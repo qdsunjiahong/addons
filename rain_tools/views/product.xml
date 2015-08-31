@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openerp>
+    <data>
+        <!--v7 导入到　ｖ8 某类产品数据-->
+        <record id="rain_tools_product_form_view" model="ir.ui.view">
+            <field name="name">rain.tools.product.form.view</field>
+            <field name="model">rain.product.v8</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string='产品导入' version="7.0">
+                    <group>
+                        <field  name="name" string="账号"/>
+                        <field  name="password" string="密码"/>
+                        <field  name="url" string="xml-rpc地址"/>
+                        <field  name="database" string="数据库"/>
+                        <field  name="category" string="v7分类"/>
+                    </group>
+                    <footer>
+                        <button name="action_upload" string="导入" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_rain_tools_product" model="ir.actions.act_window">
+            <field name="name">v7tov8产品</field>
+            <field name="res_model">rain.product.v8</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="rain_tools_product_form_view"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+        <!--菜单-->
+        <menuitem name="v7tov8产品" id="menu_rain_tools_product" action="action_rain_tools_product"
+                  parent="base.menu_product"
+                  sequence="6"/>
+    </data>
+</openerp>

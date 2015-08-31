@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="hm_inventory_form_view">
+						<field name="name">hm inventory form</field>
+						<field name="model">stock.inventory</field>
+						<field name="inherit_id" ref="stock.view_inventory_form"/>
+						<field name="arch" type="xml">
+								<button name="reset_real_qty" position="before">
+										<group>
+												<group>
+														<field name="xls"/>
+												</group>
+												<group>
+														<button name="btn_import" string="Import" type="object"/>
+												</group>
+										</group>
+								</button>
+						</field>
+				</record>
+		</data>
+</openerp>

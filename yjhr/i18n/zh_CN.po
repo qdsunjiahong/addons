@@ -1,0 +1,193 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* yjhr
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-12-23 02:42+0000\n"
+"PO-Revision-Date: 2014-12-23 10:48+0800\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"X-Generator: Poedit 1.5.4\n"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+#: field:yj.hr.attendance,absence:0
+msgid "Absence"
+msgstr "缺勤"
+
+#. module: yjhr
+#: field:yj.hr.attendance,annual_leave:0
+msgid "Annual Leave"
+msgstr "年假"
+
+#. module: yjhr
+#: field:yj.hr.attendance,antenatal_leave:0
+msgid "Antenatal Leave"
+msgstr "产检"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+#: field:yj.hr.attendance,late_early:0
+msgid "Arriving Late and Leaving Early"
+msgstr "迟到早退"
+
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+#: feild:yj.hr.attendance,e_no:0
+msgid "E_No"
+msgstr "员工编号"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+msgid "Attendace"
+msgstr "出勤"
+
+#. module: yjhr
+#: field:yj.hr.attendance,buiness_leave:0
+msgid "Buiness Leave"
+msgstr "事假"
+
+#. module: yjhr
+#: field:yj.hr.attendance,create_uid:0
+msgid "Created by"
+msgstr "Created by"
+
+#. module: yjhr
+#: field:yj.hr.attendance,create_date:0
+msgid "Created on"
+msgstr "Created on"
+
+#. module: yjhr
+#: field:yj.hr.attendance,day_off:0
+msgid "Day Off"
+msgstr "调休"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+msgid "Days Off"
+msgstr "调休"
+
+#. module: yjhr
+#: field:yj.hr.attendance,dalay:0
+msgid "Delay"
+msgstr "延时加班"
+
+#. module: yjhr
+#: field:yj.hr.attendance,out_abs:0
+msgid "Dimiss Absence"
+msgstr "离职缺勤"
+
+#. module: yjhr
+#: field:yj.hr.attendance,name:0
+msgid "Employee"
+msgstr "员工"
+
+#. module: yjhr
+#: field:yj.hr.attendance,in_abs:0
+msgid "Entry Absence"
+msgstr "入职缺勤"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+msgid "Full Salary Leave"
+msgstr "全薪假"
+
+#. module: yjhr
+#: field:yj.hr.attendance,funeral_leave:0
+msgid "Funeral Leave"
+msgstr "丧假"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+msgid "HR attendance"
+msgstr "人力出勤"
+
+#. module: yjhr
+#: field:yj.hr.attendance,holiday_overwork:0
+msgid "Holiday OverWork"
+msgstr "年假加班"
+
+#. module: yjhr
+#: field:yj.hr.attendance,hours:0
+msgid "Hours"
+msgstr "应出勤"
+
+#. module: yjhr
+#: field:yj.hr.attendance,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+#: field:yj.hr.attendance,ill_leave:0
+msgid "Ill Leave"
+msgstr "病假"
+
+#. module: yjhr
+#: field:yj.hr.attendance,write_uid:0
+msgid "Last Updated by"
+msgstr "Last Updated by"
+
+#. module: yjhr
+#: field:yj.hr.attendance,write_date:0
+msgid "Last Updated on"
+msgstr "Last Updated on"
+
+#. module: yjhr
+#: field:yj.hr.attendance,marriage_leave:0
+msgid "Marriage Leave"
+msgstr "婚假"
+
+#. module: yjhr
+#: field:yj.hr.attendance,maternity_leave:0
+msgid "Maternity Leave"
+msgstr "产假"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+msgid "No Salary Leav"
+msgstr "无薪假"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+#: field:yj.hr.attendance,occupational_injury:0
+msgid "Occupational Injury"
+msgstr "工伤"
+
+#. module: yjhr
+#: field:yj.hr.attendance,over_work:0
+msgid "Over Work"
+msgstr "加班"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+msgid "Overwork"
+msgstr "加班"
+
+#. module: yjhr
+#: field:yj.hr.attendance,sick_leave:0
+msgid "Sick Leave"
+msgstr "小病假"
+
+#. module: yjhr
+#: view:yj.hr.attendance:yjhr.yj_attendance_form_view
+msgid "Total"
+msgstr "应出勤总数"
+
+#. module: yjhr
+#: field:yj.hr.attendance,weekend_overwork:0
+msgid "Weekend Work"
+msgstr "休息日加班"
+
+#. module: yjhr
+#: model:ir.actions.act_window,name:yjhr.yjhr_action_attendance
+msgid "yjhr attendance"
+msgstr "远见人力出勤"

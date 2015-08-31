@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="prodcut_expense_usage_form_view">
+            <field name="name">product.expense.usage</field>
+            <field name="model">product.expense.usage</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Product Expense Usage">
+                    <sheet>
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <group>
+                            <field name="credit" domain="[('type','!=','view')]"/>
+                            <field name="debit" domain="[('type','!=','view')]"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="product_expense_usage_tree_view">
+            <field name="name">product.expense.usage</field>
+            <field name="model">product.expense.usage</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Product Expense Usage">
+                    <field name="name"/>
+                    <field name="credit"/>
+                    <field name="debit"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="actions_product_expense_usage">
+            <field name="name">Product Expense Usage</field>
+            <field name="res_model">product.expense.usage</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_product_expense_usage" name="Product Expense Usage" action="actions_product_expense_usage"
+                  parent="hr.menu_hr_configuration"/>
+
+    </data>
+</openerp>

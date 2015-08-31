@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="view_form_qdodoo_stock_demand" model="ir.ui.view">
+            <field name="name">qdodoo.stock.demand.form</field>
+            <field name="model">qdodoo.stock.demand</field>
+            <field name="arch" type="xml">
+                <form string="需求转换单">
+                    <header>
+                        <button name="btn_action_conversion" type="object" state="draft" string="转化为需求单"
+                                class="oe_highlight" attrs="{'invisible': [('state','in',('done'))]}"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done"
+                               statusbar_colors="{'draft':'red', 'done':'blue'}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <label string="需求转换单"/>
+                                <field name="name" class="oe_inline" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group colspan="4" col="4">
+                                <field name="partner_id"/>
+                                <field name="create_datetime"/>
+                                <field name="location_id" on_change="change_location_id(location_id)"/>
+                                <field name="date_planed"/>
+                                <field name="location_id2"/>
+                                <field name="rule_id"/>
+                                <field name="bom_id"/>
+                                <field name="route_ids" widget="many2many_tags"/>
+                                <field name="group_id"/>
+                                <field name="company_id"/>
+                                <field name="origin"/>
+                                <field name="priority_new"/>
+                                <field name="purchase_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="产品">
+                                <group>
+                                    <group>
+                                        <field name="import_file"/>
+                                    </group>
+                                    <group>
+                                        <button name='btn_import_data' string='导入' type='object' class='oe_edit_only' states="draft" />
+                                        <a href="/qdodoo_stock_demand/static/template.xls">点此进行模板下载</a>
+                                    </group>
+                                </group>
+                                <field name="qdodoo_stock_product_ids">
+                                    <tree editable="bottom">
+                                        <field name="product_id" on_change="onchange_product_id(product_id)" domain="[('company_id','=',parent.company_id)]"/>
+                                        <field name="name"/>
+                                        <field name="product_qty" sum="合计"/>
+                                        <field name="uom_id"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="view_tree_qdodoo_stock_demand2" model="ir.ui.view">
+            <field name="name">qdodoo.stock.demand.tree</field>
+            <field name="model">qdodoo.stock.demand</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <tree string="需求转换单" colors="red:state == 'draft'">
+                    <field name="partner_id"/>
+                    <field name="create_datetime"/>
+                    <field name="location_id"/>
+                    <field name="date_planed"/>
+                    <field name="group_id"/>
+                    <field name="company_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_qdodoo_stock_demand" model="ir.actions.act_window">
+            <field name="name">需求转换单</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.stock.demand</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_tree_qdodoo_stock_demand2"/>
+        </record>
+        <menuitem name="需求转换单" id="menu_qdodoo_stock_demand" parent="stock.menu_stock_sched"
+                  action="action_qdodoo_stock_demand"/>
+    </data>
+</openerp>

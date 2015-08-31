@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="report_lot_barcode" inherit_id="stock.report_lot_barcode">
+             <xpath expr="//t[@t-call='report.html_container']" position="replace">
+            <t t-call="report.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t>
+                            <div class="page" style="margin:0;padding:0">
+                                <div class="oe_structure"/>
+                                <div class="row" style="margin:0;padding:0;width:100%">
+
+                                        <p class="text-center" t-field="o.product_id.name"/>
+
+                                </div>
+                                <div class="row text-center" style="margin:0;padding:0;width:100%">
+
+                                        <img t-att-src="'/report/barcode/?type=%s&amp;value=%s&amp;width=%s&amp;height=%s' % ('Code11', o.name, 600, 200)"
+                                             style="width:180px;height:60px"/>
+
+
+                                </div>
+                                <div class="row">
+                                    <p class="text-center" t-field="o.name"></p>
+                                </div>
+                            </div>
+
+                    </t>
+                </t>
+
+            </t>
+                </xpath>
+        </template>
+    </data>
+</openerp>

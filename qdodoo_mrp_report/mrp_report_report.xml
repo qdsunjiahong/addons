@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--
+        Work Order Report
+        -->
+        <record id="view_report_mrp_of_rain" model="ir.ui.view">
+            <field name="name">mrp.report.of.rain</field>
+            <field name="model">mrp.report.of.rain</field>
+            <field name="arch" type="xml">
+                <graph string="原料耗用对比表" type="pivot">
+                    <field name="product_id"/>
+                    <field name="actual_money" type="measure"/>
+                    <field name="production_efficiency" type="measure"/>
+                    <field name="actual_consumption_num" type="measure"/>
+                    <field name="actual_price" type="measure"/>
+                    <field name="theory_num" type="measure"/>
+                    <field name="theory_money" type="measure"/>
+                    <field name="difference_qty" type="measure"/>
+                    <field name="qdr" type="measure"/>
+                    <field name="actual_collar_num" type="measure"/>
+                    <field name="actual_collar_money" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <record id="view_report_mrp_of_rain_filter" model="ir.ui.view">
+            <field name="name">mrp.report.of.rain</field>
+            <field name="model">mrp.report.of.rain</field>
+            <field name="arch" type="xml">
+                <search string="Search">
+                    <field name="production_id"/>
+                    <field name="product_id"/>
+                    <field name="analytics_id"/>
+                </search>
+            </field>
+        </record>
+        <record id="action_report_mrp_of_rain" model="ir.actions.act_window">
+            <field name="name">原料耗用对比表</field>
+            <field name="res_model">mrp.report.of.rain</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">graph</field>
+            <field name="view_id" ref="view_report_mrp_of_rain"/>
+            <field name="search_view_id" ref="view_report_mrp_of_rain_filter"/>
+        </record>
+
+        <menuitem name="原料耗用对比表" action="action_report_mrp_of_rain" id="menu_action_report_mrp_of_rain" parent="mrp.next_id_77"/>
+
+  </data>
+</openerp>

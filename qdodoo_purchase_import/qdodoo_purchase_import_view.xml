@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+		<record id="purchase_order_form_inherit" model="ir.ui.view">
+			<field name="name">qdodoo.purchase.order.form</field>
+			<field name="model">purchase.order</field>
+			<field name="inherit_id" ref="purchase.purchase_order_form"/>
+			<field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']" position="before">
+				  <group>
+					<group>
+						<field name='import_file'/>
+					</group>
+					<group>
+						<button name='import_data' string='导入' type='object' class='oe_edit_only' states="draft" />
+					    <a href="/qdodoo_purchase_import/static/purchase_import.xls">点此进行模板下载</a>
+                    </group>
+				  </group>
+				</xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

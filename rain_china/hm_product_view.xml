@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="hm_product_search_view">
+						<field name="name">hm product view</field>
+						<field name="model">product.product</field>
+						<field name="inherit_id" ref="product.product_search_form_view"/>
+						<field name="arch" type="xml">
+								<xpath expr="//field[@string='Product']" position="after">
+										<field name="categ_id" string="Categ"/>
+								</xpath>
+						</field>
+				</record>
+		</data>
+</openerp>

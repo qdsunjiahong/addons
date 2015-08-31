@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+		<record id="rain_bach_produce_form_view" model="ir.ui.view">
+			<field name="name">rain.bach.produce.form.view</field>
+			<field name="model">mrp.production.confirm</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string='rain bach produce' version="8.0">
+					<group>
+					</group>
+					<footer>
+						<button name="production_confirm" string="合并" type="object" default_focus="1" class="oe_highlight"/>
+						or
+						<button string="取消" class="oe_link" special="cancel"/>
+					</footer>
+				</form>
+			</field>
+		</record>
+
+
+		<record id="action2" model="ir.actions.act_window">
+			<field name="name">批量确认生产</field>
+			<field name="res_model">mrp.production.confirm</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="rain_bach_produce_form_view"/>
+			<field name="context">{}</field>
+			<field name="target">new</field>
+		</record>
+
+		<record id="ir_bach_produce" model="ir.values">
+			<field eval="'client_action_multi'" name="key2"/>
+			<field eval="'mrp.production'" name="model"/>
+			<field name="name">批量确认生产</field>
+			<field eval="'ir.actions.act_window,'+str(action2)" name="value"/>
+		</record>
+
+	</data>
+</openerp>

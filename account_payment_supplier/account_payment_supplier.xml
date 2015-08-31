@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="payment_supplier" model="ir.ui.view">
+            <field name="name">payment.order.form.payment_supplier</field>
+            <!-- 显示的名字 -->
+            <field name="model">payment.order</field>
+            <field name="inherit_id" ref="account_payment.view_payment_order_form"></field>
+            <field name="arch" type="xml">
+               <field name="mode" position="after">
+                   <field name="payment_supplier"></field>
+               </field>
+                <field name="line_ids" position="after">
+                   <field name="payment_supplier_comment"></field>
+               </field>
+            </field>
+        </record>
+    </data>
+</openerp>

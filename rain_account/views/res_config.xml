@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_account_config_settings" model="ir.ui.view">
+            <field name="name">cost_share_settings</field>
+            <field name="model">rain.cost.share.settings</field>
+            <field name="arch" type="xml">
+                <form string="Configure Cost Share" version="7.0" class="oe_form_configuration">
+                    <header>
+                        <button string="Apply" type="object" name="execute" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" type="object" name="cancel" class="oe_link"/>
+                    </header>
+                    <separator name="cost_share" string="成本差异分摊"/>
+                    <group name="cost_share_conf">
+                        <div>
+                            <div>
+                                <label for="rain_account_journal"/>
+                                <field name="rain_account_journal" class="oe_inline"/>
+                            </div>
+                            <div>
+                                <label for="rain_account_left"/>
+                                <field name="rain_account_left" class="oe_inline"/>
+                            </div>
+                            <div>
+                                <label for="rain_account_right"/>
+                                <field name="rain_account_right" class="oe_inline"/>
+                            </div>
+                        </div>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="cost_share_config" model="ir.actions.act_window">
+            <field name="name">Configure Cost Share</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">rain.cost.share.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+
+        <menuitem id="menu_cost_share_config" name="Cost Share" parent="base.menu_config"
+                  sequence="50" action="cost_share_config"/>
+    </data>
+</openerp>

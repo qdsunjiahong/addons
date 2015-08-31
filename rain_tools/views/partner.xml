@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<openerp>
+    <data>
+        <!--v7 导入到　ｖ8 某类产品数据-->
+        <record id="rain_partner_import_form_view" model="ir.ui.view">
+            <field name="name">rain.partner.import.form.view</field>
+            <field name="model">rain.partner.import</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string='供应商导入' version="7.0">
+                    <group>
+                        <field  name="db_datas" string="导入Excel文件"/>
+                    </group>
+                    <footer>
+                        <button name="action_upload" string="导入" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_rain_partner_import" model="ir.actions.act_window">
+            <field name="name">供应商导入</field>
+            <field name="res_model">rain.partner.import</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="rain_partner_import_form_view"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+        <!--菜单-->
+        <menuitem name="供应商导入" id="menu_rain_partner_import" action="action_rain_partner_import"
+                  parent="purchase.menu_procurement_management"
+                  sequence="6"/>
+    </data>
+</openerp>

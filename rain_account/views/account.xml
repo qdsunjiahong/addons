@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_move_form" model="ir.ui.view">
+            <field name="name">account.move.form</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree[@string='Journal Items']/field[@name='credit']" position="after">
+                    <field name="quantity"/>
+                </xpath>
+            </field>
+        </record>
+        <!--cost_share_line-->
+        <!--cost_share-->
+        <!-- tree-->
+        <record id="view_share_cost_tree" model="ir.ui.view">
+            <field name="name">share.cost.tree</field>
+            <field name="model">rain.cost.share</field>
+            <field name="arch" type="xml">
+                <tree string="Cost Share" colors="blue:state == 'draft';gray:state == 'done';black:state == 'partial'">
+                    <field name="name"/>
+                    <field name="period_id"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
+        <!--form-->
+        <record id="view_cost_share_form" model="ir.ui.view">
+            <field name="name">share.cost.form</field>
+            <field name="model">rain.cost.share</field>
+            <field name="arch" type="xml">
+                <form string="Cost Share" version="7.0">
+                    <header>
+                        <button name="action_share" string="Share Cost" type="object" attrs="{'invisible':[('state','not in',('draft', 'partial'))]}"  class="oe_highlight"/>
+                        <field name="state" widget="statusbar" nolabel="1"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="begin_period_id"/>
+                                <field name="period_id" on_change="on_change_period_id(period_id)"/>
+                                <field name="date"/>
+                            </group>
+                            <group>
+                                 <field name="name"/>
+                                <field name="account_move_id"  readonly="1"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page string="Cost Share Line" >
+                                <field name="line_ids">
+                                    <tree  string="Cost share lines" colors="blue:state == 'draft';gray:state == 'done';red:state == 'exception'">
+                                        <field name="name" invisible="1"></field>
+                                        <field name="product_id"></field>
+                                        <field name="begin_surplus_quantity"></field>
+                                        <field name="in_quantity"></field>
+                                        <field name="out_quantity"></field>
+                                        <field name="share_ratio"></field>
+                                        <field name="begin_cost_difference"></field>
+                                        <field name="cost_difference"></field>
+                                        <field name="difference_share"></field>
+                                        <field name="period_id" invisible="1"></field>
+                                        <field name="state"></field>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_view_cost_share" model="ir.actions.act_window">
+            <field name="name">成本分摊</field>
+            <field name="res_model">rain.cost.share</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    添加一个某个时期内的费用分摊
+                </p>
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_cost_share_parent" name="成本分摊" parent="account.menu_finance_periodical_processing"
+                  sequence="30"
+                />
+        <menuitem action="action_view_cost_share" id="menu_cost_share" parent="rain_account.menu_cost_share_parent"/>
+
+
+	    <!--会计凭证明细导入-->
+
+	    <record id="rain_account_ml_form_view" model="ir.ui.view">
+            <field name="name">rain.account.ml.form.view</field>
+            <field name="model">rain.account.move.line.import</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string='导入产品编码' version="7.0">
+                    <group>
+                        <field name="account_move_id" />
+                        <field name="db_datas" />
+                        <field name="debit_account_id"/>
+	                    <field name="credit_account_id"/>
+                    </group>
+                    <group>
+                        <p>说明:
+	                        1.导入的文件必须是xls文件（注：不是xlsx)<br/>
+	                        2.格式必须 按照给的模板做，而且 sheet必须为第一个<br/>
+	                        3.模板中的第一行不要改<br/>
+	                        4.模板中的第一列的内容，必须有"[ ]",且"[ ]"中的内容必须是产品的内部单号(default_code)<br/>
+	                        产品必须存在，要不导入不成功<br/>
+	                        5.这个模板可以导入"会计凭证”的分录明细<br/>
+	                        6.如果xls文件中的内容比较多的话时间会比较长，可以分两次导入，<br/>
+                        </p>
+                    </group>
+                    <footer>
+                        <button name="action_upload" string="上传" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+	    <record id="action_rain_move_line_import" model="ir.actions.act_window">
+            <field name="name">导入会计凭证明细</field>
+            <field name="res_model">rain.account.move.line.import</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="rain_account_ml_form_view"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+
+	    <menuitem action="action_rain_move_line_import" id="menu_action_rain_move_line_import" parent="rain_account.menu_cost_share_parent"
+                  sequence="5"/>
+    </data>
+</openerp>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="view_partner_form_inherit">
+            <field name="name">res.partner.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//label[@for='is_company']" position="after">
+                    <field name="is_internal_company" class="oe_inline"/>
+                    <label for="is_internal_company" string="是否是内部公司?"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_order_form_inherit">
+            <field name="name">sale.order.form.inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='project_id']" position="after">
+                    <field name="location_id_note"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_purchase_order_form_inherit">
+            <field name="name">purchase.order.form.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="is_internal_company" invisible="True"/>
+                    <field name="location_name" domain="[('company_id.partner_id.id','=',partner_id)]"
+                           attrs="{'invisible':[('is_internal_company','=',False)],'required':[('is_internal_company','=',True)],'readonly': [('state','!=','draft')]}"/>
+                </xpath>
+
+                <xpath expr="//field[@name='picking_type_id']" position="replace">
+                    <field name="picking_type_id"  on_change="onchange_picking_type_id(picking_type_id, context)" domain="[('code','=','incoming'),('warehouse_id.company_id.id','=',company_id)]" options="{'no_create': True}" context="{'special_shortened_wh_name': True}" groups="stock.group_locations"/>
+                </xpath>
+
+                <xpath expr="//field[@name='order_line']" position="replace">
+                    <field name="order_line">
+                        <tree string="Purchase Order Lines" editable="bottom">
+                            <field name="product_id" domain="[('company_id','=',parent.company_id)]"
+                                   on_change="onchange_product_id(parent.pricelist_id,product_id,0,False,parent.partner_id, parent.date_order,parent.fiscal_position,date_planned,False,False,parent.state,context)"/>
+                            <field name="name"/>
+                            <field name="date_planned"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="account_analytic_id" groups="purchase.group_analytic_accounting"
+                                   domain="[('type','not in',('view','template'))]"/>
+                            <field name="product_qty"
+                                   on_change="onchange_product_id(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id,parent.date_order,parent.fiscal_position,date_planned,name,False,parent.state,context)"/>
+                            <field name="product_uom" groups="product.group_uom"
+                                   on_change="onchange_product_uom(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id, parent.date_order,parent.fiscal_position,date_planned,name,False,parent.state,context)"/>
+                            <field name="price_unit"/>
+                            <field name="taxes_id" widget="many2many_tags"
+                                   domain="[('parent_id','=',False),('type_tax_use','!=','sale')]"/>
+                            <field name="price_subtotal"/>
+                            <field name="state" invisible="1"/>
+                        </tree>
+                    </field>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>

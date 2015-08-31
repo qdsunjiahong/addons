@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+
+
+        <record id="amos_value_001" model="ir.rule.value.data">
+            <field name="name">child_of/用户所包含公司 不含False</field>
+            <field name="value">('%s','child_of',[user.company_id.id])</field>
+        </record>
+        <record id="amos_value_001_1" model="ir.rule.value.data">
+            <field name="name">child_of/用户所包含公司含False</field>
+            <field name="value">('%s','child_of',[user.company_id.id]),('company_id','=',False)</field>
+        </record>
+
+        <record id="amos_value_002" model="ir.rule.value.data">
+            <field name="name">当前时间</field>
+            <field name="value">time.strftime('%%Y-%%m-%%d'))</field>
+        </record>
+        <record id="amos_value_003" model="ir.rule.value.data">
+            <field name="name">False</field>
+            <field name="value">False</field>
+        </record>
+        <record id="amos_value_004" model="ir.rule.value.data">
+            <field name="name">True</field>
+            <field name="value">True</field>
+        </record>
+        <record id="amos_value_005" model="ir.rule.value.data">
+            <field name="name">uid</field>
+            <field name="value">uid</field>
+        </record>
+        <record id="amos_value_005_1" model="ir.rule.value.data">
+            <field name="name">user.id</field>
+            <field name="value">user.id</field>
+        </record>
+        <record id="amos_value_006" model="ir.rule.value.data">
+            <field name="name">product type product</field>
+            <field name="value">'product'</field>
+        </record>
+        <record id="amos_value_006_1" model="ir.rule.value.data">
+            <field name="name">product type consu</field>
+            <field name="value">'consu'</field>
+        </record>
+        <record id="amos_value_006_2" model="ir.rule.value.data">
+            <field name="name">product type service</field>
+            <field name="value">'service'</field>
+        </record>
+        <record id="amos_value_007" model="ir.rule.value.data">
+            <field name="name">本年</field>
+            <field name="value">('%s','&lt;=', time.strftime('%%Y-12-31')),('%s','&gt;=',time.strftime('%%Y-01-01'))
+            </field>
+        </record>
+
+        <record id="amos_value_008" model="ir.rule.value.data">
+            <field name="name">自己的单据/不含False</field>
+            <field name="value">('%s','=',user.id)</field>
+        </record>
+        <record id="amos_value_008_1" model="ir.rule.value.data">
+            <field name="name">自己的单据/含False</field>
+            <field name="value">('%s','=',user.id),('%s','=',False)</field>
+        </record>
+
+        <record id="amos_value_009" model="ir.rule.value.data">
+            <field name="name">当前用户合作伙伴的ID</field>
+            <field name="value">[user.partner_id.id]</field>
+        </record>
+
+                <record id="amos_value_010" model="ir.rule.value.data">
+            <field name="name">(1, '=', 1)</field>
+            <field name="value">(1, '=', 1)</field>
+        </record>
+
+
+    </data>
+</openerp>

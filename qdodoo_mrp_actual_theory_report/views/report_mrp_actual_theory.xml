@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="report_mrp_actual_theory">&lt;!DOCTYPE html&gt;
+            <html style="width:100%;height:100%">
+                <head>
+                    <title>Web报表</title>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                    <script src="/qdodoo_rubylong/static/CreateControl.js" type="text/javascript"></script>
+                    <script type="text/javascript">
+                        //在响应按钮执行时重新向报表提供数据
+                        //在网页初始加载时向报表提供数据
+                        function window_onload() {
+                            ReportViewer.Stop();
+                            FillTableToReport();
+                        }
+                        function FillTableToReport() {
+                        var Report = ReportViewer.Report;
+                        //报表记录集对象
+                        var Recordset = Report.DetailGrid.Recordset;
+                        //单头信息
+                        var fld_o_start_date = Report.FieldByName("o_start_date");
+                        var fld_o_end_date = Report.FieldByName("o_end_date");
+                        var fld_o_production_id = Report.FieldByName("o_production_id");
+                        var fld_o_production_name = Report.FieldByName("o_production_name");
+                        var fld_o_location_id = Report.FieldByName("o_location_id");
+                        var fld_o_analytic_plan = Report.FieldByName("o_analytic_plan");
+                        var fld_o_product_id = Report.FieldByName("o_product_id");
+                        var fld_o_actual_money = Report.FieldByName("o_actual_money");
+                        var fld_o_actual_consumption_num = Report.FieldByName("o_actual_consumption_num");
+                        var fld_o_actual_price = Report.FieldByName("o_actual_price");
+                        var fld_o_theory_num = Report.FieldByName("o_theory_num");
+                        var fld_o_theory_money = Report.FieldByName("o_theory_money");
+                        var fld_o_theory_price = Report.FieldByName("o_theory_price");
+                        var fld_o_save_number = Report.FieldByName("o_save_number");
+                        var fld_o_save_money = Report.FieldByName("o_save_money");
+                        var fld_o_average_number = Report.FieldByName("o_average_number");
+                        var fld_o_average_money = Report.FieldByName("o_average_money");
+                        var fld_o_product_number = Report.FieldByName("o_product_number");
+                        var fld_o_number_diff = Report.FieldByName("o_number_diff");
+                        var fld_o_money_diff = Report.FieldByName("o_money_diff");
+
+
+                        Report.PrepareRecordset();
+                        //网页中的表格
+                        var tbCustomer = document.getElementById("tbCustomer");
+                        var Rows = tbCustomer.tBodies[0].rows;
+                        //将每行表格数据填入到报表记录集
+                        for (var i = 0; i &lt; Rows.length; i++) {
+                        Recordset.Append();
+                        //FireFox不认innerText，只认textContent,所以这里要特殊处理
+                        if (Rows[i].cells[0].innerText) {
+                        //单头信息
+                        fld_o_start_date.Value = Rows[i].cells['o_start_date'].innerText;
+                        fld_o_end_date.Value = Rows[i].cells['o_end_date'].innerText;
+                        fld_o_production_id.Value = Rows[i].cells['o_production_id'].innerText;
+                        fld_o_production_name.Value = Rows[i].cells['o_production_name'].innerText;
+                        fld_o_location_id.Value = Rows[i].cells['o_location_id'].innerText;
+                        fld_o_analytic_plan.Value = Rows[i].cells['o_analytic_plan'].innerText;
+                        fld_o_product_id.Value = Rows[i].cells['o_product_id'].innerText;
+                        fld_o_actual_money.Value = Rows[i].cells['o_actual_money'].innerText;
+                        fld_o_actual_consumption_num.Value = Rows[i].cells['o_actual_consumption_num'].innerText;
+                        fld_o_actual_price.Value = Rows[i].cells['o_actual_price'].innerText;
+                        fld_o_theory_num.Value = Rows[i].cells['o_theory_num'].innerText;
+                        fld_o_theory_money.Value = Rows[i].cells['o_theory_money'].innerText;
+                        fld_o_theory_price.Value = Rows[i].cells['o_theory_price'].innerText;
+                        fld_o_save_number.Value = Rows[i].cells['o_save_number'].innerText;
+                        fld_o_save_money.Value = Rows[i].cells['o_save_money'].innerText;
+                        fld_o_average_number.Value = Rows[i].cells['o_average_number'].innerText;
+                        fld_o_average_money.Value = Rows[i].cells['o_average_money'].innerText;
+                        fld_o_product_number.Value = Rows[i].cells['o_product_number'].innerText;
+                        fld_o_number_diff.Value = Rows[i].cells['o_number_diff'].innerText;
+                        fld_o_money_diff.Value = Rows[i].cells['o_money_diff'].innerText;
+                        Recordset.Post();
+                        }
+                        else {
+                        //for firefox
+                        //单头信息
+                        fld_o_start_date.Value = Rows[i].cells['o_start_date'].textContent;
+                        fld_o_end_date.Value = Rows[i].cells['o_end_date'].textContent;
+                        fld_o_production_id.Value = Rows[i].cells['o_production_id'].textContent;
+                        fld_o_production_name.Value = Rows[i].cells['o_production_name'].textContent;
+                        fld_o_location_id.Value = Rows[i].cells['o_location_id'].textContent;
+                        fld_o_analytic_plan.Value = Rows[i].cells['o_analytic_plan'].textContent;
+                        fld_o_product_id.Value = Rows[i].cells['o_product_id'].textContent;
+                        fld_o_actual_money.Value = Rows[i].cells['o_actual_money'].textContent;
+                        fld_o_actual_consumption_num.Value = Rows[i].cells['o_actual_consumption_num'].textContent;
+                        fld_o_actual_price.Value = Rows[i].cells['o_actual_price'].textContent;
+                        fld_o_theory_num.Value = Rows[i].cells['o_theory_num'].textContent;
+                        fld_o_theory_money.Value = Rows[i].cells['o_theory_money'].textContent;
+                        fld_o_theory_price.Value = Rows[i].cells['o_theory_price'].textContent;
+                        fld_o_save_number.Value = Rows[i].cells['o_save_number'].textContent;
+                        fld_o_save_money.Value = Rows[i].cells['o_save_money'].textContent;
+                        fld_o_average_number.Value = Rows[i].cells['o_average_number'].textContent;
+                        fld_o_average_money.Value = Rows[i].cells['o_average_money'].textContent;
+                        fld_o_product_number.Value = Rows[i].cells['o_product_number'].textContent;
+                        fld_o_number_diff.Value = Rows[i].cells['o_number_diff'].textContent;
+                        fld_o_money_diff.Value = Rows[i].cells['o_money_diff'].textContent;
+                        Recordset.Post();
+                        }
+                        }
+                        ReportViewer.Start();
+                        }
+                    </script>
+                </head>
+                <body onload="window_onload()" style="width:100%;height:100%">
+                    <script type="text/javascript">
+                        CreatePrintViewerEx("100%", "100%", "/qdodoo_mrp_actual_theory_report/static/report_mrp_actual_theory.grf", "", false, "&lt;param name=BorderStyle value=1&gt;");
+                    </script>
+                    <table id="tbCustomer" style="display:none;">
+                        <t t-foreach="employee()" t-as="o">
+                            <tr>
+                                <!--单头信息-->
+                                <td id="o_start_date"><span t-esc="o.get('start_date')"/></td>
+                                <td id="o_end_date"><span t-esc="o.get('end_date')"/></td>
+                                <td id="o_production_id"><span t-esc="o.get('production_id')"/></td>
+                                <td id="o_production_name"><span t-esc="o.get('production_name')"/></td>
+                                <td id="o_location_id"><span t-esc="o.get('location_id')"/></td>
+                                <td id="o_analytic_plan"><span t-esc="o.get('analytic_plan')"/></td>
+                                <td id="o_product_id"><span t-esc="o.get('product_id')"/></td>
+                                <td id="o_actual_money"><span t-esc="o.get('actual_money')"/></td>
+                                <td id="o_actual_consumption_num"><span t-esc="o.get('actual_consumption_num')"/></td>
+                                <td id="o_actual_price"><span t-esc="o.get('actual_price')"/></td>
+                                <td id="o_theory_num"><span t-esc="o.get('theory_num')"/></td>
+                                <td id="o_theory_money"><span t-esc="o.get('theory_money')"/></td>
+                                <td id="o_theory_price"><span t-esc="o.get('theory_price')"/></td>
+                                <td id="o_save_number"><span t-esc="o.get('save_number')"/></td>
+                                <td id="o_save_money"><span t-esc="o.get('save_money')"/></td>
+                                <td id="o_average_number"><span t-esc="o.get('average_number')"/></td>
+                                <td id="o_average_money"><span t-esc="o.get('average_money')"/></td>
+                                <td id="o_product_number"><span t-esc="o.get('product_number')"/></td>
+                                <td id="o_number_diff"><span t-esc="o.get('number_diff')"/></td>
+                                <td id="o_money_diff"><span t-esc="o.get('money_diff')"/></td>
+                            </tr>
+                        </t>
+                    </table>
+                </body>
+            </html>
+        </template>
+    </data>
+</openerp>

@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="rainsoft_product_category_view">
+						<field name="name">Product Category</field>
+						<field name="model">rainsoft.product.category.update</field>
+						<field name="type">form</field>
+						<field name="arch" type="xml">
+								<form string='Product Category' version='7.0'>
+										<separator colspan='4' string='Are you sure to change the selected row?'/>
+										<group>
+												<field name='property_account_creditor_price_difference_categ'/>
+												<field name="property_account_income_categ"/>
+												<field name="property_account_expense_categ"/>
+												<field name="property_stock_account_input_categ"/>
+												<field name="property_stock_account_output_categ"/>
+												<field name="property_stock_valuation_account_id"/>
+												<field name="property_stock_journal"/>
+										</group>
+										<footer>
+												<button name="btn_ok" string="Fine,change them." type="object" class="oe_highlight" context="{'property_account_creditor_price_difference_categ':property_account_creditor_price_difference_categ,'property_account_income_categ':property_account_income_categ,'property_account_expense_categ':property_account_expense_categ,'property_stock_account_input_categ':property_stock_account_input_categ,'property_stock_account_output_categ':property_stock_account_output_categ,'property_stock_valuation_account_id':property_stock_valuation_account_id,'property_stock_journal':property_stock_journal}"/>
+												or
+												<button string="cancel" class="oe_link" special="cancel"/>
+										</footer>
+								</form>
+						</field>
+				</record>
+
+				<record model="ir.actions.act_window" id="action_rainsoft_product_category_update">
+						<field name="name">Product Category Update</field>
+						<field name="res_model">rainsoft.product.category.update</field>
+						<field name="view_mode">form</field>
+						<field name="view_type">form</field>
+						<field name="view_id" ref="rainsoft_product_category_view"/>
+						<field name="target">new</field>
+						<field name="multi">True</field>
+				</record>
+
+				<record model="ir.values" id="values_login_stop">
+						<field name="model_id" ref="product.model_product_category"/>
+						<field name="name">Product Category</field>
+						<field name="key2">client_action_multi</field>
+						<field name="value" eval="'ir.actions.act_window,'+str(ref('action_rainsoft_product_category_update'))"/>
+						<field name="key">action</field>
+						<field name="model">product.category</field>
+				</record>
+		</data>
+</openerp>

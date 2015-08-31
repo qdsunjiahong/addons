@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--产品导入-->
+            <!--动作-->
+        <record id="rain_product_import_form_view" model="ir.ui.view">
+            <field name="name">rain.product.import.form.view</field>
+            <field name="model">rain.product.import</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string='产品导入' version="7.0">
+                    <group>
+                       <field name="db_datas"  string="产品导入文件"/>
+                    </group>
+                    <group>
+                        <p>说明:<br/>
+                            1.提示报错,会指示哪行错误<br/>
+                            2.产品以内部编码为唯一的标示,所以内部编码重复,产品不会导入的
+                              所以产品必须有内部编码
+                        </p>
+                    </group>
+                    <footer>
+                        <button name="action_upload" string="上传" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_rain_product_import" model="ir.actions.act_window">
+            <field name="name">产品导入</field>
+            <field name="res_model">rain.product.import</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="rain_product_import_form_view"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem action="action_rain_product_import" id="menu_action_rain_product_import"  parent="base.menu_product"  sequence="5"/>
+
+        <!--&lt;!&ndash;分类导入&ndash;&gt;-->
+            <!--&lt;!&ndash;动作&ndash;&gt;-->
+        <!--<record id="rain_category_import_form_view" model="ir.ui.view">-->
+            <!--<field name="name">rain.category.import.form.view</field>-->
+            <!--<field name="model">rain.category.import</field>-->
+            <!--<field name="type">form</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<form string='产品分类导入' version="7.0">-->
+                    <!--<group>-->
+                       <!--<field name="db_datas"  string="产品分类导入文件"/>-->
+                    <!--</group>-->
+                    <!--<group>-->
+                        <!--<p>说明:<br/>-->
+                            <!--1.提示报错,会指示哪行错误<br/>-->
+                            <!--2.产品以内部编码为唯一的标示,所以内部编码重复,产品不会导入的-->
+                              <!--所以产品必须有内部编码-->
+                        <!--</p>-->
+                    <!--</group>-->
+                    <!--<footer>-->
+                        <!--<button name="action_upload" string="上传" type="object" class="oe_highlight"/>-->
+                        <!--or-->
+                        <!--<button string="取消" class="oe_link" special="cancel"/>-->
+                    <!--</footer>-->
+                <!--</form>-->
+            <!--</field>-->
+        <!--</record>-->
+
+        <!--<record id="action_rain_category_import" model="ir.actions.act_window">-->
+            <!--<field name="name">产品分类导入</field>-->
+            <!--<field name="res_model">rain.category.import</field>-->
+            <!--<field name="type">ir.actions.act_window</field>-->
+            <!--<field name="view_type">form</field>-->
+            <!--<field name="view_mode">tree,form</field>-->
+            <!--<field name="view_id" ref="rain_category_import_form_view"/>-->
+            <!--<field name="context">{}</field>-->
+            <!--<field name="target">new</field>-->
+        <!--</record>-->
+
+        <!--<menuitem action="action_rain_category_import" id="menu_action_rain_category_import"  parent="base.menu_product"  sequence="5"/>-->
+
+    </data>
+</openerp>

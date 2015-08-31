@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--视图-->
+
+        <record id="hr_department_list_view" model="ir.ui.view">
+            <field name="name">hr.department.list</field>
+            <field name="model">hr.department</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <tree string="Product Categories">
+                    <field name="complete_name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_department_tree_view" model="ir.ui.view">
+            <field name="name">hr.department.tree</field>
+            <field name="model">hr.department</field>
+            <field name="field_parent">child_ids</field>
+            <field name="arch" type="xml">
+                <tree toolbar="True" string="部门">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+
+        <!--动作-->
+        <record id="open_view_departments" model="ir.actions.act_window">
+            <field name="name">部门</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.department</field>
+            <field name="domain">[('parent_id','=',False)]</field>
+            <field name="view_type">tree</field>
+            <field name="view_id" ref="hr_department_tree_view"/>
+            <field name="help" type="html">
+                <p>
+                    查看部门分类,点击部门可以查看所有的与该部门有关的人员.点击右侧小
+                    三角符号,可以查看子部门.
+                </p>
+            </field>
+        </record>
+        <!--menu-->
+        <menuitem action="open_view_departments" id="menu_open_view_departments" sequence="4" parent="hr.menu_hr_main"/>
+
+         <record id="hr_employee_normal_action_tree" model="ir.actions.act_window">
+            <field name="name">Employee Variants</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">hr.employee</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,kanban</field>
+            <field name="context">{'department_id':active_id, 'search_default_department_id':active_id}</field>
+        </record>
+
+        <record id="ir_employee_department_open" model="ir.values">
+            <field eval="'tree_but_open'" name="key2"/>
+            <field eval="'hr.department'" name="model"/>
+            <field name="name">Products by Department</field>
+            <field eval="'ir.actions.act_window,%d'%hr_employee_normal_action_tree" name="value"/>
+        </record>
+
+        <!--员工导入-->
+            <!--动作-->
+        <record id="rain_import_employees_form_view" model="ir.ui.view">
+            <field name="name">rain.import.employees.form.view</field>
+            <field name="model">hr.employee.import</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string='员工导入' version="7.0">
+                    <group>
+                       <field name="db_datas"  />
+                    </group>
+                    <footer>
+                        <button name="action_upload" string="上传" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_rain_import_employees" model="ir.actions.act_window">
+            <field name="name">员工导入</field>
+            <field name="res_model">hr.employee.import</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="rain_import_employees_form_view"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem action="action_rain_import_employees" id="menu_action_import_employees" sequence="5" parent="hr.menu_hr_main"/>
+    </data>
+</openerp>

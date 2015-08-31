@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <report
+            id="be_shipped"
+            string="生产实际投料与理论投料对比"
+            model="mrp.production"
+            report_type="qweb-html"
+            file="qdodoo_mrp_actual_theory_report.report_mrp_actual_theory"
+            name="qdodoo_mrp_actual_theory_report.report_mrp_actual_theory"
+            menu="False"
+        />
+    </data>
+</openerp>
