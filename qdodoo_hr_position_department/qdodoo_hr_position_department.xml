@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_view_employee_form_inherit">
+            <field name="name">员工</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <field name="job_id" position="replace">
+                    <field name="job_id" on_change="onchange_job_id(job_id)"/>
+                </field>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="qdodoo_view_contract_form_inherit">
+            <field name="name">合同</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+            <field name="arch" type="xml">
+                <field name="job_id" position="replace">
+                    <field name="job_id" on_change="onchange_job_department_id(job_id, hr_department_id, employee_id)"/>
+                </field>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="qdodoo_view_contract_form_inherit2">
+            <field name="name">合同</field>
+            <field name="model">hr.contract</field>
+            <field name="inherit_id" ref="rain_hr_extend.hr_contract_views_form"/>
+            <field name="arch" type="xml">
+                <field name="hr_department_id" position="replace">
+                    <field name="hr_department_id"
+                           on_change="onchange_job_department_id(job_id, hr_department_id, employee_id)"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
