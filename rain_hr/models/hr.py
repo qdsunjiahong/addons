@@ -9,6 +9,7 @@ import datetime
 
 from openerp.osv import fields, osv
 import xlrd,base64
+
 class hr_department(osv.osv):
     _name = "hr.department"
     _inherit = "hr.department"
@@ -27,7 +28,22 @@ class hr_department(osv.osv):
             res.append((record['id'], name))
         return res
 
+    def name_search(self, cr, uid, name, args=None, operator='ilike', context=None, limit=100):
+        if not args:
+            args = []
+        if not context:
+            context = {}
+        if name:
+            # Be sure name_search is symetric to name_get
+            name = name.split(' / ')[-1]
+            ids = self.search(cr, uid, [('name', operator, name)] + args, limit=limit, context=context)
+        else:
+            ids = self.search(cr, uid, args, limit=limit, context=context)
+        return self.name_get(cr, uid, ids, context)
 
+    def _name_get_fnc(self, cr, uid, ids, prop, unknow_none, context=None):
+        res = self.name_get(cr, uid, ids, context=context)
+        return dict(res)
 
 hr_department()
 
@@ -50,6 +66,7 @@ class hr_employee_import(osv.osv):
             department_objs = self.pool.get("hr.department").browse(cr, uid, department_ids)
             for department_obj in department_objs:
                 if department_obj.complete_name == complete_name:
+                    print department_obj.complete_name
                     return department_obj.id
 
         return False

@@ -5,7 +5,7 @@
             <field name="name">qdodoo.stock.demand.form</field>
             <field name="model">qdodoo.stock.demand</field>
             <field name="arch" type="xml">
-                <form string="需求转换单" version="7.0">
+                <form string="需求转换单">
                     <header>
                         <button name="btn_action_conversion" type="object" state="draft" string="转化为需求单"
                                 class="oe_highlight" attrs="{'invisible': [('state','in',('done'))]}"/>
@@ -21,14 +21,14 @@
                         </div>
                         <group>
                             <group colspan="4" col="4">
-                                <field name="partner_id"/>
+                                <!--<field name="partner_id"/>-->
                                 <field name="create_datetime"/>
                                 <field name="location_id" on_change="change_location_id(location_id)"/>
                                 <field name="date_planed"/>
                                 <field name="location_id2"/>
-                                <field name="rule_id"/>
-                                <field name="bom_id"/>
-                                <field name="route_ids" widget="many2many_tags"/>
+                                <!--<field name="rule_id"/>-->
+                                <!--<field name="bom_id"/>-->
+                                <field name="route_ids" widget="many2many_tags" domain="[('supplied_wh_id','=',location_id)]"/>
                                 <field name="group_id"/>
                                 <field name="company_id"/>
                                 <field name="origin"/>
@@ -49,7 +49,7 @@
                                 </group>
                                 <field name="qdodoo_stock_product_ids">
                                     <tree editable="bottom">
-                                        <field name="product_id" on_change="onchange_product_id(product_id)"/>
+                                        <field name="product_id" on_change="onchange_product_id(product_id)" domain="[('company_id','=',parent.company_id)]"/>
                                         <field name="name"/>
                                         <field name="product_qty" sum="合计"/>
                                         <field name="uom_id"/>

@@ -20,26 +20,34 @@
             <field name="field_parent">child_ids</field>
             <field name="arch" type="xml">
                 <tree toolbar="True" string="部门">
-                    <field name="name"/>
+                    <field icon="icon" name="name"/>
                 </tree>
             </field>
         </record>
 
 
         <!--动作-->
-        <record id="open_view_departments" model="ir.actions.act_window">
+		<record id="open_view_departments" model="ir.actions.act_window">
             <field name="name">部门</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">hr.department</field>
-            <field name="domain">[('parent_id','=',False)]</field>
+			<field name="domain">[('parent_id','=',False)]</field>
             <field name="view_type">tree</field>
-            <field name="view_id" ref="hr_department_tree_view"/>
+			<field name="view_id" ref="hr_department_tree_view"/>
             <field name="help" type="html">
                 <p>
                     查看部门分类,点击部门可以查看所有的与该部门有关的人员.点击右侧小
                     三角符号,可以查看子部门.
                 </p>
             </field>
+		</record>
+        <record id="view_departments_filter" model="ir.ui.view">
+            <field name="name">Department Filter</field>
+            <field name="model">hr.department</field>
+			<field name="arch" type="xml">
+					<search string="Search Department" filter_domain="[('name','ilike',self)]">
+					</search>
+			</field>
         </record>
         <!--menu-->
         <menuitem action="open_view_departments" id="menu_open_view_departments" sequence="4" parent="hr.menu_hr_main"/>

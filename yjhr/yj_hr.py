@@ -24,6 +24,7 @@ class yj_hr(models.Model):
 	_name="yj.hr.attendance"
 
 	name = fields.Many2one('hr.employee',string="Employee",required=True)
+	attendance_account_period = fields.Many2one('account.period',string="Accounting ",required=True)
 	e_no = fields.Char(related='name.e_no',string='E_No',readonly=True)
 	department = fields.Many2one(related='name.department_id',string='Department',relation='hr.department',readonly=True)
 	hours = fields.Integer('Hours')
