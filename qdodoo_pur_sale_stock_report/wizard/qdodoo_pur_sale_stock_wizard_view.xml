@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_form_qdodoo_pur_sale_stock_wizard" model="ir.ui.view">
+            <field name="name">qdodoo.pur.sale.stock.wizard.form</field>
+            <field name="model">qdodoo.pur.sale.stock.wizard</field>
+            <field name="arch" type="xml">
+                <form string="进销存报表">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="start_date"/>
+                                <field name="end_date"/>
+                            </group>
+                            <group>
+                                <field name="location_id"/>
+                            </group>
+                        </group>
+                        <footer>
+                            <button name="search_date" string="查询" type="object" default_focus="1"
+                                    class="oe_highlight" context="{'start_date':start_date,'end_date':end_date,'location_id':location_id}"/>
+                            如果报表无法展示请下载<a href="/qdodoo_pur_sale_stock_report/static/Grid++Report6.0wd.exe">报表插件</a>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!--  窗体事件 查询  Search  graph,gantt-->
+        <record id="action_qdodoo_pur_sale_stock_wizard" model="ir.actions.act_window">
+            <field name="name">进销存报表</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.pur.sale.stock.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="view_id" ref="view_form_qdodoo_pur_sale_stock_wizard"/>
+        </record>
+
+        <menuitem name="进销存报表" id="menu_report_qdodoo_pur_sale_stock_wizard" parent="mrp.next_id_77" sequence="12"
+                  action="action_qdodoo_pur_sale_stock_wizard"/>
+    </data>
+</openerp>

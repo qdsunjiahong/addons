@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="report_pur_sale_stock">&lt;!DOCTYPE html&gt;
+            <html style="width:100%;height:100%">
+                <head>
+                    <title>Web报表</title>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                    <script src="/qdodoo_rubylong/static/CreateControl.js" type="text/javascript"></script>
+                    <script type="text/javascript">
+                        //在响应按钮执行时重新向报表提供数据
+                        //在网页初始加载时向报表提供数据
+                        function window_onload() {
+                            ReportViewer.Stop();
+                            FillTableToReport();
+                        }
+                        function FillTableToReport() {
+                        var Report = ReportViewer.Report;
+                        //报表记录集对象
+                        var Recordset = Report.DetailGrid.Recordset;
+                        //单头信息
+                        var fld_o_start_date = Report.FieldByName("o_start_date");
+                        var fld_o_end_date = Report.FieldByName("o_end_date");
+                        var fld_o_location_id = Report.FieldByName("o_location_id");
+                        var fld_o_product_name = Report.FieldByName("o_product_name");
+                        var fld_o_product_id = Report.FieldByName("o_product_id");
+                        var fld_o_product_category = Report.FieldByName("o_product_category");
+                        var fld_o_previous_balance_num = Report.FieldByName("o_previous_balance_num");
+                        var fld_o_previous_balance_amount = Report.FieldByName("o_previous_balance_amount");
+                        var fld_o_purchase_stock_num = Report.FieldByName("o_purchase_stock_num");
+                        var fld_o_purchase_stock_amount = Report.FieldByName("o_purchase_stock_amount");
+                        var fld_o_purchase_stock_old_num = Report.FieldByName("o_purchase_stock_old_num");
+                        var fld_o_purchase_stock_old_amount = Report.FieldByName("o_purchase_stock_old_amount");
+                        var fld_o_move_stock_num = Report.FieldByName("o_move_stock_num");
+                        var fld_o_move_stock_amount = Report.FieldByName("o_move_stock_amount");
+                        var fld_o_sale_stock_num = Report.FieldByName("o_sale_stock_num");
+                        var fld_o_sale_stock_amount = Report.FieldByName("o_sale_stock_amount");
+                        var fld_o_sale_stock_old_num = Report.FieldByName("o_sale_stock_old_num");
+                        var fld_o_sale_stock_old_amount = Report.FieldByName("o_sale_stock_old_amount");
+                        var fld_o_move_stock_out_num = Report.FieldByName("o_move_stock_out_num");
+                        var fld_o_move_stock_out_amount = Report.FieldByName("o_move_stock_out_amount");
+                        var fld_o_inventory_num = Report.FieldByName("o_inventory_num");
+                        var fld_o_inventory_amount = Report.FieldByName("o_inventory_amount");
+                        var fld_o_scrap_num = Report.FieldByName("o_scrap_num");
+                        var fld_o_scrap_amount = Report.FieldByName("o_scrap_amount");
+                        var fld_o_mrp_num = Report.FieldByName("o_mrp_num");
+                        var fld_o_mrp_amount = Report.FieldByName("o_mrp_amount");
+                        var fld_o_current_balance_num = Report.FieldByName("o_current_balance_num");
+                        var fld_o_current_balance_amount = Report.FieldByName("o_current_balance_amount");
+                        var fld_o_mrp_old_num = Report.FieldByName("o_mrp_old_num");
+                        var fld_o_mrp_old_amount = Report.FieldByName("o_mrp_old_amount");
+
+                        Report.PrepareRecordset();
+                        //网页中的表格
+                        var tbCustomer = document.getElementById("tbCustomer");
+                        var Rows = tbCustomer.tBodies[0].rows;
+                        //将每行表格数据填入到报表记录集
+                        for (var i = 0; i &lt; Rows.length; i++) {
+                        Recordset.Append();
+                        //FireFox不认innerText，只认textContent,所以这里要特殊处理
+                        if (Rows[i].cells[0].innerText) {
+                        //单头信息
+                        fld_o_product_category.Value = Rows[i].cells['o_product_category'].innerText;
+                        fld_o_previous_balance_num.Value = Rows[i].cells['o_previous_balance_num'].innerText;
+                        fld_o_previous_balance_amount.Value = Rows[i].cells['o_previous_balance_amount'].innerText;
+                        fld_o_purchase_stock_num.Value = Rows[i].cells['o_purchase_stock_num'].innerText;
+                        fld_o_purchase_stock_amount.Value = Rows[i].cells['o_purchase_stock_amount'].innerText;
+                        fld_o_purchase_stock_old_num.Value = Rows[i].cells['o_purchase_stock_old_num'].innerText;
+                        fld_o_purchase_stock_old_amount.Value = Rows[i].cells['o_purchase_stock_old_amount'].innerText;
+                        fld_o_move_stock_num.Value = Rows[i].cells['o_move_stock_num'].innerText;
+                        fld_o_move_stock_amount.Value = Rows[i].cells['o_move_stock_amount'].innerText;
+                        fld_o_start_date.Value = Rows[i].cells['o_start_date'].innerText;
+                        fld_o_end_date.Value = Rows[i].cells['o_end_date'].innerText;
+                        fld_o_location_id.Value = Rows[i].cells['o_location_id'].innerText;
+                        fld_o_product_name.Value = Rows[i].cells['o_product_name'].innerText;
+                        fld_o_product_id.Value = Rows[i].cells['o_product_id'].innerText;
+                        fld_o_current_balance_amount.Value = Rows[i].cells['o_current_balance_amount'].innerText;
+                        fld_o_current_balance_num.Value = Rows[i].cells['o_current_balance_num'].innerText;
+                        fld_o_mrp_amount.Value = Rows[i].cells['o_mrp_amount'].innerText;
+                        fld_o_mrp_num.Value = Rows[i].cells['o_mrp_num'].innerText;
+                        fld_o_scrap_amount.Value = Rows[i].cells['o_scrap_amount'].innerText;
+                        fld_o_scrap_num.Value = Rows[i].cells['o_scrap_num'].innerText;
+                        fld_o_inventory_amount.Value = Rows[i].cells['o_inventory_amount'].innerText;
+                        fld_o_inventory_num.Value = Rows[i].cells['o_inventory_num'].innerText;
+                        fld_o_move_stock_out_amount.Value = Rows[i].cells['o_move_stock_out_amount'].innerText;
+                        fld_o_move_stock_out_num.Value = Rows[i].cells['o_move_stock_out_num'].innerText;
+                        fld_o_sale_stock_old_amount.Value = Rows[i].cells['o_sale_stock_old_amount'].innerText;
+                        fld_o_sale_stock_old_num.Value = Rows[i].cells['o_sale_stock_old_num'].innerText;
+                        fld_o_sale_stock_amount.Value = Rows[i].cells['o_sale_stock_amount'].innerText;
+                        fld_o_sale_stock_num.Value = Rows[i].cells['o_sale_stock_num'].innerText;
+                        fld_o_mrp_old_num.Value = Rows[i].cells['o_mrp_old_num'].innerText;
+                        fld_o_mrp_old_amount.Value = Rows[i].cells['o_mrp_old_amount'].innerText;
+                        Recordset.Post();
+                        }
+                        else {
+                        //for firefox
+                        //单头信息
+                        fld_o_product_category.Value = Rows[i].cells['o_product_category'].textContent;
+                        fld_o_previous_balance_num.Value = Rows[i].cells['o_previous_balance_num'].textContent;
+                        fld_o_previous_balance_amount.Value = Rows[i].cells['o_previous_balance_amount'].textContent;
+                        fld_o_purchase_stock_num.Value = Rows[i].cells['o_purchase_stock_num'].textContent;
+                        fld_o_purchase_stock_amount.Value = Rows[i].cells['o_purchase_stock_amount'].textContent;
+                        fld_o_purchase_stock_old_num.Value = Rows[i].cells['o_purchase_stock_old_num'].textContent;
+                        fld_o_purchase_stock_old_amount.Value = Rows[i].cells['o_purchase_stock_old_amount'].textContent;
+                        fld_o_move_stock_num.Value = Rows[i].cells['o_move_stock_num'].textContent;
+                        fld_o_move_stock_amount.Value = Rows[i].cells['o_move_stock_amount'].textContent;
+                        fld_o_start_date.Value = Rows[i].cells['o_start_date'].textContent;
+                        fld_o_end_date.Value = Rows[i].cells['o_end_date'].textContent;
+                        fld_o_location_id.Value = Rows[i].cells['o_location_id'].textContent;
+                        fld_o_product_name.Value = Rows[i].cells['o_product_name'].textContent;
+                        fld_o_product_id.Value = Rows[i].cells['o_product_id'].textContent;
+                        fld_o_current_balance_amount.Value = Rows[i].cells['o_current_balance_amount'].textContent;
+                        fld_o_current_balance_num.Value = Rows[i].cells['o_current_balance_num'].textContent;
+                        fld_o_mrp_amount.Value = Rows[i].cells['o_mrp_amount'].textContent;
+                        fld_o_mrp_num.Value = Rows[i].cells['o_mrp_num'].textContent;
+                        fld_o_scrap_amount.Value = Rows[i].cells['o_scrap_amount'].textContent;
+                        fld_o_scrap_num.Value = Rows[i].cells['o_scrap_num'].textContent;
+                        fld_o_inventory_amount.Value = Rows[i].cells['o_inventory_amount'].textContent;
+                        fld_o_inventory_num.Value = Rows[i].cells['o_inventory_num'].textContent;
+                        fld_o_move_stock_out_amount.Value = Rows[i].cells['o_move_stock_out_amount'].textContent;
+                        fld_o_move_stock_out_num.Value = Rows[i].cells['o_move_stock_out_num'].textContent;
+                        fld_o_sale_stock_old_amount.Value = Rows[i].cells['o_sale_stock_old_amount'].textContent;
+                        fld_o_sale_stock_old_num.Value = Rows[i].cells['o_sale_stock_old_num'].textContent;
+                        fld_o_sale_stock_amount.Value = Rows[i].cells['o_sale_stock_amount'].textContent;
+                        fld_o_sale_stock_num.Value = Rows[i].cells['o_sale_stock_num'].textContent;
+                        fld_o_mrp_old_num.Value = Rows[i].cells['o_mrp_old_num'].textContent;
+                        fld_o_mrp_old_amount.Value = Rows[i].cells['o_mrp_old_amount'].textContent;
+
+                        Recordset.Post();
+                        }
+                        }
+                        ReportViewer.Start();
+                        }
+                    </script>
+                </head>
+                <body onload="window_onload()" style="width:100%;height:100%">
+                    <script type="text/javascript">
+                        CreatePrintViewerEx("100%", "100%", "/qdodoo_pur_sale_stock_report/static/pur_sale_stock_report.grf", "", false, "&lt;param name=BorderStyle value=1&gt;");
+                    </script>
+                    <table id="tbCustomer" style="display:none;">
+                        <t t-foreach="employee()" t-as="o">
+                            <tr>
+                                <!--单头信息-->
+                                <td id="o_start_date"><span t-esc="o.get('start_date')"/></td>
+                                <td id="o_end_date"><span t-esc="o.get('end_date')"/></td>
+                                <td id="o_location_id"><span t-esc="o.get('location_id')"/></td>
+                                <td id="o_product_name"><span t-esc="o.get('product_name')"/></td>
+                                <td id="o_product_id"><span t-esc="o.get('product_id')"/></td>
+                                <td id="o_product_category"><span t-esc="o.get('product_category')"/></td>
+                                <td id="o_previous_balance_num"><span t-esc="o.get('previous_balance_num')"/></td>
+                                <td id="o_previous_balance_amount"><span t-esc="o.get('previous_balance_amount')"/></td>
+                                <td id="o_purchase_stock_num"><span t-esc="o.get('purchase_stock_num')"/></td>
+                                <td id="o_purchase_stock_amount"><span t-esc="o.get('purchase_stock_amount')"/></td>
+                                <td id="o_purchase_stock_old_num"><span t-esc="o.get('purchase_stock_old_num')"/></td>
+                                <td id="o_purchase_stock_old_amount"><span t-esc="o.get('purchase_stock_old_amount')"/></td>
+                                <td id="o_move_stock_num"><span t-esc="o.get('move_stock_num')"/></td>
+                                <td id="o_move_stock_amount"><span t-esc="o.get('move_stock_amount')"/></td>
+                                <td id="o_sale_stock_num"><span t-esc="o.get('sale_stock_num')"/></td>
+                                <td id="o_sale_stock_amount"><span t-esc="o.get('sale_stock_amount')"/></td>
+                                <td id="o_sale_stock_old_num"><span t-esc="o.get('sale_stock_old_num')"/></td>
+                                <td id="o_sale_stock_old_amount"><span t-esc="o.get('sale_stock_old_amount')"/></td>
+                                <td id="o_move_stock_out_num"><span t-esc="o.get('move_stock_out_num')"/></td>
+                                <td id="o_move_stock_out_amount"><span t-esc="o.get('move_stock_out_amount')"/></td>
+                                <td id="o_inventory_num"><span t-esc="o.get('inventory_num')"/></td>
+                                <td id="o_inventory_amount"><span t-esc="o.get('inventory_amount')"/></td>
+                                <td id="o_scrap_num"><span t-esc="o.get('scrap_num')"/></td>
+                                <td id="o_scrap_amount"><span t-esc="o.get('scrap_amount')"/></td>
+                                <td id="o_mrp_num"><span t-esc="o.get('mrp_num')"/></td>
+                                <td id="o_mrp_amount"><span t-esc="o.get('mrp_amount')"/></td>
+                                <td id="o_current_balance_num"><span t-esc="o.get('current_balance_num')"/></td>
+                                <td id="o_current_balance_amount"><span t-esc="o.get('current_balance_amount')"/></td>
+                                <td id="o_mrp_old_num"><span t-esc="o.get('mrp_old_num')"/></td>
+                                <td id="o_mrp_old_amount"><span t-esc="o.get('mrp_old_amount')"/></td>
+                            </tr>
+                        </t>
+                    </table>
+                </body>
+            </html>
+        </template>
+    </data>
+</openerp>
