@@ -23,7 +23,7 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
     def get_picking_name(self, move_id):
         move_obj = self.pool.get('stock.move')
         move_obj_obj = move_obj.browse(self.cr,self.uid,move_id)
-        return move_obj_obj.picking_id and move_obj_obj.picking_id.name
+        return move_obj_obj.picking_id and move_obj_obj.picking_id.name or ''
     def employee_get(self):
         now_date = datetime.now().strftime('%Y-%m-%d ')
         data = []
@@ -49,7 +49,7 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
         product_obj = self.pool.get('product.product')
         product_ids = product_obj.search(self.cr,self.uid,['|',('active','=',1),('active','=',0)])
         for product_id in product_obj.browse(self.cr,self.uid,product_ids):
-            dict_product[product_id.id] = product_id.name
+            dict_product[product_id.id] = product_id.name_template
             dict_product_num[product_id.id] = product_id.default_code
         # 根据id获取库位名字
         dict_location = {}
@@ -89,7 +89,6 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
             val_dict['balance_num'] = '%.4f'%(product_num.get('balance_num',0.0) - float(val_dict['credit_num']) + float(val_dict['debit_num']))#结余数量
             product_num['balance_num'] = float(val_dict['balance_num'])
             val_dict['description'] = ('从'+dict_location.get(production_id[2],'')+'发出') if self.location_id == production_id[2] else ('从'+dict_location.get(production_id[2],'')+'入库')
-            # val_dict['move_id'] = move_picking.get(production_id[1],'')
             val_dict['move_id'] = self.get_picking_name(production_id[1])
             val_dict['date'] = production_id[0]
             val_dict['location_id'] = dict_location.get(self.location_id,'') if self.location_id else '全部'

@@ -7,7 +7,7 @@
 ###########################################################################################
 
 {
-    'name' : 'Qdodoo Subsidiary Ledger Report',    #模块名称
+    'name' : '物品明细账报表',    #模块名称
     'version' : '1.0',    #版本
     'category' : 'Technology',    #分类
     'author' : 'qdodoo Technology',    #作者
