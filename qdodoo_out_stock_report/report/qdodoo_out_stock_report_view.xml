@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_qdodoo_out_stock_report_graph" model="ir.ui.view">
+            <field name="name">qdodoo.in.stock.report.graph</field>
+            <field name="model">qdodoo.in.stock.report</field>
+            <field name="arch" type="xml">
+                <graph string="出库明细表" type="pivot">
+                    <field name="location_id" type="row"/>
+                    <field name="date" interval="month" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="product_qty" type="measure"/>
+                    <field name="price" type="measure"/>
+                    <field name="amount" type="measure"/>
+                </graph>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_view_qdodoo_out_stock_report_graph">
+            <field name="name">出库明细表</field>
+            <field name="res_model">qdodoo.in.stock.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">graph</field>
+            <field name="view_id" ref="view_qdodoo_out_stock_report_graph"/>
+        </record>
+        <menuitem name="出库明细表" parent="stock.next_id_61" sequence="12" action="action_view_qdodoo_out_stock_report_graph" id="menu_action_view_qdodoo_out_stock_report_graph"/>
+    </data>
+</openerp>
