@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_qdodoo_arrival_rate_report_graph" model="ir.ui.view">
+            <field name="name">qdodoo.arrival.rate.report.graph</field>
+            <field name="model">qdodoo.arrival.rate.report</field>
+            <field name="arch" type="xml">
+                <graph string="到货率报表" type="pivot">
+                    <field name="date" interval="month" type="row"/>
+                    <field name="partner_id" type="row"/>
+                    <field name="order_num" type="measure"/>
+                    <field name="delivery_num" type="measure"/>
+                    <field name="delivery_nmu_rate" type="measure"/>
+                    <field name="price" type="measure"/>
+                </graph>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_view_qdodoo_arrival_rate_report_graph">
+            <field name="name">到货率报表</field>
+            <field name="res_model">qdodoo.arrival.rate.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">graph</field>
+            <field name="view_id" ref="view_qdodoo_arrival_rate_report_graph"/>
+        </record>
+        <menuitem name="到货率报表" parent="base.next_id_73" sequence="10" action="action_view_qdodoo_arrival_rate_report_graph" id="menu_action_view_qdodoo_arrival_rate_report_graph"/>
+    </data>
+</openerp>
