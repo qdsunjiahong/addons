@@ -75,12 +75,17 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
             dict_category[category_id.id] = category_name
         # 获取产品的前期结余
         balance_num_dict = {}
+        balance_num_new_dict = {}
         balance_obj = self.pool.get('qdodoo.previous.balance')
         # 获取昨天的日期
         yesterday = (datetime.datetime.strptime(self.start_date,'%Y-%m-%d') - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
         balance_ids = balance_obj.search(self.cr, self.uid, [('date','=',yesterday),('product_id','in',product_lst)])
         for balance_id in balance_obj.browse(self.cr, self.uid, balance_ids):
             balance_num_dict[balance_id.product_id.id] = balance_id.balance_num
+        if self.end_date:
+            balance_ids_new = balance_obj.search(self.cr, self.uid, [('date','=',self.end_date),('product_id','in',product_lst)])
+            for balance_id_new in balance_obj.browse(self.cr, self.uid, balance_ids_new):
+                balance_num_new_dict[balance_id_new.product_id.id] = balance_id_new.balance_num
         # 查询产品的采购数量
         num_dict = {}
         num_old_dict = {}
@@ -194,7 +199,7 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
             val_dict['scrap_num'] = scrap_dict.get(product_l,0.0) #报废数量
             val_dict['mrp_num'] = production_dict.get(product_l,0.0) #生产数量
             val_dict['mrp_old_num'] = production_old_dict.get(product_l,0.0) #原料消耗数量
-            val_dict['current_balance_num'] = product_dict.get(product_l,0.0) #本期结余数量
+            val_dict['current_balance_num'] = balance_num_new_dict.get(product_l,product_dict.get(product_l,0.0)) #本期结余数量
             data.append(val_dict)
         if not data:
             data = [{'start_date':self.start_date,'end_date':self.end_date if self.end_date else now_date,'location_id':self.location_id,'product_name':'',
