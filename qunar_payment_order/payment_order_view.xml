@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="rainsoft_multi_payment_form">
+						<field name="name">multi pay</field>
+						<field name="model">qunar.payment</field>
+						<field name="arch" type="xml">
+								<form string="payment" version="7.0">
+										<separator colspan="4" string="Do you want to pay now?"/>
+										<footer>
+												<button name="btn_pay" type="object" string="Pay Now" class="oe_highlight"/>
+												or
+												<button string="cancel" class="oe_link" special="cancel"/>
+										</footer>
+								</form>
+						</field>
+				</record>
+
+				<act_window id="act_qunar_payment" name="Multi Pay" res_model="qunar.payment" src_model="account.invoice" target="new" key2="client_action_multi" view_mode="form"/>
+		</data>
+</openerp>
