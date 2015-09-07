@@ -41,8 +41,13 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
         end_date = (self.end_date if self.end_date else now_date) + ' 23:59:59'
         # 根据库位id获取产品
         product_lst = []
+        product_dict = {} #本期结余
         quant_id = self.pool.get('stock.quant')
         for quant in quant_id.browse(self.cr, self.uid, quant_id.search(self.cr, self.uid, [('location_id','=',self.location_id)])):
+            if quant.product_id.id in product_dict:
+                product_dict[quant.product_id.id] += quant.qty
+            else:
+                product_dict[quant.product_id.id] = quant.qty
             if quant.product_id.id not in product_lst:
                 product_lst.append(quant.product_id.id)
         # 根据id获取库位名字
@@ -70,14 +75,12 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
             dict_category[category_id.id] = category_name
         # 获取产品的前期结余
         balance_num_dict = {}
-        balance_money_dict = {}
         balance_obj = self.pool.get('qdodoo.previous.balance')
         # 获取昨天的日期
         yesterday = (datetime.datetime.strptime(self.start_date,'%Y-%m-%d') - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
         balance_ids = balance_obj.search(self.cr, self.uid, [('date','=',yesterday),('product_id','in',product_lst)])
         for balance_id in balance_obj.browse(self.cr, self.uid, balance_ids):
             balance_num_dict[balance_id.product_id.id] = balance_id.balance_num
-            balance_money_dict[balance_id.product_id.id] = balance_id.balance_money
         # 查询产品的采购数量
         num_dict = {}
         num_old_dict = {}
@@ -181,29 +184,17 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
             val_dict['product_name'] = dict_product_name.get(product_l,'')
             val_dict['product_category'] = dict_category.get(dict_category_id.get(product_l,''),'')
             val_dict['previous_balance_num'] = balance_num_dict.get(product_l,0.0) #前期结余数量
-            val_dict['previous_balance_amount'] = balance_money_dict.get(product_l,0.0) #前期结余金额
             val_dict['purchase_stock_num'] = num_dict.get(product_l,0.0) #采购入库数量
-            val_dict['purchase_stock_amount'] = 0.0 #采购入库金额
             val_dict['purchase_stock_old_num'] = num_old_dict.get(product_l,0.0) #采购退货数量
-            val_dict['purchase_stock_old_amount'] = 0.0 #采购退货金额
             val_dict['move_stock_num'] = move_in_dict.get(product_l,0.0) #调拨入库数量
-            val_dict['move_stock_amount'] = 0.0 #调拨入库金额
             val_dict['sale_stock_num'] = sale_out_dict.get(product_l,0.0) #销售出库数量
-            val_dict['sale_stock_amount'] = 0.0 #销售数量金额
             val_dict['sale_stock_old_num'] = sale_in_dict.get(product_l,0.0) #销售退货数量
-            val_dict['sale_stock_old_amount'] = 0.0 #销售退货金额
             val_dict['move_stock_out_num'] = move_out_dict.get(product_l,0.0) #调拨出库数量
-            val_dict['move_stock_out_amount'] = 0.0 #调拨出库金额
             val_dict['inventory_num'] = inventory_dict.get(product_l,0.0) #盘点盈亏数量
-            val_dict['inventory_amount'] = 0.0 #盘点盈亏金额
             val_dict['scrap_num'] = scrap_dict.get(product_l,0.0) #报废数量
-            val_dict['scrap_amount'] = 0.0 #报废金额
             val_dict['mrp_num'] = production_dict.get(product_l,0.0) #生产数量
-            val_dict['mrp_amount'] = 0.0 #生产金额
             val_dict['mrp_old_num'] = production_old_dict.get(product_l,0.0) #原料消耗数量
-            val_dict['mrp_old_amount'] = 0.0 #原料消耗金额
-            val_dict['current_balance_num'] = val_dict['previous_balance_num'] + val_dict['purchase_stock_num'] - val_dict['purchase_stock_old_num'] + val_dict['move_stock_num'] - val_dict['sale_stock_num'] + val_dict['sale_stock_old_num'] - val_dict['move_stock_out_num'] + val_dict['inventory_num'] - val_dict['scrap_num'] + val_dict['mrp_num'] - val_dict['mrp_old_num'] #本期结余数量
-            val_dict['current_balance_amount'] = val_dict['previous_balance_amount'] + val_dict['purchase_stock_amount'] - val_dict['purchase_stock_old_amount'] + val_dict['move_stock_amount'] - val_dict['sale_stock_amount'] + val_dict['sale_stock_old_amount'] - val_dict['move_stock_out_amount'] + val_dict['inventory_amount'] - val_dict['scrap_amount'] + val_dict['mrp_amount'] - val_dict['mrp_old_amount'] #本期结余金额
+            val_dict['current_balance_num'] = product_dict.get(product_l,0.0) #本期结余数量
             data.append(val_dict)
         if not data:
             data = [{'start_date':self.start_date,'end_date':self.end_date if self.end_date else now_date,'location_id':self.location_id,'product_name':'',

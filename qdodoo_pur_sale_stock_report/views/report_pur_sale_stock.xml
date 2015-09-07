@@ -26,29 +26,17 @@
                         var fld_o_product_id = Report.FieldByName("o_product_id");
                         var fld_o_product_category = Report.FieldByName("o_product_category");
                         var fld_o_previous_balance_num = Report.FieldByName("o_previous_balance_num");
-                        var fld_o_previous_balance_amount = Report.FieldByName("o_previous_balance_amount");
                         var fld_o_purchase_stock_num = Report.FieldByName("o_purchase_stock_num");
-                        var fld_o_purchase_stock_amount = Report.FieldByName("o_purchase_stock_amount");
                         var fld_o_purchase_stock_old_num = Report.FieldByName("o_purchase_stock_old_num");
-                        var fld_o_purchase_stock_old_amount = Report.FieldByName("o_purchase_stock_old_amount");
                         var fld_o_move_stock_num = Report.FieldByName("o_move_stock_num");
-                        var fld_o_move_stock_amount = Report.FieldByName("o_move_stock_amount");
                         var fld_o_sale_stock_num = Report.FieldByName("o_sale_stock_num");
-                        var fld_o_sale_stock_amount = Report.FieldByName("o_sale_stock_amount");
                         var fld_o_sale_stock_old_num = Report.FieldByName("o_sale_stock_old_num");
-                        var fld_o_sale_stock_old_amount = Report.FieldByName("o_sale_stock_old_amount");
                         var fld_o_move_stock_out_num = Report.FieldByName("o_move_stock_out_num");
-                        var fld_o_move_stock_out_amount = Report.FieldByName("o_move_stock_out_amount");
                         var fld_o_inventory_num = Report.FieldByName("o_inventory_num");
-                        var fld_o_inventory_amount = Report.FieldByName("o_inventory_amount");
                         var fld_o_scrap_num = Report.FieldByName("o_scrap_num");
-                        var fld_o_scrap_amount = Report.FieldByName("o_scrap_amount");
                         var fld_o_mrp_num = Report.FieldByName("o_mrp_num");
-                        var fld_o_mrp_amount = Report.FieldByName("o_mrp_amount");
                         var fld_o_current_balance_num = Report.FieldByName("o_current_balance_num");
-                        var fld_o_current_balance_amount = Report.FieldByName("o_current_balance_amount");
                         var fld_o_mrp_old_num = Report.FieldByName("o_mrp_old_num");
-                        var fld_o_mrp_old_amount = Report.FieldByName("o_mrp_old_amount");
 
                         Report.PrepareRecordset();
                         //网页中的表格
@@ -62,34 +50,22 @@
                         //单头信息
                         fld_o_product_category.Value = Rows[i].cells['o_product_category'].innerText;
                         fld_o_previous_balance_num.Value = Rows[i].cells['o_previous_balance_num'].innerText;
-                        fld_o_previous_balance_amount.Value = Rows[i].cells['o_previous_balance_amount'].innerText;
                         fld_o_purchase_stock_num.Value = Rows[i].cells['o_purchase_stock_num'].innerText;
-                        fld_o_purchase_stock_amount.Value = Rows[i].cells['o_purchase_stock_amount'].innerText;
                         fld_o_purchase_stock_old_num.Value = Rows[i].cells['o_purchase_stock_old_num'].innerText;
-                        fld_o_purchase_stock_old_amount.Value = Rows[i].cells['o_purchase_stock_old_amount'].innerText;
                         fld_o_move_stock_num.Value = Rows[i].cells['o_move_stock_num'].innerText;
-                        fld_o_move_stock_amount.Value = Rows[i].cells['o_move_stock_amount'].innerText;
                         fld_o_start_date.Value = Rows[i].cells['o_start_date'].innerText;
                         fld_o_end_date.Value = Rows[i].cells['o_end_date'].innerText;
                         fld_o_location_id.Value = Rows[i].cells['o_location_id'].innerText;
                         fld_o_product_name.Value = Rows[i].cells['o_product_name'].innerText;
                         fld_o_product_id.Value = Rows[i].cells['o_product_id'].innerText;
-                        fld_o_current_balance_amount.Value = Rows[i].cells['o_current_balance_amount'].innerText;
                         fld_o_current_balance_num.Value = Rows[i].cells['o_current_balance_num'].innerText;
-                        fld_o_mrp_amount.Value = Rows[i].cells['o_mrp_amount'].innerText;
                         fld_o_mrp_num.Value = Rows[i].cells['o_mrp_num'].innerText;
-                        fld_o_scrap_amount.Value = Rows[i].cells['o_scrap_amount'].innerText;
                         fld_o_scrap_num.Value = Rows[i].cells['o_scrap_num'].innerText;
-                        fld_o_inventory_amount.Value = Rows[i].cells['o_inventory_amount'].innerText;
                         fld_o_inventory_num.Value = Rows[i].cells['o_inventory_num'].innerText;
-                        fld_o_move_stock_out_amount.Value = Rows[i].cells['o_move_stock_out_amount'].innerText;
                         fld_o_move_stock_out_num.Value = Rows[i].cells['o_move_stock_out_num'].innerText;
-                        fld_o_sale_stock_old_amount.Value = Rows[i].cells['o_sale_stock_old_amount'].innerText;
                         fld_o_sale_stock_old_num.Value = Rows[i].cells['o_sale_stock_old_num'].innerText;
-                        fld_o_sale_stock_amount.Value = Rows[i].cells['o_sale_stock_amount'].innerText;
                         fld_o_sale_stock_num.Value = Rows[i].cells['o_sale_stock_num'].innerText;
                         fld_o_mrp_old_num.Value = Rows[i].cells['o_mrp_old_num'].innerText;
-                        fld_o_mrp_old_amount.Value = Rows[i].cells['o_mrp_old_amount'].innerText;
                         Recordset.Post();
                         }
                         else {
@@ -97,34 +73,22 @@
                         //单头信息
                         fld_o_product_category.Value = Rows[i].cells['o_product_category'].textContent;
                         fld_o_previous_balance_num.Value = Rows[i].cells['o_previous_balance_num'].textContent;
-                        fld_o_previous_balance_amount.Value = Rows[i].cells['o_previous_balance_amount'].textContent;
                         fld_o_purchase_stock_num.Value = Rows[i].cells['o_purchase_stock_num'].textContent;
-                        fld_o_purchase_stock_amount.Value = Rows[i].cells['o_purchase_stock_amount'].textContent;
                         fld_o_purchase_stock_old_num.Value = Rows[i].cells['o_purchase_stock_old_num'].textContent;
-                        fld_o_purchase_stock_old_amount.Value = Rows[i].cells['o_purchase_stock_old_amount'].textContent;
                         fld_o_move_stock_num.Value = Rows[i].cells['o_move_stock_num'].textContent;
-                        fld_o_move_stock_amount.Value = Rows[i].cells['o_move_stock_amount'].textContent;
                         fld_o_start_date.Value = Rows[i].cells['o_start_date'].textContent;
                         fld_o_end_date.Value = Rows[i].cells['o_end_date'].textContent;
                         fld_o_location_id.Value = Rows[i].cells['o_location_id'].textContent;
                         fld_o_product_name.Value = Rows[i].cells['o_product_name'].textContent;
                         fld_o_product_id.Value = Rows[i].cells['o_product_id'].textContent;
-                        fld_o_current_balance_amount.Value = Rows[i].cells['o_current_balance_amount'].textContent;
                         fld_o_current_balance_num.Value = Rows[i].cells['o_current_balance_num'].textContent;
-                        fld_o_mrp_amount.Value = Rows[i].cells['o_mrp_amount'].textContent;
                         fld_o_mrp_num.Value = Rows[i].cells['o_mrp_num'].textContent;
-                        fld_o_scrap_amount.Value = Rows[i].cells['o_scrap_amount'].textContent;
                         fld_o_scrap_num.Value = Rows[i].cells['o_scrap_num'].textContent;
-                        fld_o_inventory_amount.Value = Rows[i].cells['o_inventory_amount'].textContent;
                         fld_o_inventory_num.Value = Rows[i].cells['o_inventory_num'].textContent;
-                        fld_o_move_stock_out_amount.Value = Rows[i].cells['o_move_stock_out_amount'].textContent;
                         fld_o_move_stock_out_num.Value = Rows[i].cells['o_move_stock_out_num'].textContent;
-                        fld_o_sale_stock_old_amount.Value = Rows[i].cells['o_sale_stock_old_amount'].textContent;
                         fld_o_sale_stock_old_num.Value = Rows[i].cells['o_sale_stock_old_num'].textContent;
-                        fld_o_sale_stock_amount.Value = Rows[i].cells['o_sale_stock_amount'].textContent;
                         fld_o_sale_stock_num.Value = Rows[i].cells['o_sale_stock_num'].textContent;
                         fld_o_mrp_old_num.Value = Rows[i].cells['o_mrp_old_num'].textContent;
-                        fld_o_mrp_old_amount.Value = Rows[i].cells['o_mrp_old_amount'].textContent;
 
                         Recordset.Post();
                         }
@@ -148,29 +112,17 @@
                                 <td id="o_product_id"><span t-esc="o.get('product_id')"/></td>
                                 <td id="o_product_category"><span t-esc="o.get('product_category')"/></td>
                                 <td id="o_previous_balance_num"><span t-esc="o.get('previous_balance_num')"/></td>
-                                <td id="o_previous_balance_amount"><span t-esc="o.get('previous_balance_amount')"/></td>
                                 <td id="o_purchase_stock_num"><span t-esc="o.get('purchase_stock_num')"/></td>
-                                <td id="o_purchase_stock_amount"><span t-esc="o.get('purchase_stock_amount')"/></td>
                                 <td id="o_purchase_stock_old_num"><span t-esc="o.get('purchase_stock_old_num')"/></td>
-                                <td id="o_purchase_stock_old_amount"><span t-esc="o.get('purchase_stock_old_amount')"/></td>
                                 <td id="o_move_stock_num"><span t-esc="o.get('move_stock_num')"/></td>
-                                <td id="o_move_stock_amount"><span t-esc="o.get('move_stock_amount')"/></td>
                                 <td id="o_sale_stock_num"><span t-esc="o.get('sale_stock_num')"/></td>
-                                <td id="o_sale_stock_amount"><span t-esc="o.get('sale_stock_amount')"/></td>
                                 <td id="o_sale_stock_old_num"><span t-esc="o.get('sale_stock_old_num')"/></td>
-                                <td id="o_sale_stock_old_amount"><span t-esc="o.get('sale_stock_old_amount')"/></td>
                                 <td id="o_move_stock_out_num"><span t-esc="o.get('move_stock_out_num')"/></td>
-                                <td id="o_move_stock_out_amount"><span t-esc="o.get('move_stock_out_amount')"/></td>
                                 <td id="o_inventory_num"><span t-esc="o.get('inventory_num')"/></td>
-                                <td id="o_inventory_amount"><span t-esc="o.get('inventory_amount')"/></td>
                                 <td id="o_scrap_num"><span t-esc="o.get('scrap_num')"/></td>
-                                <td id="o_scrap_amount"><span t-esc="o.get('scrap_amount')"/></td>
                                 <td id="o_mrp_num"><span t-esc="o.get('mrp_num')"/></td>
-                                <td id="o_mrp_amount"><span t-esc="o.get('mrp_amount')"/></td>
                                 <td id="o_current_balance_num"><span t-esc="o.get('current_balance_num')"/></td>
-                                <td id="o_current_balance_amount"><span t-esc="o.get('current_balance_amount')"/></td>
                                 <td id="o_mrp_old_num"><span t-esc="o.get('mrp_old_num')"/></td>
-                                <td id="o_mrp_old_amount"><span t-esc="o.get('mrp_old_amount')"/></td>
                             </tr>
                         </t>
                     </table>
