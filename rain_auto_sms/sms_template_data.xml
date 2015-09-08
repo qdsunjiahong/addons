@@ -7,7 +7,7 @@
         </record>
         <record id="auto_sms_template_data_chishi" model="auto.sms.template.data">
             <field eval="'信息管理员短信模板'" name="title"/>
-            <field eval="'亲爱的%s：这条信息来自于资源库。根据资源库合同信息现有附件表格中供应商合同已到期，多次提醒合同签署人员，未做处理。请关闭您所管理的ERP系统中合作关系。如有开通请按照《合同审批工作流》、《产品信息更改工作流》办理相关业务。！'"
+            <field eval="'亲爱的%s：这条信息来自于资源库。根据资源库合同信息现有附件表格中%s《%s》合同已到期，多次提醒合同签署人员，未做处理。请关闭您所管理的ERP系统中合作关系。如有开通请按照《合同审批工作流》、《产品信息更改工作流》办理相关业务。！'"
                    name="body"/>
         </record>
     </data>

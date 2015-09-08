@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="view_form_inherit_qdodoo_gamification" model="ir.ui.view">
+            <field name="name">字段修改</field>
+            <field name="model">gamification.badge.user.wizard</field>
+            <field name="inherit_id" ref="hr_gamification.view_badge_wizard_grant_employee"/>
+            <field name="arch" type="xml">
+                <field name="employee_id" position="replace">
+                    <field name="employee_ids"  widget="many2many_tags" nolabel="1"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
