@@ -111,6 +111,14 @@ class auto_email_template_data(osv.osv):
     }
 
 
+class auto_sms_template_data(osv.osv):
+    _name = 'auto.sms.template.data'
+    _columns = {
+        'title': fields.char(u'标题'),
+        'body': fields.html(u'内容')
+    }
+
+
 class qdodoo_account_analytic_account(osv.osv):
     _inherit = 'account.analytic.account'
 
@@ -123,13 +131,14 @@ class qdodoo_account_analytic_account(osv.osv):
         date1 = datetime.strptime(str(date_now + timedelta(days=45))[:10], '%Y-%m-%d')
         date2 = datetime.strptime(str(date_now + timedelta(days=15))[:10], '%Y-%m-%d')
         message_list1 = self.pool.get('account.analytic.account').search(cr, uid,
-                                                                         [('date', '>', date2), ('date', '<', date1),
-                                                                          ('sms_one_ok', '=', False)
+                                                                         [('date', '>', date2), ('date', '<=', date1),
+                                                                          ('sms_one_ok', '=', False),
+                                                                          ('state', 'not in', ('close', 'cancelled'))
                                                                           ], context=context)
         rs_send_service = self.pool.get('rainsoft.sendsms')
         if len(message_list1):
             for line in self.pool.get('account.analytic.account').browse(cr, uid, message_list1, context=context):
-                phone_number = line.partner_id.mobile
+                phone_number = line.manager_id.mobile or line.manager_id.phone
                 type_contact = line.contract_type1.name
                 mm = content % (line.contract_company1.name, line.name, line.days)
                 message = (re.sub('<[^>]+>', '', mm))
@@ -137,23 +146,20 @@ class qdodoo_account_analytic_account(osv.osv):
                     res = rs_send_service.send(cr, uid, phone_number, message, context=context)
                     if res['message'] == 'ok':
                         line.write({'sms_one_ok': True, 'contract_state': 'c'})
-                        # if line.partner_id.user_id.mobile:
-                        #     rs_send_service.send(cr, uid, phone_number, message, context=context)
-                        # else:
-                        #     pass
                     else:
                         pass
                 else:
                     pass
 
         message_list2 = self.pool.get('account.analytic.account').search(cr, uid,
-                                                                         [('date', '<', date2),
+                                                                         [('date', '<=', date2),
                                                                           ('date', '>', time_now),
-                                                                          ('sms_two_ok', '=', False)],
+                                                                          ('sms_two_ok', '=', False),
+                                                                          ('state', 'not in', ('close', 'cancelled'))],
                                                                          context=context)
         if len(message_list2):
             for line in self.pool.get('account.analytic.account').browse(cr, uid, message_list2, context=context):
-                phone_number = line.manager_id.mobile
+                phone_number = line.manager_id.mobile or line.manager_id.phone
                 type_contact = line.contract_type1.name
                 mm = content % (line.contract_company1.name, line.name, line.days)
                 message = (re.sub('<[^>]+>', '', mm))
@@ -161,11 +167,46 @@ class qdodoo_account_analytic_account(osv.osv):
                     res = rs_send_service.send(cr, uid, phone_number, message, context=context)
                     if res['message'] == 'ok':
                         line.write({'sms_two_ok': True, 'contract_state': 'c'})
-                        # if line.partner_id.user_id.mobile:
-                        #     rs_send_service.send(cr, uid, phone_number, message, context=context)
-                        # else:
-                        #     pass
                     else:
                         pass
                 else:
                     pass
+                    # for i in line.erp_manager_ids:
+                    #     phone_number2 = i.mobile or i.phone
+                    #     content2 = self.pool.get('auto.sms.template.data').browse(cr, uid, 1, context=context).body
+                    #     mm2 = content2 % i.name
+                    #     message2 = (re.sub('<[^>]+>', '', mm2))
+                    #     print message2,333333333333333333
+                    #     if phone_number:
+                    #         # if line.erp_ok != True:
+                    #             # res2 = rs_send_service.send(cr, uid, phone_number2, message2, context=content)
+                    #             print 111111111111
+                    #             res2 = rs_send_service.send(cr, uid, '13520578277', message2, context=content)
+                    #             if res2['message'] == 'ok':
+                    #                 line.write({'erp_ok': True})
+
+    def send_sms2(self, cr, uid, context=None):
+        if context == None:
+            context = {}
+        content = self.pool.get('auto.sms.template.data').browse(cr, uid, 1, context=context).body
+        date_now = datetime.now()
+        rs_send_service = self.pool.get('rainsoft.sendsms')
+        time_now = datetime.strptime(str(date_now + timedelta(days=0))[:10], '%Y-%m-%d')
+        date1 = datetime.strptime(str(date_now + timedelta(days=45))[:10], '%Y-%m-%d')
+        date2 = datetime.strptime(str(date_now + timedelta(days=15))[:10], '%Y-%m-%d')
+        message_list = self.pool.get('account.analytic.account').search(cr, uid,
+                                                                        [('date', '<=', date2),
+                                                                         ('date', '>', time_now),
+                                                                         ('erp_ok', '=', False),
+                                                                         ('state', 'not in', ('close', 'cancelled'))],
+                                                                        context=context)
+        if message_list:
+            for line in self.pool.get('account.analytic.account').browse(cr, uid, message_list, context=context):
+                for i in line.erp_manager_ids:
+                    phone_number = i.mobile or i.phone
+                    mm = content % i.name
+                    message = (re.sub('<[^>]+>', '', mm))
+                    if phone_number:
+                        res2 = rs_send_service.send(cr, uid, phone_number, message, context=context)
+                        if res2['message'] == 'ok':
+                            line.write({'erp_ok': True})

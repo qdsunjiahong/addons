@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding='utf-8'?>
 <openerp>
-	<data noupdate="1">
-		<record id="auto_mail_template_data_chishi" model="auto.mail.template.data">
-			<field eval="'短信模板'" name="title"/>
-			<field eval="'合同到期提醒，您好，这里是信息资源库的信息，您与%s单位签订的%s合同，将于%s天到期，届时资源库将关闭合作，请抓紧时间办理。谢谢！'" name="body_html"/>
-		</record>
-	</data>
+    <data noupdate="1">
+        <record id="auto_mail_template_data_chishi" model="auto.mail.template.data">
+            <field eval="'短信模板'" name="title"/>
+            <field eval="'合同到期提醒，您好，这里是信息资源库的信息，您与%s签订的关于《%s》合同，将于%s天后到期，届时资源库将关闭合作，请抓紧时间办理。谢谢！'" name="body_html"/>
+        </record>
+        <record id="auto_sms_template_data_chishi" model="auto.sms.template.data">
+            <field eval="'信息管理员短信模板'" name="title"/>
+            <field eval="'亲爱的%s：这条信息来自于资源库。根据资源库合同信息现有附件表格中供应商合同已到期，多次提醒合同签署人员，未做处理。请关闭您所管理的ERP系统中合作关系。如有开通请按照《合同审批工作流》、《产品信息更改工作流》办理相关业务。！'"
+                   name="body"/>
+        </record>
+    </data>
 </openerp>

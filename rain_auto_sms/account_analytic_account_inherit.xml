@@ -11,12 +11,14 @@
                 <xpath expr="//field[@name='date_start']" position="before">
                     <field name="sms_one_ok"/>
                     <field name="sms_two_ok"/>
-                    <!--<field name="days"/>-->
+                    <field name="erp_ok"/>
                 </xpath>
                 <xpath expr="//field[@name='date']" position="replace">
                     <field name="date" required="1"/>
                 </xpath>
-
+                <xpath expr="//field[@name='manager_id']" position="after">
+                    <field name="erp_manager_ids" widget="many2many_tags"/>
+                </xpath>
             </field>
         </record>
         <record model="ir.ui.view" id="account_analytic_account_tree_sms_inherit">
@@ -33,7 +35,7 @@
                         <field name="partner_id" invisible="1"/>
                         <field name="code" invisible="1"/>
                         <field name="date_start" invisible="1"/>
-                        <field name="date" required="1"/>
+                        <field name="date"/>
                         <field name="user_id" invisible="1"/>
                         <field name="manager_id"/>
                         <field name="parent_id" invisible="1"/>
@@ -43,11 +45,10 @@
                         <field name="company_id" groups="base.group_multi_company"/>
                         <field name="sms_one_ok" invisible="1"/>
                         <field name="sms_two_ok" invisible="1"/>
+                        <field name="erp_ok" invisible="1"/>
                         <field name="days" invisible="1"/>
-                        <field name="color" invisible="1"/>
                     </tree>
                 </xpath>
-
             </field>
         </record>
 
