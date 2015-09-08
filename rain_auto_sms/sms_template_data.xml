@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding='utf-8'?>
+<openerp>
+	<data noupdate="1">
+		<record id="auto_mail_template_data_chishi" model="auto.mail.template.data">
+			<field eval="'短信模板'" name="title"/>
+			<field eval="'合同到期提醒，您好，这里是信息资源库的信息，您与%s单位签订的%s合同，将于%s天到期，届时资源库将关闭合作，请抓紧时间办理。谢谢！'" name="body_html"/>
+		</record>
+	</data>
+</openerp>

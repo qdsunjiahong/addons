@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+
+
+        <record model="ir.ui.view" id="account_analytic_account_form_sms_inherit">
+            <field name="name">account.analytic.account.inherit</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='date_start']" position="before">
+                    <field name="sms_one_ok"/>
+                    <field name="sms_two_ok"/>
+                    <!--<field name="days"/>-->
+                </xpath>
+                <xpath expr="//field[@name='date']" position="replace">
+                    <field name="date" required="1"/>
+                </xpath>
+
+            </field>
+        </record>
+        <record model="ir.ui.view" id="account_analytic_account_tree_sms_inherit">
+            <field name="name">account.analytic.account.inherit</field>
+            <field name="model">account.analytic.account</field>
+            <field name="inherit_id" ref="account.view_account_analytic_account_list"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//tree[@string='Analytic Accounts']" position="replace">
+                    <tree toolbar="1"
+                          colors="green:contract_state=='c';red:contract_state=='b';grey:contract_state=='a';blue:type=='view'"
+                          string="Analytic Accounts">
+                        <field name="complete_name"/>
+                        <field name="partner_id" invisible="1"/>
+                        <field name="code" invisible="1"/>
+                        <field name="date_start" invisible="1"/>
+                        <field name="date" required="1"/>
+                        <field name="user_id" invisible="1"/>
+                        <field name="manager_id"/>
+                        <field name="parent_id" invisible="1"/>
+                        <field name="state" invisible="1"/>
+                        <field name="type" invisible="1"/>
+                        <field name="template_id" invisible="1"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="sms_one_ok" invisible="1"/>
+                        <field name="sms_two_ok" invisible="1"/>
+                        <field name="days" invisible="1"/>
+                        <field name="color" invisible="1"/>
+                    </tree>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>
