@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="view_graph_qdodoo_purchase_price_change" model="ir.ui.view">
+            <field name="name">qdodoo.pop.change.graph</field>
+            <field name="model">qdodoo.pop.change</field>
+            <field name="arch" type="xml">
+                <graph string="采购价格变动表" type="pivot">
+                    <field name="product_name" type="row"/>
+                    <field name="date_planned" interval="month" type="col"/>
+                    <field name="unit_price" type="measure"/>
+                </graph>
+            </field>
+        </record>
+        <record id="view_qdodoo_pop_change_search" model="ir.ui.view">
+            <field name="name">qdodoo.pop.change.search</field>
+            <field name="model">qdodoo.pop.change</field>
+            <field name="arch" type="xml">
+                <search string="Entries Analysis">
+                    <field name="product_name"/>
+                    <field name="delivery_place"/>
+                </search>
+            </field>
+        </record>
+        <record id="action_qdodoo_purchase_price_change" model="ir.actions.act_window">
+            <field name="name">采购价格变动表</field>
+            <field name="res_model">qdodoo.pop.change</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">graph</field>
+            <!--<field name="search_view_id" ref="view_qdodoo_pop_change_search"/>-->
+            <field name="view_id" ref="view_graph_qdodoo_purchase_price_change"/>
+        </record>
+        <menuitem name="采购价格变动表" id="menu_qdodoo_purchase_price_change" parent="base.next_id_73"
+                  action="action_qdodoo_purchase_price_change"/>
+    </data>
+</openerp>
