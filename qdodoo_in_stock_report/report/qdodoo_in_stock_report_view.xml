@@ -9,19 +9,33 @@
                     <field name="location_id" type="row"/>
                     <field name="date" interval="month" type="row"/>
                     <field name="partner_id" type="row"/>
-                    <!--<field name="default_code" type="row"/>-->
+                    <field name="move_id" type="row"/>
                     <field name="product_qty" type="measure"/>
                     <field name="price" type="measure"/>
                     <field name="amount" type="measure"/>
                 </graph>
             </field>
         </record>
+
+        <record id="view_search_qdodoo_in_stock_report" model="ir.ui.view">
+            <field name="name">qdodoo.in.stock.report.search</field>
+            <field name="model">qdodoo.in.stock.report</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="product_id"/>
+                    <field name="location_id"/>
+                    <field name="partner_id"/>
+                </search>
+            </field>
+        </record>
+
         <record model="ir.actions.act_window" id="action_view_qdodoo_in_stock_report_graph">
             <field name="name">入库明细表</field>
             <field name="res_model">qdodoo.in.stock.report</field>
             <field name="view_type">form</field>
             <field name="view_mode">graph</field>
             <field name="view_id" ref="view_qdodoo_in_stock_report_graph"/>
+            <field name="search_view_id" ref="view_search_qdodoo_in_stock_report"/>
         </record>
         <menuitem name="入库明细表" parent="stock.next_id_61" sequence="11" action="action_view_qdodoo_in_stock_report_graph" id="menu_action_view_qdodoo_in_stock_report_graph"/>
     </data>
