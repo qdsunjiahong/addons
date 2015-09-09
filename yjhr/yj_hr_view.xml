@@ -10,10 +10,8 @@
 												<div class="oe_title">
 														<label for="name"/>
 														<h1>
-														<field name="name"/>
+																<field name="name"/>
 														</h1>
-														<label for="attendance_account_period"/>
-														<field name="attendance_account_period"/>
 														<label for="e_no"/>
 														<field name="e_no"/>
 														<label for="department"/>
@@ -66,16 +64,6 @@
 								</form>
 						</field>
 				</record>
-	 <record model="ir.ui.view" id="yi_attendance_tree_view">
-            <field name="name">人员列表</field>
-            <field name="type">tree</field>
-            <field name="model">yj.hr.attendance</field>
-            <field name="arch" type="xml">
-                <field name="name"/>
-                <field name="attendance_account_period"/>
-                <field name="absence" />
-            </field>
-        </record>
 
 				<record model="ir.actions.act_window" id="yjhr_action_attendance">
 						<field name="name">yjhr attendance</field>
