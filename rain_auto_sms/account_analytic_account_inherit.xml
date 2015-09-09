@@ -29,7 +29,7 @@
 
                 <xpath expr="//tree[@string='Analytic Accounts']" position="replace">
                     <tree toolbar="1"
-                          colors="green:contract_state=='c';red:contract_state=='b';grey:contract_state=='a';blue:type=='view'"
+                          colors="green:contract_state=='即将到期';red:contract_state=='到期';grey:contract_state=='正常';blue:type=='view'"
                           string="Analytic Accounts">
                         <field name="complete_name"/>
                         <field name="partner_id" invisible="1"/>

@@ -206,7 +206,6 @@ class qdodoo_account_analytic_account(osv.osv):
                     phone_number = i.mobile or i.phone
                     mm = content % (i.name, line.partner_id.name, line.name)
                     message = (re.sub('<[^>]+>', '', mm))
-                    print message, 32333
                     if phone_number:
                         res2 = rs_send_service.send(cr, uid, phone_number, message, context=context)
                         if res2['message'] == 'ok':
