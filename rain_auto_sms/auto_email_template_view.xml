@@ -7,7 +7,6 @@
             <field name="model">auto.mail.template.data</field>
             <field name="arch" type="xml">
                 <form create="0" delete="0">
-                     <!--<button string="执行" type="object" name="send_sms" class="oe_highlight"/>-->
                     <sheet>
                         <group>
                             <field name="title"/>
@@ -36,5 +35,41 @@
         </record>
         <menuitem id="menu_auto_email" name="自动发送短信模板" parent="base.menu_config"
                   action="action_view_auto_email_tree"/>
+
+
+        <record model="ir.ui.view" id="view_auto_sms_form">
+            <field name="name">ERP信息管理员短信群发</field>
+            <field name="type">form</field>
+            <field name="model">auto.sms.template.data</field>
+            <field name="arch" type="xml">
+                <form create="0" delete="0">
+                    <sheet>
+                        <group>
+                            <field name="title"/>
+                            <field name="body"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="view_auto_sms_tree">
+            <field name="name">ERP信息管理员短信群发</field>
+            <field name="type">tree</field>
+            <field name="model">auto.sms.template.data</field>
+            <field name="arch" type="xml">
+                <tree create="0" delete="0">
+                    <field name="title"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_view_auto_sms_tree" model="ir.actions.act_window">
+            <field name="name">ERP信息管理员短信模板</field>
+            <field name="res_model">auto.sms.template.data</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_auto_sms_tree"/>
+        </record>
+        <menuitem id="menu_auto_sms" name="ERP信息管理员短信模板" parent="base.menu_config"
+                  action="action_view_auto_sms_tree"/>
     </data>
 </openerp>

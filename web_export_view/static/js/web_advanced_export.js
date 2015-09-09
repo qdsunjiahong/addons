@@ -22,7 +22,7 @@
 //#############################################################################
 
 openerp.web_export_view = function(instance, m) {
-
+    console.log("实例化 web_export_view");
     var _t = instance.web._t,
     QWeb = instance.web.qweb;
 

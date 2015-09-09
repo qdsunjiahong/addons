@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <openerp>
     <data>
-        <record id="view_tree_qdodoo_analytic_report" model="ir.ui.view">
+        <record id="view_tree_qdodoo_analytic_report2" model="ir.ui.view">
             <field name="name">合同</field>
             <field name="model">account.analytic.account</field>
             <field name="arch" type="xml">
@@ -10,7 +10,6 @@
                     <field name="partner_id" string="供应商名称"/>
                     <field name="date" string="合同到期时间"/>
                     <field name="manager_id" string="科目管理员"/>
-                    <!--<field name="days"/>-->
                     <field name="erp_manager_ids" widget="many2many_tags"/>
                 </tree>
             </field>
@@ -24,6 +23,10 @@
                     <field name="partner_id" string="供应商名称"/>
                     <field name="date" string="合同到期时间"/>
                     <field name="manager_id" string="科目管理员"/>
+                    <field name="contract_state" string="合同状态"/>
+                    <group string="分组按">
+                        <filter string="合同状态" domain="[]" context="{'group_by' : 'contract_state'}"/>
+                    </group>
                 </search>
             </field>
         </record>
@@ -34,7 +37,7 @@
             <field name="view_type">form</field>
             <field name="view_mode">tree</field>
             <field name="search_view_id" ref="view_qdodoo_analytic_report_search"/>
-            <field name="view_id" ref="view_tree_qdodoo_analytic_report"/>
+            <field name="view_id" ref="view_tree_qdodoo_analytic_report2"/>
         </record>
         <menuitem name="合同报表" id="menu_qdodoo_analytic_report" parent="purchase.menu_procurement_management"
                   action="action_qdodoo_analytic_report"/>
