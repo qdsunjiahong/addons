@@ -22,37 +22,26 @@
 
 {
     'name': 'Export Current View',
-    'version': '1.1',
+    'version': '1.2',
     'category': 'Web',
     'description': """
 WEB EXPORT VIEW
 ===============
-
-One of the best OpenERP’s features is exporting custom data to CSV/XLS. You can
-do it by clicking on the export link in the sidebar. The export action allows
-use to configure what to be exported by selecting fields, etc, and allows you
-to save your export as a template so that you can export it once again without
-having to configure it again.
-
-That feature is as great and advanced as limited for an everyday experience.
-A lot of customers want simply to export the tree view they are looking to.
-
-If you miss this feature as us, probably you’ll find an answer into our
-web_export_view module.
-
-After you installed it, you’ll find an additional link ‘Export current view’
-right below the ‘Export’ one. By clicking on it you’ll get a XLS file contains
-the same data of the tree view you are looking at, headers included.
+1.修改原来的7.0版本，适合8.0使用。
 """,
-    'author': 'Agile Business Group',
-    'website': 'http://www.agilebg.com',
+    'author': 'sun',
+    'website': 'http://www.rainsoft.com',
     'license': 'AGPL-3',
     'depends': ['web'],
+    'data':[
+        'views/web_export_view.xml'
+    ],
     # 'external_dependencies': {
     #     'python': ['xlwt'],
     # },
     'css':['static/css/style.css'],
-    'js': ['static/*/*.js', 'static/*/js/*.js'],
+    # 'js': ['static/*/*.js', 'static/*/js/*.js'],
+    # 'js' : ['static/js/web_advanced_export.js'],
     'qweb': ['static/xml/web_advanced_export.xml'],
     'installable': True,
     'auto_install': False,
