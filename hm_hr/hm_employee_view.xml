@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!--工作记录 start-->
+
+        <!--工作记录 form-->
+        <record model="ir.ui.view" id="hr_work_record_form_view">
+            <field name="name">HR Work Record</field>
+            <field name="model">hr.work.record</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="HR Work Record">
+                    <sheet>
+                        <group>
+                   <field name="employee_id"></field>
+                    <field name="start_date"></field>
+                    <field name="stop_date"></field>
+                    <field name="name"></field>
+                    <field name="work_post"></field>
+                    <field name="type"></field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--工作记录 tree-->
+        <record model="ir.ui.view" id="view_hr_work_record_tree">
+            <field name="name">hr.work.record.tree</field>
+            <field name="model">hr.work.record</field>
+            <field name="arch" type="xml">
+                <tree string="Work Record">
+                    <field name="employee_id"></field>
+                    <field name="start_date"></field>
+                    <field name="stop_date"></field>
+                    <field name="name"></field>
+                    <field name="work_post"></field>
+                    <field name="type"></field>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_work_record_view_search" model="ir.ui.view">
+            <field name="name">hr.work.record.view.search</field>
+            <field name="model">hr.work.record</field>
+            <field name="arch" type="xml">
+                <search string="Search Certificate">
+                    <field name="employee_id"></field>
+                    <field name="start_date"></field>
+                    <field name="stop_date"></field>
+                    <field name="name"></field>
+                    <field name="work_post"></field>
+                    <field name="type"></field>
+                   <group expand="0" string="Group By">
+                       <filter string="Employee" icon="terp-personal" domain="[]" context="{'group_by':'employee_id'}"/>
+                   </group>
+               </search>
+            </field>
+        </record>
+
+
+        <record id="open_view_work_record_list" model="ir.actions.act_window">
+            <field name="name">Work Record</field>
+            <field name="res_model">hr.work.record</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="view_id" eval="False"/>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <menuitem action="open_view_work_record_list" id="action_open_view_work_record_list" sequence="33"
+                  parent="hr.menu_hr_configuration"/>
+        <!--工作记录 stop-->
+
+
+
+        <!--证书记录 start-->
+
+        <!--证书记录 form-->
+        <record model="ir.ui.view" id="hr_certificate_form_view">
+            <field name="name">HR Certificate</field>
+            <field name="model">hr.certificate</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="HR Certificate">
+                    <sheet>
+                        <group>
+                    <field name="employee_id"></field>
+                    <field name="name"></field>
+                    <field name="type"></field>
+                    <field name="stop_date"></field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--证书记录 tree-->
+        <record model="ir.ui.view" id="view_hr_certificate_tree">
+            <field name="name">hr.certificate.tree</field>
+            <field name="model">hr.certificate</field>
+            <field name="arch" type="xml">
+                <tree string="Certificate">
+                    <field name="employee_id"></field>
+                    <field name="name"></field>
+                    <field name="type"></field>
+                    <field name="stop_date"></field>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_certificate_view_search" model="ir.ui.view">
+            <field name="name">hr.certificate.view.search</field>
+            <field name="model">hr.certificate</field>
+            <field name="arch" type="xml">
+                <search string="Search Certificate">
+                    <field name="employee_id"></field>
+                    <field name="name"></field>
+                    <field name="type"></field>
+                    <field name="stop_date"></field>
+                   <group expand="0" string="Group By">
+                       <filter string="Employee" icon="terp-personal" domain="[]" context="{'group_by':'employee_id'}"/>
+                   </group>
+               </search>
+            </field>
+        </record>
+
+
+        <record id="open_view_certificate_list" model="ir.actions.act_window">
+            <field name="name">Certificate</field>
+            <field name="res_model">hr.certificate</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="view_id" eval="False"/>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <menuitem action="open_view_certificate_list" id="action_open_view_certificate_list" sequence="32"
+                  parent="hr.menu_hr_configuration"/>
+        <!--证书记录 stop-->
+
+
+        <!--学历记录 start-->
+
+        <!--学历记录 form-->
+        <record model="ir.ui.view" id="hr_edu_record_form_view">
+            <field name="name">HR EDUCATION RECORD</field>
+            <field name="model">hr.edu.record</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="HR EDU RECORD">
+                    <sheet>
+                        <group>
+                            <field name="employee_id"></field>
+							<field name="degree"/>
+                            <field name="graduate_date"></field>
+                            <field name="graduate_school"></field>
+                            <field name="graduate_professional"></field>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!--学历记录 tree-->
+        <record model="ir.ui.view" id="view_hr_edu_record_tree">
+            <field name="name">hr.edu.record.tree</field>
+            <field name="model">hr.edu.record</field>
+            <field name="arch" type="xml">
+                <tree string="Education">
+                    <field name="employee_id"></field>
+					<field name="degree"/>
+                    <field name="graduate_date"></field>
+                    <field name="graduate_school"></field>
+                    <field name="graduate_professional"></field>
+                </tree>
+            </field>
+        </record>
+
+        <record id="hr_edu_record_view_search" model="ir.ui.view">
+            <field name="name">hr.edu.record.view.search</field>
+            <field name="model">hr.edu.record</field>
+            <field name="arch" type="xml">
+                <search string="Search Education">
+                    <field name="employee_id"></field>
+					<field name="degree"/>
+                    <field name="graduate_date"></field>
+                    <field name="graduate_school"></field>
+                    <field name="graduate_professional"></field>
+                   <group expand="0" string="Group By">
+                       <filter string="Employee" icon="terp-personal" domain="[]" context="{'group_by':'employee_id'}"/>
+                   </group>
+               </search>
+            </field>
+        </record>
+
+
+        <record id="open_view_edu_record_list" model="ir.actions.act_window">
+            <field name="name">Education</field>
+            <field name="res_model">hr.edu.record</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+            <field name="view_id" eval="False"/>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <menuitem action="open_view_edu_record_list" id="action_open_view_edu_record_list" sequence="31"
+                  parent="hr.menu_hr_configuration"/>
+        <!--学历记录 stop-->
+
+
+        <!--合同视图扩展-->
+        <record model="ir.ui.view" id="hm_contract_form_view">
+            <field name="name">HM HR Contract</field>
+            <field name="model">hr.contract</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@string='Information']/group/group[@string='Salary and Advantages']/field[@name='advantages']"
+                       position="before">
+                    <field name="company_sign"/>
+                    <field name="work_address"/>
+                    <field name="work_hours"/>
+                    <field name="other_welfare"/>
+                    <field name="other"/>
+                </xpath>
+                <xpath expr="//page[@string='Information']" position="after">
+                    <page string="Wage Info">
+                        <group>
+                            <group string="Base Wage">
+                                <field name="base_wage"/>
+                                <field name="base_wage_condition"/>
+                                <field name="base_wage_date"/>
+                            </group>
+                            <group string="Duty Wage">
+                                <field name="duty_wage"/>
+                                <field name="duty_wage_condition"/>
+                                <field name="duty_wage_date"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Age Wage">
+                                <field name="age_wage"/>
+                                <field name="age_wage_condition"/>
+                                <field name="age_wage_date"/>
+                            </group>
+                            <group string="Post Wage">
+                                <field name="post_wage"/>
+                                <field name="post_wage_condition"/>
+                                <field name="post_wage_date"/>
+                            </group>
+                        </group>
+                    </page>
+
+                    <!--绩效考核约定-->
+                    <page string="Performance Info">
+                        <group>
+                            <field name="performance"/>
+                            <field name="performance_type"/>
+                            <field name="performance_amout"
+                                   attrs="{'invisible': [('performance_type','!=','standard')]}"/>
+                            <field name="performance_paul_salary"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!--职务视图扩展-->
+        <record model="ir.ui.view" id="hm_job_form_view">
+            <field name="name">HM HR Job</field>
+            <field name="model">hr.job</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="hr.view_hr_job_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <notebook>
+                        <page string="Job Information">
+                            <group>
+                                <group string="Education Information">
+                                    <field name="education"/>
+                                    <field name="edu_other"/>
+                                </group>
+                                <group string="Positon Information">
+                                    <field name="positon_power"/>
+                                    <field name="positon_content"/>
+                                </group>
+                                <group string="Exam Information">
+                                    <field name="exam_answer"/>
+                                    <field name="exam_type"/>
+                                    <field name="exam_cycle"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="act_hr_employee_2_hr_edu_record" model="ir.actions.act_window">
+            <field name="res_model">hr.edu.record</field>
+            <field name="view_type">form</field>
+            <field name="name">Education</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_employee_id': [active_id], 'default_employee_id': active_id}</field>
+        </record>
+
+        <record id="act_hr_employee_2_hr_certificate" model="ir.actions.act_window">
+            <field name="res_model">hr.certificate</field>
+            <field name="view_type">form</field>
+            <field name="name">Certificate</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_employee_id': [active_id], 'default_employee_id': active_id}</field>
+        </record>
+
+        <record id="act_hr_employee_2_hr_work_record" model="ir.actions.act_window">
+            <field name="res_model">hr.work.record</field>
+            <field name="view_type">form</field>
+            <field name="name">Work Record</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_employee_id': [active_id], 'default_employee_id': active_id}</field>
+        </record>
+
+        <record model="ir.ui.view" id="hm_employee_form_view">
+            <field name="name">HM HR Empolyee</field>
+            <field name="model">hr.employee</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="hr_contract.hr_hr_employee_view_form2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="%(act_hr_employee_2_hr_edu_record)d"
+                            class="oe_stat_button"
+                            icon="fa-pencil"
+                            type="action"
+                            groups="base.group_hr_manager">
+                        <field name="edu_record_count" widget="statinfo" string="学历记录"/>
+                    </button>
+                    <button name="%(act_hr_employee_2_hr_certificate)d"
+                            class="oe_stat_button"
+                            icon="fa-certificate"
+                            type="action"
+                            groups="base.group_hr_manager">
+                        <field name="certificate_count" widget="statinfo" string="证书记录"/>
+                    </button>
+                    <button name="%(act_hr_employee_2_hr_work_record)d"
+                            class="oe_stat_button"
+                            icon="fa-hdd-o"
+                            type="action"
+                            groups="base.group_hr_manager">
+                        <field name="work_record_count" widget="statinfo" string="工作记录"/>
+                    </button>
+                </xpath>
+                <xpath expr="//div[@class='oe_title']/field[@name='category_ids']" position="replace">
+                    <field name="category_ids" widget="many2many_tags" placeholder="e.g. Part Time" class="oe_read_only"
+                           groups="base.group_hr_user"/>
+                </xpath>
+                <xpath expr="//div[@class='oe_title']/label[@for='category_ids']" position="replace">
+                </xpath>
+                <xpath expr="//page[@string='Public Information']/group/group[@string='Contact Information']"
+                       position="before">
+                    <group string="Basic Infomation">
+                        <field name="e_name"/>
+                        <field name="e_gender"/>
+                    </group>
+                </xpath>
+                <xpath expr="//page[@string='Public Information']/group/group[@string='Contact Information']"
+                       position="replace">
+                    <group string="Contact Infomation">
+                        <field name="e_email" string="外部电子邮箱"/>
+                        <field name="mobile_phone"/>
+                    </group>
+                </xpath>
+                <xpath expr="//page[@string='Public Information']/group/group[@string='Position']" position="replace">
+                    <group string="Position">
+                        <field name="e_no"/>
+                        <field name="job_id" string="岗位"/>
+		        <field name="e_parttime_job" string="兼职岗位" widget="many2many_tags"/>
+                        <field name="category_ids" widget="many2many_tags" placeholder="e.g. Part Time"
+                               groups="base.group_hr_user" string="职级"/>
+                        <field name="coach_id" invisible="1"/>
+                        <field name="department_id" on_change="onchange_department_id(department_id)"/>
+			<field name="e_parttime_department" string="兼职部门" widget="many2many_tags"/>
+                        <field name="work_location" string="工作地点"/>
+                        <field name="e_job_status"/>
+                    </group>
+                </xpath>
+
+                <!--下面是　个人信息　-->
+                <xpath expr="//page[@string='Personal Information']/group" position="replace">
+                    <group>
+                        <group string="Citizenship &amp; Other Info">
+                            <field name="country_id" options='{"no_open": True}'/>
+                            <field name="identification_id" groups="base.group_hr_user"/>
+                            <field name="e_hukou_type"/>
+                            <field name="e_hukou_location"/>
+
+                        </group>
+                        <!--住址及联系方式 现住址 紧急联系人　紧急联系人与本人关系　紧急联系电话　联系电话-->
+                        <group string="Contact Information">
+                            <field name="address_home_id" string="关联的合作伙伴"
+                                   context="{'show_address': 1, 'default_customer': False}"
+                                   options='{"always_reload": True, "highlight_first_line": True}'/>
+						    <field name="e_address"/>
+                            <field name="e_emergency_contact" string="紧急联系人"/>
+                            <field name="e_emergency_relation" string="紧急联系人与本人关系"/>
+                            <field name="e_emergency_phone" string="紧急联系电话"/>
+                            <field name="e_personal_phone" string="个人电话"/>
+                            <field name="bank_account_id" invisible="1"></field>
+                        </group>
+                        <!--个人信息:　出生日期，年龄，婚否，子女数-->
+                        <group string="Status">
+                            <field name="e_birthday"/>
+                            <field name="e_age"/>
+                            <field name="marital"/>
+                        </group>
+
+                        <!--档案是否有缺项: 档案转总部日期  缺项内容-->
+                        <group string="Files">
+                            <field name="e_file_transfer_date"/>
+                            <field name="e_gap"/>
+                        </group>
+                    </group>
+                </xpath>
+
+                <xpath expr="//page[@string='HR Settings']" position="before">
+                    <page string="Labor relations">
+                        <group>
+                            <group string="Labor relations Info">
+                                <field name="e_recruit_date" string="入职日期"/>
+                                <field name="e_job_date" string="定岗日期"/>
+                                <!--试用期截止日期 缺少-->
+                                <field name="e_work_age" string="工龄"/>
+                                <field name="e_workhour_type" string="工时制"/>
+                                <field name="gongling" string="工作年限"/>
+                                <field name="e_hire_type" string="劳动关系类型"/>
+                                <!--<field name="contracts_count" widget="statinfo" string="签合同次数"/>-->
+                            </group>
+                            <group string="Current Contracts">
+								<field name="e_contract_No"/>
+                                <field name="e_contract_type"/>
+                                <field name="company_sign"/>
+								<field name="e_contract_start"/>
+								<field name="e_contract_stop"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <!--险金-->
+                            <group string="Social Society Insurance">
+                                <field name="e_accident_insurance_stop"/>
+                                <field name="e_provident_fund_base"/>
+                                <field name="e_ss_base"/>
+                                <field name="e_ss_type"/>
+                                <field name="e_ss_main"/>
+                            </group>
+                            <!--账户信息-->
+                            <group string="Bank Info">
+                                <field name="bank1"/>
+                                <field name="bank1_no"/>
+                                <field name="bank2"/>
+                                <field name="bank2_no"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group string="Dimission">
+                                <field name="e_dimission_date"/>
+                                <field name="e_dimission_reason"/>
+                                <field name="e_dimission_personal_reason"/>
+                                <field name="e_dimission_compentation"/>
+                                <field name="e_dimission_labor_disputes"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

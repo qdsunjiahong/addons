@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="hm_grade_form_view">
+						<field name="name">hm grade form view</field>
+						<field name="model">hm.grade</field>
+						<field name="type">form</field>
+						<field name="arch" type="xml">
+								<form string="grade">
+										<group>
+												<field name="name"/>
+										</group>
+								</form>
+						</field>
+				</record>
+				<record model="ir.actions.act_window" id="hm_action_grade">
+						<field name="name">hm grade action view</field>
+						<field name="res_model">hm.grade</field>
+						<field name="view_mode">tree,form</field>
+				</record>
+				<menuitem id="menu_hm_grade" action="hm_action_grade" parent="hr.menu_hr_configuration" name="grade"/>
+		</data>
+</openerp>
