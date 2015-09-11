@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="rainsoft_product_handler_form_view">
+						<field name="name">Product Handler</field>
+						<field name="model">rainsoft.product.handler</field>
+						<field name="type">form</field>
+						<field name="arch" type="xml">
+								<form string="Product Handler" version="7.0">
+										<separator colspan='4' string="Are you sure to update all your selected products' info ?" />
+										<group>
+												<field name="cost_method"/>
+												<field name="valuation"/>
+										</group>
+										<footer>
+												<button name="btn_update" string="Sure" type="object" class="oe_highlight" context="{'cost_method':cost_method,'valuation':valuation}" />
+												or
+												<button string="cancel" class="oe_link" special="cancel"/>
+										</footer>
+								</form>
+						</field>
+				</record>
+
+				<record model="ir.actions.act_window" id="action_rainsoft_product_udpate">
+						<field name="name">Prouct Update</field>
+						<field name="res_model">rainsoft.product.handler</field>
+						<field name="type">ir.actions.act_window</field>
+						<field name="view_mode">form</field>
+						<field name="view_type">form</field>
+						<field name="view_id" ref="rainsoft_product_handler_form_view"/>
+						<field name="target">new</field>
+						<field name="multi">True</field>
+				</record>
+
+				<record model="ir.values" id="values_rainsoft_product_update">
+						<field name="model_id" ref="product.model_product_template"/>
+						<field name="name">Product Update</field>
+						<field name="key2">client_action_multi</field>
+						<field name="value" eval="'ir.actions.act_window,'+str(ref('action_rainsoft_product_udpate'))"/>
+						<field name="key">action</field>
+						<field name="model">product.template</field>
+				</record>
+		</data>
+</openerp>
