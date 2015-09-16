@@ -66,7 +66,7 @@ class qdodoo_warehouse_ratesearch(osv.Model):
         for active_id in active_ids:
             # 搜索balance对象
             turnon_dict['product'] = active_id
-            print '==========================', rate_search[0].location_id.id
+            #print '==========================', rate_search[0].location_id.id
             balance_ids = balance_obj.search(cr, uid,
                                              [('location_id', '=', turnon_dict['ware_name']),
                                               ('product_id', '=', active_id), (
@@ -96,23 +96,23 @@ class qdodoo_warehouse_ratesearch(osv.Model):
             # 查询产品的销售出库数量
             sale_out_dict = {}
             sum = 0
-            print 'product_id',active_id,'date_start', rate_search.from_date,'date_end',rate_search.to_date,'location_id',turnon_dict['ware_name'],location_cus_ids,location_suppliers_ids
+            #print 'product_id',active_id,'date_start', rate_search.from_date,'date_end',rate_search.to_date,'location_id',turnon_dict['ware_name'],location_cus_ids,location_suppliers_ids
             sale_out_ids = stock_move_obj.search(cr,uid,
                                                  [('product_id', '=', active_id), ('state', '=', 'done'),
                                                   ('date', '>=', rate_search.from_date),
                                                   ('date', '<=', rate_search.to_date),
                                                   ('location_id', '=', turnon_dict['ware_name']),
                                                   ('location_dest_id', '=', location_cus_ids), ('location_id','!=',location_suppliers_ids)])
-            print  'idsssssssssssssssssssssssssssssssssssssssss',sale_out_ids
+            #print  'idsssssssssssssssssssssssssssssssssssssssss',sale_out_ids
             for sale_out_id in stock_move_obj.browse(cr, uid, sale_out_ids):
-                print '222222222222222222222222',sale_out_id
+                #print '222222222222222222222222',sale_out_id
                 if sum > 0:
                     sum += sale_out_id.product_uom_qty
                 else:
                     sum = sale_out_id.product_uom_qty
 
             turnon_dict['number'] = sum
-            print  turnon_dict
+            #print  turnon_dict
             turnrate_id = turnrate_obj.create(cr, uid,turnon_dict)
             result = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'qdodoo_warehouse_turnover_rate',
                                                                              'qdodoo_turnrate_tree')
