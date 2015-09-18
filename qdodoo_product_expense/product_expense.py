@@ -213,13 +213,10 @@ class product_expense(models.Model):
             if len(account_moves):
                 for account_move in account_moves:
                     for a_line in account_move.line_id:
-                        print '22222222222222222222',a_line
                         if a_line.product_id == line.product and a_line.credit != 0 and a_line.debit == 0:
-                            print self.analytic_acc.id,'111111111111111111'
                             a_line.write({'account_id': self.usage.credit.id,
                                           'analytic_account_id': self.analytic_acc.id})
                         if a_line.product_id == line.product and a_line.debit != 0 and a_line.credit == 0:
-                            print self.analytic_acc.id,'33333333333333333333'
                             a_line.write({'account_id': self.usage.debit.id,
                                           'analytic_account_id': self.analytic_acc.id})
 
@@ -283,8 +280,9 @@ class product_expense_picking(models.Model):
         if res:
             expense = self.env['product.expense'].search([('name', '=', self.origin)])
             if expense:
-                expense.ref_no = self.id
-                workflow.trg_validate(self.env.user.id, 'product.expense', expense.id, 'ship_end', self.env.cr)
+                for line in expense:
+                    line.ref_no = self.id
+                    workflow.trg_validate(self.env.user.id, 'product.expense', line.id, 'ship_end', self.env.cr)
         return res
 
 
