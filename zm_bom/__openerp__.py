@@ -1,0 +1,12 @@
+#coding:utf-8
+{
+				"name":u"青岛卓美贸易公司专用模块",
+				"description":u"专为青岛卓美贸易公司开发的模块",
+				"author":"Rainsoft",
+				"depends":['base','mrp'],
+				"data":[
+						"zm_bom_view.xml"
+						],
+				'installbale':True,
+				"category":"Other",
+}

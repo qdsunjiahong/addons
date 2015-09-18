@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+		<!--<record id="product_expense_account_form_view" model="ir.ui.view">
+			<field name="name">product expense account</field>
+			<field name="model">product.expense.account</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Product Expense Account">
+					<sheet>
+						<h1>
+							<field name="name"/>
+						</h1>
+						<group>
+							<field name="department"/>
+							<field name="analytic_acc"/>
+						</group>
+						<group>
+							<notebook>
+								<page string="Lines">
+									<field name="line_ids">
+										<tree string="lines" editable="bottom">
+											<field name="account_id" invisible="1"/>
+											<field name="name" />
+											<field name="in_account"/>
+											<field name="out_account"/>
+										</tree>
+									</field>
+								</page>
+								<page string="Stock Setting">
+									<group>
+										<field name="warehouse"/>
+									</group>
+									<group>
+										<field name="location"/>
+									</group>
+								</page>
+							</notebook>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>-->
+
+		<!--<record model="ir.ui.view" id="product_expense_account_tree">			
+			<field name="name">product expense account</field>
+			<field name="model">product.expense.account</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Product Expense">
+					<field name="name"/>
+					<field name="department"/>
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="actions_product_expense_account">
+			<field name="name">Product Expense Account</field>
+			<field name="res_model">product.expense.account</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<menuitem id="menu_product_expense_account" name="Product Expense Account" action="actions_product_expense_account" parent="hr.menu_hr_configuration" />-->
+
+		<record model="ir.ui.view" id="prodcut_expense_usage_form_view">
+			<field name="name">product.expense.usage</field>
+			<field name="model">product.expense.usage</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Product Expense Usage">
+					<sheet>
+						<h1>
+							<field name="name"/>
+						</h1>
+						<group>
+							<field name="credit"/>
+							<field name="debit"/>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="product_expense_usage_tree_view">
+			<field name="name">product.expense.usage</field>
+			<field name="model">product.expense.usage</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Product Expense Usage">
+						<field name="name"/>
+						<field name="credit"/>
+						<field name="debit"/>
+				</tree>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="actions_product_expense_usage">
+			<field name="name">Product Expense Usage</field>
+			<field name="res_model">product.expense.usage</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+		
+		<menuitem id="menu_product_expense_usage" name="Product Expense Usage" action="actions_product_expense_usage" parent="hr.menu_hr_configuration" />
+
+	</data>
+</openerp>

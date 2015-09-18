@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="hm_sale_order_form_view">
+						<field name="name">Hm sale order</field>
+						<field name="model">sale.order</field>
+						<field name="inherit_id" ref="sale.view_order_form"/>
+						<field name="arch" type="xml">
+								<field name="date_order" position="after">
+										<field name="deal_date"/>
+								</field>
+								<field name="order_line" position="after">
+										<group>
+												<group>
+														<field name="item_qty"/>
+												</group>
+												<group>
+														<field name="sum_qty"/>
+												</group>
+										</group>
+								</field>
+						</field>
+				</record>
+		</data>
+</openerp>

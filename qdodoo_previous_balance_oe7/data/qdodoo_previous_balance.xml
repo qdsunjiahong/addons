@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<openerp>
+    <data noupdate="1">
+        <!--<record id="ir_cron_qdodoo_previous_balance" model="ir.cron">-->
+        <!--<field name='name'>自动记录产品前期结余</field>-->
+        <!--<field name='interval_number'>1</field>-->
+        <!--<field name='interval_type'>days</field>-->
+        <!--<field name="numbercall">-1</field>-->
+        <!--<field name="active">True</field>-->
+        <!--<field name="doall" eval="False" />-->
+        <!--<field name="model">qdodoo.previous.balance</field>-->
+        <!--<field name="function">_create_new_data</field>-->
+        <!--<field eval="'2010-01-07 23:00:01'" name="nextcall"/>-->
+        <!--<field name="args">()</field>-->
+        <!--</record>-->
+        <record model="ir.cron" id="ir_cron_qdodoo_previous_balance">
+            <field name="name">自动记录产品前期结余</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False"/>
+            <field name="model" eval="'qdodoo.previous.balance'"/>
+            <field name="function" eval="'_create_new_data'"/>
+            <field name="args" eval="'()'"/>
+        </record>
+    </data>
+</openerp>

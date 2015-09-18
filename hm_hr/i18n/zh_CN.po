@@ -1,0 +1,874 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* hm_hr
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 8.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-02-13 05:37+0000\n"
+"PO-Revision-Date: 2015-02-13 13:40+0800\n"
+"Last-Translator: <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"X-Generator: Poedit 1.5.4\n"
+
+#. module: hm_hr
+#: field:hr.employee,e_education_backgroud:0
+msgid "1st Education Backgroud"
+msgstr "第一学历"
+
+#. module: hm_hr
+#: model:ir.actions.act_window,help:hm_hr.open_view_certificate_list
+#: model:ir.actions.act_window,help:hm_hr.open_view_edu_record_list
+#: model:ir.actions.act_window,help:hm_hr.open_view_work_record_list
+msgid ""
+"<p>\n"
+"                </p>\n"
+"            "
+msgstr ""
+"<p>\n"
+"                </p>\n"
+"            "
+
+#. module: hm_hr
+#: field:hr.employee,e_accident_insurance_stop:0
+msgid "Accident Insurance End"
+msgstr "意外险截止"
+
+#. module: hm_hr
+#: field:hr.employee,e_address:0
+msgid "Address"
+msgstr "现住址"
+
+#. module: hm_hr
+#: view:hr.contract:hm_hr.hm_contract_form_view
+msgid "Age Wage"
+msgstr "标准工资"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Bank Info"
+msgstr "银行信息"
+
+#. module: hm_hr
+#: view:hr.contract:hm_hr.hm_contract_form_view
+msgid "Base Wage"
+msgstr "基本工资"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Basic Infomation"
+msgstr "基本信息"
+
+#. module: hm_hr
+#: field:hr.employee,e_certificated_date:0
+msgid "Ceritificated Date"
+msgstr "资格证到期时间"
+
+#. module: hm_hr
+#: view:hr.certificate:hm_hr.view_hr_certificate_tree
+#: model:ir.actions.act_window,name:hm_hr.act_hr_employee_2_hr_certificate
+#: model:ir.actions.act_window,name:hm_hr.open_view_certificate_list
+#: model:ir.model,name:hm_hr.model_hr_certificate
+#: model:ir.ui.menu,name:hm_hr.action_open_view_certificate_list
+msgid "Certificate"
+msgstr "证书"
+
+#. module: hm_hr
+#: field:hr.employee,e_certification:0
+msgid "Certification"
+msgstr "执业资格/技能证书"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Citizenship & Other Info"
+msgstr "国籍和其他信息"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Contact Infomation"
+msgstr "联系方式"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Contact Information"
+msgstr "联系信息"
+
+#. module: hm_hr
+#: model:ir.model,name:hm_hr.model_hr_contract
+msgid "Contract"
+msgstr "合同"
+
+#. module: hm_hr
+#: field:hm.grade,create_uid:0 field:hr.certificate,create_uid:0
+#: field:hr.edu.record,create_uid:0 field:hr.work.record,create_uid:0
+msgid "Created by"
+msgstr "Created by"
+
+#. module: hm_hr
+#: field:hm.grade,create_date:0 field:hr.certificate,create_date:0
+#: field:hr.edu.record,create_date:0 field:hr.work.record,create_date:0
+msgid "Created on"
+msgstr "Created on"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Current Contracts"
+msgstr "当前合同"
+
+#. module: hm_hr
+#: field:hr.edu.record,degree:0
+msgid "Degree"
+msgstr "学位"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Dimission"
+msgstr "离职"
+
+#. module: hm_hr
+#: field:hr.employee,e_dimission_compentation:0
+msgid "Dimission Compentation "
+msgstr "离职补偿"
+
+#. module: hm_hr
+#: field:hr.employee,e_dimission_date:0
+msgid "Dimission Date"
+msgstr "离职日期"
+
+#. module: hm_hr
+#: field:hr.employee,e_dimission_reason:0
+msgid "Dimission Reason"
+msgstr "离职原因"
+
+#. module: hm_hr
+#: view:hr.contract:hm_hr.hm_contract_form_view
+msgid "Duty Wage"
+msgstr "标准工资"
+
+#. module: hm_hr
+#: view:hr.edu.record:hm_hr.view_hr_edu_record_tree
+#: model:ir.actions.act_window,name:hm_hr.act_hr_employee_2_hr_edu_record
+#: model:ir.actions.act_window,name:hm_hr.open_view_edu_record_list
+#: model:ir.ui.menu,name:hm_hr.action_open_view_edu_record_list
+msgid "Education"
+msgstr "教育"
+
+#. module: hm_hr
+#: view:hr.job:hm_hr.hm_job_form_view
+msgid "Education Information"
+msgstr "任职资格"
+
+#. module: hm_hr
+#: model:ir.model,name:hm_hr.model_hr_edu_record
+msgid "Education Record"
+msgstr "教育记录"
+
+#. module: hm_hr
+#: field:hr.employee,e_emergency_contact:0
+msgid "Emergency Contact"
+msgstr "紧急联系人"
+
+#. module: hm_hr
+#: field:hr.employee,e_emergency_phone:0
+msgid "Emergency Phone"
+msgstr "紧急联系电话"
+
+#. module: hm_hr
+#: field:hr.employee,e_emergency_relation:0
+msgid "Emergency Relation"
+msgstr "与紧急联系人关系"
+
+#. module: hm_hr
+#: view:hr.certificate:hm_hr.hr_certificate_view_search
+#: view:hr.edu.record:hm_hr.hr_edu_record_view_search
+#: view:hr.work.record:hm_hr.hr_work_record_view_search
+#: model:ir.model,name:hm_hr.model_hr_employee
+msgid "Employee"
+msgstr "员工"
+
+#. module: hm_hr
+#: field:hr.employee,e_no:0
+msgid "Employee No"
+msgstr "员工编号"
+
+#. module: hm_hr
+#: field:hr.employee,e_name:0
+msgid "English Name"
+msgstr "英文名"
+
+#. module: hm_hr
+#: view:hr.job:hm_hr.hm_job_form_view
+msgid "Exam Information"
+msgstr "胜任考核"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Files"
+msgstr "档案是否有缺项"
+
+#. module: hm_hr
+#: field:hr.employee,e_grade:0
+msgid "Grade"
+msgstr "职级"
+
+#. module: hm_hr
+#: field:hr.employee,e_graduated_date:0
+msgid "Graduated Date"
+msgstr "毕业时间"
+
+#. module: hm_hr
+#: view:hr.certificate:hm_hr.hr_certificate_view_search
+#: view:hr.edu.record:hm_hr.hr_edu_record_view_search
+#: view:hr.work.record:hm_hr.hr_work_record_view_search
+msgid "Group By"
+msgstr "Group By"
+
+#. module: hm_hr
+#: view:hr.certificate:hm_hr.hr_certificate_form_view
+msgid "HR Certificate"
+msgstr "HR 证书"
+
+#. module: hm_hr
+#: view:hr.edu.record:hm_hr.hr_edu_record_form_view
+msgid "HR EDU RECORD"
+msgstr "HR 学历记录"
+
+#. module: hm_hr
+#: view:hr.work.record:hm_hr.hr_work_record_form_view
+msgid "HR Work Record"
+msgstr "HR 工作记录"
+
+#. module: hm_hr
+#: field:hr.employee,e_health_certification:0
+msgid "Health Certification"
+msgstr "健康证"
+
+#. module: hm_hr
+#: field:hr.employee,e_highest_education:0
+msgid "Highest Education"
+msgstr "最高学历"
+
+#. module: hm_hr
+#: field:hr.employee,e_highest_major:0
+msgid "Highest Major"
+msgstr "最高学历专业"
+
+#. module: hm_hr
+#: field:hr.employee,e_hire_type:0
+msgid "Hire Type"
+msgstr "劳动关系类型"
+
+#. module: hm_hr
+#: field:hr.employee,e_hukou_address:0
+msgid "HuKou Address"
+msgstr "户籍地址"
+
+#. module: hm_hr
+#: field:hr.employee,e_hukou_location:0
+msgid "HuKou Location"
+msgstr "户口性质"
+
+#. module: hm_hr
+#: field:hr.employee,e_hukou_type:0
+msgid "HuKou Type"
+msgstr "户口类型"
+
+#. module: hm_hr
+#: field:hm.grade,id:0 field:hr.certificate,id:0 field:hr.edu.record,id:0
+#: field:hr.work.record,id:0
+msgid "ID"
+msgstr "ID"
+
+#. module: hm_hr
+#: field:hr.employee,e_job_date:0
+msgid "Job Date"
+msgstr "定岗日期"
+
+#. module: hm_hr
+#: view:hr.job:hm_hr.hm_job_form_view
+msgid "Job Information"
+msgstr "岗位说明"
+
+#. module: hm_hr
+#: model:ir.model,name:hm_hr.model_hr_job
+msgid "Job Position"
+msgstr "工作职位"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Labor relations"
+msgstr "劳动关系"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Labor relations Info"
+msgstr "劳动关系信息"
+
+#. module: hm_hr
+#: field:hm.grade,write_uid:0 field:hr.certificate,write_uid:0
+#: field:hr.edu.record,write_uid:0 field:hr.work.record,write_uid:0
+msgid "Last Updated by"
+msgstr "Last Updated by"
+
+#. module: hm_hr
+#: field:hm.grade,write_date:0 field:hr.certificate,write_date:0
+#: field:hr.edu.record,write_date:0 field:hr.work.record,write_date:0
+msgid "Last Updated on"
+msgstr "Last Updated on"
+
+#. module: hm_hr
+#: field:hr.employee,e_major:0
+msgid "Major"
+msgstr "专业"
+
+#. module: hm_hr
+#: model:ir.model,name:hm_hr.model_hr_payslip_line
+msgid "Payslip Line"
+msgstr "工资单明细"
+
+#. module: hm_hr
+#: view:hr.contract:hm_hr.hm_contract_form_view
+msgid "Performance Info"
+msgstr "绩效考核约定"
+
+#. module: hm_hr
+#: field:hr.employee,e_personal_phone:0
+msgid "Personal Phone"
+msgstr "个人电话"
+
+#. module: hm_hr
+#: field:hr.employee,e_dimission_personal_reason:0
+msgid "Personal Reason"
+msgstr "个人离职原因"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Position"
+msgstr "职位"
+
+#. module: hm_hr
+#: view:hr.job:hm_hr.hm_job_form_view
+msgid "Positon Information"
+msgstr "岗位职责"
+
+#. module: hm_hr
+#: view:hr.contract:hm_hr.hm_contract_form_view
+msgid "Post Wage"
+msgstr "岗位工资"
+
+#. module: hm_hr
+#: field:hr.employee,e_probation_length:0
+msgid "Probation Length"
+msgstr "实习期"
+
+#. module: hm_hr
+#: field:hr.employee,e_provident_fund_base:0
+msgid "Provident Fund Base"
+msgstr "公积金基数"
+
+#. module: hm_hr
+#: field:hr.employee,e_provident_fund_date:0
+msgid "Provident Fund Date"
+msgstr "公积金缴纳时间"
+
+#. module: hm_hr
+#: field:hr.employee,e_provident_fund_no:0
+msgid "Provident Fund No"
+msgstr "公积金编号"
+
+#. module: hm_hr
+#: field:hr.employee,e_recruit_date:0
+msgid "Recruit Date"
+msgstr "入职日期"
+
+#. module: hm_hr
+#: field:hr.employee,e_rent:0
+msgid "Rent"
+msgstr "是否租房"
+
+#. module: hm_hr
+#: view:hr.certificate:hm_hr.hr_certificate_view_search
+#: view:hr.work.record:hm_hr.hr_work_record_view_search
+msgid "Search Certificate"
+msgstr "学历查询"
+
+#. module: hm_hr
+#: view:hr.edu.record:hm_hr.hr_edu_record_view_search
+msgid "Search Education"
+msgstr "教育查询"
+
+#. module: hm_hr
+#: field:hr.employee,e_skill_certification:0
+msgid "Skill Certification"
+msgstr "技能证书"
+
+#. module: hm_hr
+#: field:hr.employee,e_ss_base:0
+msgid "Social Society Base"
+msgstr "社保基数"
+
+#. module: hm_hr
+#: field:hr.employee,e_ss_date:0
+msgid "Social Society Fund"
+msgstr "社保缴纳时间"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Social Society Insurance"
+msgstr "社会保险"
+
+#. module: hm_hr
+#: field:hr.employee,e_ss_no:0
+msgid "Social Society No"
+msgstr "社保编号"
+
+#. module: hm_hr
+#: field:hr.employee,e_state:0
+msgid "State"
+msgstr "在职状态"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "Status"
+msgstr "状态"
+
+#. module: hm_hr
+#: field:hr.employee,e_university:0
+msgid "University"
+msgstr "毕业院校"
+
+#. module: hm_hr
+#: view:hr.contract:hm_hr.hm_contract_form_view
+msgid "Wage Info"
+msgstr "薪酬信息"
+
+#. module: hm_hr
+#: view:hr.work.record:hm_hr.view_hr_work_record_tree
+#: model:ir.actions.act_window,name:hm_hr.act_hr_employee_2_hr_work_record
+#: model:ir.actions.act_window,name:hm_hr.open_view_work_record_list
+#: model:ir.model,name:hm_hr.model_hr_work_record
+#: model:ir.ui.menu,name:hm_hr.action_open_view_work_record_list
+msgid "Work Record"
+msgstr "工作记录"
+
+#. module: hm_hr
+#: field:hr.contract,work_hours:0
+msgid "Workhour Type"
+msgstr "工时制"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "e.g. Part Time"
+msgstr "例如： 部分时间"
+
+#. module: hm_hr
+#: field:hm.grade,name:0
+msgid "name"
+msgstr "名称"
+
+#. module: hm_hr
+#: selection:hr.contract,work_hours:0
+msgid "不定"
+msgstr "不定"
+
+#. module: hm_hr
+#: field:hr.edu.record,graduate_professional:0
+msgid "专业"
+msgstr "专业"
+
+#. module: hm_hr
+#: selection:hr.contract,performance_type:0
+msgid "业务提成"
+msgstr "业务提成"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "个人电话"
+msgstr "个人电话"
+
+#. module: hm_hr
+#: selection:hr.employee,e_ss_type:0
+msgid "个人缴纳"
+msgstr "个人缴纳"
+
+#. module: hm_hr
+#: selection:hr.employee,e_ss_type:0
+msgid "代理"
+msgstr "代理"
+
+#. module: hm_hr
+#: selection:hr.employee,e_dimission_labor_disputes:0
+msgid "仲裁"
+msgstr "仲裁"
+
+#. module: hm_hr
+#: field:hr.contract,performance_paul_salary:0
+msgid "保底年薪"
+msgstr "保底年薪"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "入职日期"
+msgstr "入职日期"
+
+#. module: hm_hr
+#: selection:hr.employee,e_ss_type:0
+msgid "公司缴纳"
+msgstr "公司缴纳"
+
+#. module: hm_hr
+#: field:hr.contract,other:0 field:hr.job,edu_other:0
+msgid "其他"
+msgstr "其他"
+
+#. module: hm_hr
+#: field:hr.contract,other_welfare:0
+msgid "其他福利"
+msgstr "其他福利"
+
+#. module: hm_hr
+#: selection:hr.work.record,type:0
+msgid "内部"
+msgstr "内部"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hukou_location:0
+msgid "农村"
+msgstr "农村"
+
+#. module: hm_hr
+#: field:hr.certificate,stop_date:0
+msgid "到期时间"
+msgstr "到期时间"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "劳动关系类型"
+msgstr "劳动关系类型"
+
+#. module: hm_hr
+#: field:hr.employee,e_dimission_labor_disputes:0
+msgid "劳动纠纷"
+msgstr "劳动纠纷"
+
+#. module: hm_hr
+#: field:hr.work.record,name:0
+msgid "单位名称"
+msgstr "单位名称"
+
+#. module: hm_hr
+#: field:hr.employee,contract_count2:0
+msgid "合同数"
+msgstr "合同数"
+
+#. module: hm_hr
+#: field:hr.certificate,employee_id:0 field:hr.edu.record,employee_id:0
+#: field:hr.work.record,employee_id:0
+msgid "员工"
+msgstr "员工"
+
+#. module: hm_hr
+#: selection:hr.contract,work_hours:0
+msgid "固定"
+msgstr "固定"
+
+#. module: hm_hr
+#: selection:hr.employee,e_state:0
+msgid "在职"
+msgstr "在职"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hukou_location:0
+msgid "城镇"
+msgstr "城镇"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hukou_type:0
+msgid "外地"
+msgstr "外地"
+
+#. module: hm_hr
+#: selection:hr.work.record,type:0
+msgid "外部"
+msgstr "外部"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view field:hr.employee,e_email:0
+msgid "外部电子邮箱"
+msgstr "外部电子邮箱"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "学历记录"
+msgstr "学历记录"
+
+#. module: hm_hr
+#: field:hr.edu.record,graduate_school:0
+msgid "学校"
+msgstr "学校"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "定岗日期"
+msgstr "定岗日期"
+
+#. module: hm_hr
+#: field:hr.job,positon_content:0
+msgid "工作内容"
+msgstr "工作内容"
+
+#. module: hm_hr
+#: field:hr.contract,work_address:0
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "工作地点"
+msgstr "工作地点"
+
+#. module: hm_hr
+#: field:hr.work.record,work_post:0
+msgid "工作岗位"
+msgstr "工作岗位"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "工作记录"
+msgstr "工作记录"
+
+#. module: hm_hr
+#: field:hr.work.record,type:0
+msgid "工作记录类型"
+msgstr "工作记录类型"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "工时制"
+msgstr "工时制"
+
+#. module: hm_hr
+#: selection:hr.contract,performance_type:0
+msgid "年薪绩效"
+msgstr "年薪绩效"
+
+#. module: hm_hr
+#: field:hr.employee,bank1:0
+msgid "开户行1"
+msgstr "开户行1"
+
+#. module: hm_hr
+#: field:hr.employee,bank2:0
+msgid "开户行2"
+msgstr "开户行2"
+
+#. module: hm_hr
+#: field:hr.job,education:0
+msgid "教育/学历"
+msgstr "教育/学历"
+
+#. module: hm_hr
+#: selection:hr.employee,e_dimission_labor_disputes:0
+msgid "无"
+msgstr "无"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hukou_type:0
+msgid "本地"
+msgstr "本地"
+
+#. module: hm_hr
+#: selection:hr.contract,performance_type:0
+msgid "标准绩效"
+msgstr "标准绩效"
+
+#. module: hm_hr
+#: field:hr.employee,e_file_transfer_date:0
+msgid "档案转总部日期"
+msgstr "档案转总部日期"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hire_type:0
+msgid "正式"
+msgstr "正式"
+
+#. module: hm_hr
+#: field:hr.edu.record,graduate_date:0
+msgid "毕业日期"
+msgstr "毕业日期"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "现住址"
+msgstr "现住址"
+
+#. module: hm_hr
+#: field:hr.employee,e_ss_main:0
+msgid "社保缴纳主体"
+msgstr "社保缴纳主体"
+
+#. module: hm_hr
+#: field:hr.employee,e_ss_type:0
+msgid "社保缴纳方式"
+msgstr "社保缴纳方式"
+
+#. module: hm_hr
+#: selection:hr.employee,e_state:0
+msgid "离职"
+msgstr "离职"
+
+#. module: hm_hr
+#: field:hr.contract,company_sign:0
+msgid "签订合同公司"
+msgstr "签订合同公司"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "紧急联系人"
+msgstr "紧急联系人"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "紧急联系人与本人关系"
+msgstr "紧急联系人与本人关系"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "紧急联系电话"
+msgstr "紧急联系电话"
+
+#. module: hm_hr
+#: field:hr.work.record,stop_date:0
+msgid "终止时间"
+msgstr "终止时间"
+
+#. module: hm_hr
+#: field:hr.contract,performance_type:0
+msgid "绩效类型"
+msgstr "绩效类型"
+
+#. module: hm_hr
+#: field:hr.contract,performance_amout:0
+msgid "绩效额度"
+msgstr "绩效额度"
+
+#. module: hm_hr
+#: selection:hr.contract,work_hours:0
+msgid "综合"
+msgstr "综合"
+
+#. module: hm_hr
+#: field:hr.employee,e_gap:0
+msgid "缺项内容"
+msgstr "缺项内容"
+
+#. module: hm_hr
+#: field:hr.job,exam_cycle:0
+msgid "考核周期"
+msgstr "考核周期"
+
+#. module: hm_hr
+#: field:hr.job,exam_type:0
+msgid "考核形式"
+msgstr "考核形式"
+
+#. module: hm_hr
+#: field:hr.job,exam_answer:0
+msgid "考核要求"
+msgstr "考核要求"
+
+#. module: hm_hr
+#: field:hr.job,job_no:0
+msgid "职位编号"
+msgstr "职位编号"
+
+#. module: hm_hr
+#: field:hr.job,positon_power:0
+msgid "职责/权限"
+msgstr "职责/权限"
+
+#. module: hm_hr
+#: field:hr.contract,age_wage_condition:0
+#: field:hr.contract,base_wage_condition:0
+#: field:hr.contract,duty_wage_condition:0
+#: field:hr.contract,post_wage_condition:0
+msgid "计发条件"
+msgstr "计发条件"
+
+#. module: hm_hr
+#: field:hr.contract,age_wage_date:0 field:hr.contract,base_wage_date:0
+#: field:hr.contract,duty_wage_date:0 field:hr.contract,post_wage_date:0
+msgid "计薪日期"
+msgstr "计薪日期"
+
+#. module: hm_hr
+#: field:hr.certificate,name:0
+msgid "证书名称"
+msgstr "证书名称"
+
+#. module: hm_hr
+#: field:hr.certificate,type:0
+msgid "证书类型"
+msgstr "证书类型"
+
+#. module: hm_hr
+#: view:hr.employee:hm_hr.hm_employee_form_view
+msgid "证书记录"
+msgstr "证书记录"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hire_type:0
+msgid "试用"
+msgstr "试用"
+
+#. module: hm_hr
+#: field:hr.work.record,start_date:0
+msgid "起始时间"
+msgstr "起始时间"
+
+#. module: hm_hr
+#: selection:hr.employee,e_dimission_labor_disputes:0
+msgid "起诉"
+msgstr "起诉"
+
+#. module: hm_hr
+#: selection:hr.employee,e_dimission_reason:0
+msgid "辞职"
+msgstr "辞职"
+
+#. module: hm_hr
+#: selection:hr.employee,e_dimission_reason:0
+msgid "辞退"
+msgstr "辞退"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hire_type:0
+msgid "返聘"
+msgstr "返聘"
+
+#. module: hm_hr
+#: field:hr.contract,performance:0
+msgid "适用绩效方案"
+msgstr "适用绩效方案"
+
+#. module: hm_hr
+#: field:hr.contract,age_wage:0 field:hr.contract,base_wage:0
+#: field:hr.contract,duty_wage:0 field:hr.contract,post_wage:0
+msgid "金额"
+msgstr "金额"
+
+#. module: hm_hr
+#: selection:hr.employee,e_hire_type:0
+msgid "钟点工"
+msgstr "钟点工"
+
+#. module: hm_hr
+#: field:hr.employee,bank1_no:0
+msgid "银行卡号1"
+msgstr "银行卡号1"
+
+#. module: hm_hr
+#: field:hr.employee,bank2_no:0
+msgid "银行卡号2"
+msgstr "银行卡号2"

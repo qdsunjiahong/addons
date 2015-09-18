@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_account_invoice_line_tree">
+            <field name="name">qdodoo.account.invoice.line.tree</field>
+            <field name="model">account.invoice.line</field>
+            <field name="inherit_id" ref="account.view_invoice_line_tree"/>
+            <field name="arch" type="xml">
+                    <field name="name" position="before">
+							<field name="partner_id"/>
+							<field name="date" />
+							<field name="origin"/>
+					</field>
+			<!--	<field name="price_subtotal" position="after">
+							<field name="cost_amount" sum="Cost Amount"/>
+							<field name="state"/>
+					</field>-->
+					<field name="price_subtotal" position="attributes">
+							<attribute name="sum">Price Subtotal</attribute>
+					</field>
+			<!--		<field name="price_unit" position="after">
+							<field name="average_price"/>
+					</field>-->
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="account_invoice_line_action">
+                <field name="name">发票明细</field>
+                <field name="res_model">account.invoice.line</field>
+                <field name="view_type">form</field>
+                <field name="view_mode">tree</field>
+            </record>
+          <menuitem id="payment_invoice_line" name="支付" parent="base.menu_purchase_root" />
+          <menuitem id="account_invoice_line" name="发票明细"  parent="payment_invoice_line"  action="account_invoice_line_action"/>
+    </data>
+</openerp>
