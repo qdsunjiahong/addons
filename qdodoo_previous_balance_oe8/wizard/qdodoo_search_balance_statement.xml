@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_qdodoo_search_statement" model="ir.ui.view">
+            <field name="name">库存查询</field>
+            <field name="model">qdodoo.search.balance.statement</field>
+            <field name="arch" type="xml">
+                <form string="库存查询" version="7.0">
+                    <group>
+                        <label for="start_date" string="查询时间段"/>
+                        <div>
+                            <field name="start_date" class="oe_inline"/>
+                            ---
+                            <field name="end_date" class="oe_inline"/>
+                        </div>
+                        <field name="location_id"/>
+                    </group>
+                    <footer>
+                        <button string="查询" name="balance_statement_open_window" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_search_statement" model="ir.actions.act_window">
+            <field name="name">库存查询</field>
+            <field name="res_model">qdodoo.search.balance.statement</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_qdodoo_search_statement"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem icon="STOCK_INDENT" action="action_qdodoo_search_statement"
+                  id="menu_qdodoo_search_statement"
+                  parent="stock.menu_traceability"/>
+
+        <record id="view_result_balance_statement_tree" model="ir.ui.view">
+            <field name="name">库存结余报表</field>
+            <field name="model">qdodoo.result.balance.statement</field>
+            <field name="arch" type="xml">
+                <tree string="库存结余报表">
+                    <field name="product_name"/>
+                    <field name="name"/>
+                    <field name="pre_balance"/>
+                    <field name="storage_quantity_period"/>
+                    <field name="number_of_library"/>
+                    <field name="current_balance"/>
+                </tree>
+            </field>
+        </record>
+        <record id="result_balance_statement_search_view" model="ir.ui.view">
+            <field name="name">qdodoo.result.balance.statement.search</field>
+            <field name="model">qdodoo.result.balance.statement</field>
+            <field name="arch" type="xml">
+                <search string="库存结余报表">
+                    <field name="name" string="库位"/>
+                </search>
+            </field>
+        </record>
+        <record id="action_result_balance_statement_tree" model="ir.actions.act_window">
+            <field name="name">库存结余报表</field>
+            <field name="res_model">qdodoo.result.balance.statement</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_result_balance_statement_tree"/>
+            <field name="search_view_id" ref="result_balance_statement_search_view"/>
+        </record>
+    </data>
+</openerp>
