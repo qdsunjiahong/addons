@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+<template id="report_qdodoo_entrusted_agency_document">
+    <t t-call="report.external_layout">
+        <div class="page">
+            <div class="oe_structure"/>
+
+            <div class="text-center">
+                <h1><strong>进口代理协议</strong></h1>
+            </div>
+            <div class="text-right">
+                <p t-if="o.name">合同号码:<span t-field="o.name"/></p>
+            </div>
+            <div class="text-left">
+                <p>委托方（甲方）：青岛哈里森汽车贸易有限公司</p>
+            </div>
+            <div class="text-left">
+                <p>联系人：</p>
+            </div>
+            <div class="text-left col-xs-5 col-xs-offset-1">
+                <p>电话：</p>
+            </div>
+            <div class="text-left col-xs-5 col-xs-offset-1">
+                <p>传真：</p>
+            </div>
+            <div class="text-left">
+                <p>受托方（乙方）：<span t-field="o.agent_id"/></p>
+            </div>
+            <div class="text-left">
+                <p>地址：<span t-field="o.agent_id.country_id"/>,<span t-field="o.agent_id.state_id"/>,<span t-field="o.agent_id.city"/>,<span t-field="o.agent_id.street2"/>,<span t-field="o.agent_id.street"/></p>
+            </div>
+            <div class="text-left col-xs-5 col-xs-offset-1">
+                <p>电话：<span t-field="o.agent_id.phone"/></p>
+            </div>
+            <div class="text-left col-xs-5 col-xs-offset-1">
+                <p>传真：<span t-field="o.agent_id.fax"/></p>
+            </div>
+            <div class="text-left">
+                 <p><span>1.甲方委托乙方代理进口以下产品，双方本着平等互利，协商一致的原则达成如下协议。此协议为进口合同号：</span><span t-field="o.contract_id.contract_number"/><span>之不可侵害的补充协议，进口商品名称、数量、规格、价格、装运日期、交货条件等参照进口合同。（进口合同中的交货期指货物的装运日期）。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>2.产品明细</span></p>
+            </div>
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th ><strong>货物名称</strong></th>
+                        <th class="text-right"><strong>数量</strong></th>
+                        <th class="text-right"><strong>单价</strong></th>
+                        <th class="text-right"><strong>合计（币种）</strong></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="o.order_line" t-as="order_line">
+                        <td>
+                            <span t-field="order_line.name"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="order_line.price_unit"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-field="order_line.product_qty"/>
+                            <span t-field="order_line.product_uom" groups="product.group_uom"/>
+                        </td>
+                        <td class="text-right">
+                            <span t-set="order_line.price_subtotal" t-value="order_line.product_qty*order_line.price_unit"
+                                t-field-options='{"widget": "monetary", "display_currency": "o.pricelist_id.currency_id"}'/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="row">
+                <div class="col-xs-4 pull-right">
+                    <table class="table table-condensed">
+                        <tr class="border-black">
+                            <td><strong>Total</strong></td>
+                            <td class="text-right">
+                                <span t-field="o.car_money"
+                                    t-field-options='{"widget": "monetary", "display_currency": "o.pricelist_id.currency_id"}'/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="text-left">
+                 <p><span>3.甲方责任</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>3.1负责与外商谈判，将确认的协议条款等（包括进口价格、质量、数量、交货期、付款条件等）有关资料交给乙方，并委托乙方对外签约。甲方的订货数量和计划要与乙方进行沟通，并得到乙方的认可。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>3.2承担进口商品的货款、进口关税、增值税、消费税（如有）、国外运保费、清关、商检费及一切进口商品所需值费用（包括因进口商品的问题等引起的相关款项等）。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>3.3在L/C开证前3个工作日将相当于</span><span t-field="o.deposit_rate"/><span>%信用证价值的人民币金额划入乙方指定账户，最晚在还押汇前3天将剩余</span><span t-set="abc" t-value="100-o.deposit_rate"/><span>%货款及押汇利息划入乙方指定账户，押汇利息按年率XXX，押汇期XXX个月，如无客户特殊通知，我公司接到银行到单通知后即付汇。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>3.4按（</span><span t-field="o.agency_fee"/><span>元/台）支付代理手续费给乙方，并在支付乙方保证金时一同支付。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>3.5所有银行费用实报实销（包括信用证保兑费用，改证费）。由甲方承担。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>3.6协助办理收货、报关等手续。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>3.7若甲方不能再垫付期限内支付乙方货款，首先需提前书面通知乙方申请垫付货款延期，如乙方同意，支付乙方所垫款项每日万分之三的罚息，并保证在一个月内还款，并结清所有费用。若一个月后仍未能偿还货款，乙方则有权自由处置信用证项下货物。如遇乙方资金不能保证进行信用证对外付汇，则产生一切后果由甲方全权承担。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>4.乙方责任</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>4.1受甲方委托，按甲方与外商达成的协议条款（包括进口价格、质量、数量、交货期、付款条件等）对外签约。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>4.2负责对外以即期信用证方式支付货款。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>4.3负责以CFR条款成交合同。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>4.4收到外方装船通知后，及时告知甲方有关船名、船期，使之做好接船准备工作。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>4.5乙方要承诺对合同中的价格承担保密责任。不得将合同价格告知第三方。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>5.报关、放货</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>5.1甲、乙双方协商确定报关公司为</span><span t-field="o.agent_declaration_id"/><span>报关行有限公司。由乙方与确认的报关公司签订《进口报关货运代理协议》 。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>5.2货到目的港后，乙方负责办理进口报关手续，甲方应将报关时所需的全部文件事先办妥后交与乙方报关，费用由甲方承担，报关完毕，进口货物和相关进口文件（包括进口货物证明、商检单等）由乙方保管，甲方应不晚于本合同第三款第3条的最晚付款期前支付乙方L/C余款，乙方确认款项到账后将货物与进口相关文件交与甲方。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>6.索赔条款</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>6.1因外商不履行合同义务，导致进口合同不能履行，不能完全履行，延迟履行或履行不符合约定条件的，甲方应在违约发生后30日内按乙方要求提交索赔证据，并委托乙方对外办理索赔事宜，其费用和结果由甲方承担。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>6.2因甲方不按委托协议履行其义务，导致进口合同不能履行，不能完全履行，延迟履行或履行不符合约定条件的，若外商提出索赔，则乙方所对外承担的一切责任由甲方承担，甲方有义务为乙方对外交涉提供支持和方便并承担费用和结果。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.其它</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.1甲方对乙方与外商所签订的合同中早已印就的条款不得标识异议，乙方按甲方订货条款与外商签订的进口合同（或书面确定）双方必须执行。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.2乙方在与外商签订合同后，应立即通知甲方并将所签合同的副本或合同复印件寄送甲方。如甲方发现该合同的内容，条款与进口货单或往来函电不符，须于三日内与乙方联系，要求乙方争取与外商协商修改，否则即表示接受该合同内容。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.3此协议中涉及外币与人民币兑换汇率的，均按结算购汇时当天购汇行外汇卖出价核算。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.4若外商所交货物质量与合同部分或发生短重，甲方不得提出拒付，但可凭商检证书等法定文书要求乙方根据其与外商所签合同及国际贸易惯例向外商索赔。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.5在甲方尚未付清全部款项及费用（包括货款、运费、保险费、报关费、关税、增值税、代理进口手续费、银行手续费、码头费等）之前，货物所有权归乙方所有。若甲方不能按时支付上述款项，乙方有权没收甲方的履约保证金，并另行处置该批货物，如甲方保证金不足以补偿乙方的损失，则甲方还应赔偿乙方的其余损失。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.6甲方必须遵守我国法律、法规，提供的有关单证必须真实、可靠、完整。否则，甲方承担相应的一切法律责任及经济责任。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.7具体内容、条款以乙方与外商所签合同为准。如有未尽事宜，甲、乙双方签订补充协议。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.8本协议适用我国对外经济贸易部发布的《关于对外贸易代理制的暂时规定》。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.9本协议中未了事项通过友好协商解决，如双方协商不成，有本协议签约地的中国国际经济贸易仲裁委员会北京分会管辖裁判。</span></p>
+            </div>
+            <div class="text-left">
+                 <p><span>7.10本协议壹式贰份，甲、乙双方各执一份。</span></p>
+            </div>
+            <div class="col-xs-5 col-xs-offset-1 text-left">
+                <p>甲方:青岛哈里森汽车贸易有限公司</p>
+            </div>
+            <div class="col-xs-5 col-xs-offset-1 text-left">
+                <p t-if="o.agent_id">乙方:<span t-field="o.agent_id"/></p>
+            </div>
+            <div class="col-xs-5 col-xs-offset-1 text-right">
+                <p>签章</p>
+            </div>
+            <div class="col-xs-5 col-xs-offset-1 text-right">
+                <p>签章</p>
+            </div>
+            <div class="col-xs-5 col-xs-offset-1 text-left">
+                <p>签约时间：</p>
+            </div>
+            <div class="col-xs-5 col-xs-offset-1 text-left">
+                <p>签约时间：</p>
+            </div>
+            <div class="text-left">
+                <p><span t-field="o.notes"/></p>
+            </div>
+        </div>
+    </t>
+</template>
+
+<template id="report_qdodoo_entrusted_agency">
+    <t t-call="report.html_container">
+        <t t-foreach="doc_ids" t-as="doc_id">
+            <t t-raw="translate_doc(doc_id, doc_model, 'partner_id.lang', 'qdodoo_car_import_trade.report_qdodoo_entrusted_agency_document')"/>
+        </t>
+    </t>
+</template>
+</data>
+</openerp>
+

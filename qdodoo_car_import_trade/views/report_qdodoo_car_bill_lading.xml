@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+<template id="report_qdodoo_car_bill_lading_document">
+    <t t-call="report.external_layout">
+        <div class="page">
+            <div class="oe_structure"/>
+
+            <div class="text-center">
+                <h1><strong>赎车单</strong></h1>
+            </div>
+            <div class="text-left">
+                <p t-if="o.in_partner_id">代理商:<span t-field="o.in_partner_id"/></p>
+            </div>
+            <div class="text-left">
+                <p t-if="o.date">日期:<span t-field="o.date"/></p>
+            </div>
+
+            <div>
+                <p><strong>货物明细</strong></p>
+            </div>
+
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th><strong>车架号</strong></th>
+                        <th class="text-center"><strong>车型</strong></th>
+                        <th class="text-center"><strong>委托协议</strong></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="o.order_line" t-as="order_line">
+                        <td>
+                            <span t-field="order_line.car_department"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="order_line.car_model"/>
+                        </td>
+                        <td class="text-center">
+                            <span t-field="order_line.agency_id"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="text-left">
+                <p t-if="o.notes">特殊说明：<span t-field="o.notes"/></p>
+            </div>
+        </div>
+    </t>
+</template>
+
+<template id="report_qdodoo_car_bill_lading">
+    <t t-call="report.html_container">
+        <t t-foreach="doc_ids" t-as="doc_id">
+            <t t-raw="translate_doc(doc_id, doc_model, 'in_partner_id.lang', 'qdodoo_car_import_trade.report_qdodoo_car_bill_lading_document')"/>
+        </t>
+    </t>
+</template>
+</data>
+</openerp>
+
