@@ -478,6 +478,32 @@ class qdodoo_payment_order_inherit(models.Model):
                     move_line_obj.create(cr, uid, val)
             if obj.redeem_id:
                 redeem_obj.write(cr, uid, [obj.redeem_id.id],{'state':'done'})
+                print redeem_obj,'1111111111111111111111'
+                for pay_line in obj.line_ids:
+                    agency_obj_ids = agency_obj.search(cr, uid, [('name','=',pay_line.communication)])
+                    print agency_obj_ids,'4444444444444444'
+                    agency = agency_obj.browse(cr, uid, agency_obj_ids[0])
+                    print agency,'3333333333333333'
+                    move_ids = move_obj.search(cr, uid, [('ref','=',pay_line.communication)])
+                    print move_ids,'222222222222222'
+                    if move_ids:
+                        invoice_ids = invoice_obj.search(cr, uid, [('origin','=',agency.contract_id.name)])
+                        invoice_obj_obj = invoice_obj.browse(cr, uid, invoice_ids[0])
+                        debit = pay_line.amount_currency
+                        val = {}
+                        val['move_id'] = move_ids[0]
+                        val['name'] = agency.name
+                        val['ref'] = agency.name
+                        val['journal_id'] = invoice_obj_obj.journal_id.id
+                        val['period_id'] = invoice_obj_obj.period_id.id
+                        val['account_id'] = invoice_obj_obj.account_id.id
+                        val['debit'] = debit
+                        val['credit'] = 0
+                        val['quantity'] = 1
+                        val['date'] = datetime.now().date()
+                        val['analytic_account_id'] = agency.analytic_id.id
+                        val['partner_id'] = agency.agent_id.id
+                        move_line_obj.create(cr, uid, val)
             if obj.settlement_id:
                 settlement_obj.write(cr, uid, [obj.settlement_id.id],{'state':'done'})
         if vals.get('state') == 'cancel':
