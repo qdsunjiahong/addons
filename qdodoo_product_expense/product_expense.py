@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
@@ -48,7 +48,7 @@ class product_expense(models.Model):
                                        required=True)
     warehouse = fields.Many2one('stock.warehouse', u'仓库', required=True)
     analytic_acc = fields.Many2one('account.analytic.account', u'辅助核算')
-    company_id = fields.Many2one('res.company',u'当前登录人所属公司')
+    company_id = fields.Many2one('res.company', u'当前登录人所属公司')
 
     def change_location_id(self, cr, uid, ids, location_id, context=None):
         if location_id:
@@ -60,7 +60,7 @@ class product_expense(models.Model):
         return self.pool.get('res.users').browse(cr, uid, uid).company_id.id
 
     _defaults = {
-        'company_id':get_company_id,
+        'company_id': get_company_id,
     }
 
     @api.one
@@ -81,15 +81,14 @@ class product_expense(models.Model):
         if self.on_ship_create():
             self.state = 'waiting'
 
-
     def _prepare_procurement_group(self):
         return {'name': self.name, 'partner_id': self.staff.address_home_id.id}
 
     def _prepare_expense_line_procurement(self, line, group):
         expense_loc = self.env['stock.location'].search([('expense_location', '=', True)])
-        #find suitalbe route for specified department
+        # find suitalbe route for specified department
         rule_id = self.env['procurement.rule'].search([('location_id', '=', expense_loc.id), (
-        'location_src_id', '=', self.expense_location.id),
+            'location_src_id', '=', self.expense_location.id),
                                                        ('warehouse_id', '=', self.warehouse.id)])
         return {
             "name": self.name,
@@ -110,10 +109,10 @@ class product_expense(models.Model):
 
     @api.model
     def on_ship_create(self):
-        #new version using procurement to create shipping
+        # new version using procurement to create shipping
         procurement_obj = self.env['procurement.order']
         expense_line_obj = self.env['product.expense.line']
-        #proc_ids=[]
+        # proc_ids=[]
         vals = self._prepare_procurement_group()
         if not self.procurement_group and len(vals):
             self.procurement_group = self.env['procurement.group'].create(vals)
@@ -124,17 +123,16 @@ class product_expense(models.Model):
                 for x in line.procurement_ids:
                     if x.state in ('exception', 'cancel'):
                         x.reset_to_confirmed()
-                        #procurement_obj.reset_to_confirmed(proc_ids)
+                        # procurement_obj.reset_to_confirmed(proc_ids)
             elif line.need_procurement():
-                #if line.state=='done' or not line.product:
+                # if line.state=='done' or not line.product:
                 #    continue
                 vals = self._prepare_expense_line_procurement(line, self.procurement_group.id)
                 proc_id = procurement_obj.create(vals)
                 proc_id.run()
-                #proc_ids.append(proc_id)
-            #procurement_obj.run(proc_ids)
+                # proc_ids.append(proc_id)
+                # procurement_obj.run(proc_ids)
         return True
-
 
     @api.one
     @api.constrains('expense_line')
@@ -142,22 +140,43 @@ class product_expense(models.Model):
         if not len(self.expense_line):
             raise except_orm(_('Warning!'), _('You must add at least one product!'))
 
-    @api.model
-    def create(self, vals):
-        vals['name'] = self.env['ir.sequence'].get('product.expense')
-        expense_loc = self.env['stock.location'].search([('expense_location', '=', True)])
-        res = super(product_expense, self).create(vals)
-        #create proper route for selected warehouse.
-        pull_obj = self.env['procurement.rule']
-        if not pull_obj.search([('location_id', '=', expense_loc.id), ('warehouse_id', '=', res.warehouse.id)]):
-            pull_obj.create({'name': 'Expense Route → ' + res.warehouse.name,
-                             'location_id': expense_loc.id,
-                             'warehouse_id': res.warehouse.id,
-                             'procure_method': 'make_to_stock',
-                             'action': 'move',
-                             'picking_type_id': res.warehouse.out_type_id.id,
-                             'location_src_id': res.expense_location.id,
-            })
+    # @api.model
+    # def create(self, vals):
+    #     vals['name'] = self.env['ir.sequence'].get('product.expense')
+    #     expense_loc = self.env['stock.location'].search([('expense_location', '=', True)])
+    #     res = super(product_expense, self).create(vals)
+    #     #create proper route for selected warehouse.
+    #     pull_obj = self.env['procurement.rule']
+    #     if not pull_obj.search([('location_id', '=', expense_loc.id), ('warehouse_id', '=', res.warehouse.id)]):
+    #         pull_obj.create({'name': 'Expense Route → ' + res.warehouse.name,
+    #                          'location_id': expense_loc.id,
+    #                          'warehouse_id': res.warehouse.id,
+    #                          'procure_method': 'make_to_stock',
+    #                          'action': 'move',
+    #                          'picking_type_id': res.warehouse.out_type_id.id,
+    #                          'location_src_id': res.expense_location.id,
+    #         })
+    #     return res
+
+    def create(self, cr, uid, vals, context=None):
+        uid = 1
+        vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'product.expense')
+        print vals['name']
+        expense_id = self.pool.get('stock.location').search(cr, uid, [('expense_location', '=', True)])
+        expense_loc = self.pool.get('stock.location').browse(cr, uid, expense_id[0])
+        res = super(product_expense, self).create(cr, uid, vals, context=context)
+        res_obj = self.pool.get("product.expense").browse(cr, uid, res)
+        pull_obj = self.pool.get('procurement.rule')
+        if not pull_obj.search(cr, uid,
+                               [('location_id', '=', expense_loc.id), ('warehouse_id', '=', res_obj.warehouse.id)]):
+            pull_obj.create(cr, uid, {'name': 'Expense Route → ' + res_obj.warehouse.name,
+                                      'location_id': expense_loc.id,
+                                      'warehouse_id': res.warehouse.id,
+                                      'procure_method': 'make_to_stock',
+                                      'action': 'move',
+                                      'picking_type_id': res_obj.warehouse.out_type_id.id,
+                                      'location_src_id': res_obj.expense_location.id,
+                                      })
         return res
 
     @api.multi
@@ -174,7 +193,7 @@ class product_expense(models.Model):
             if location:
                 route.write({'location_src_id': location})
         else:
-            #create new expense route
+            # create new expense route
             pull_obj = self.env['procurement.rule']
             pull_obj.create({'name': 'Expense Route → ' + self.warehouse.name,
                              'location_id': expense_loc.id,
@@ -183,7 +202,7 @@ class product_expense(models.Model):
                              'action': 'move',
                              'picking_type_id': self.warehouse.out_type_id.id,
                              'location_src_id': self.expense_location.id,
-            })
+                             })
 
         return res
 
@@ -201,15 +220,15 @@ class product_expense(models.Model):
 
     def do_ship_end(self):
         self.write({'state': 'done'})
-        #correcting the account according to the stratgy.
-        #1.checking if there's one strategy fit department and product category requirement.
-        #strategy = self.env['product.expense.account'].search([('department','=',self.staff.department_id.id)])
+        # correcting the account according to the stratgy.
+        # 1.checking if there's one strategy fit department and product category requirement.
+        # strategy = self.env['product.expense.account'].search([('department','=',self.staff.department_id.id)])
         account_obj = self.env['account.move']
         account_moves = account_obj.search([('ref', '=', self.ref_no.name)])
-        #if len(strategy):
+        # if len(strategy):
         for line in self.expense_line:
-            #res = [s_line for s_line in strategy.line_ids if s_line.product_category==line.product.categ_id]
-            #if len(res):
+            # res = [s_line for s_line in strategy.line_ids if s_line.product_category==line.product.categ_id]
+            # if len(res):
             if len(account_moves):
                 for account_move in account_moves:
                     for a_line in account_move.line_id:
@@ -229,7 +248,7 @@ class product_expense_line(models.Model):
     expense_date = fields.Date('Expense Date')
     comment = fields.Char('Comment')
     price_unit = fields.Many2one('product.uom', 'Unit')
-    price = fields.Float('Price',readonly=True)
+    price = fields.Float('Price', readonly=True)
     quantity = fields.Float('Quantity')
     subtotal = fields.Float('Subtotal', compute='_get_subtotal')
     procurement_ids = fields.One2many('procurement.order', 'expense_line_id', 'Expense Procurement')

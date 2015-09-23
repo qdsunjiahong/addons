@@ -160,8 +160,8 @@ class mrp_product_produce(models.Model):
         self.pool.get('mrp.production').action_produce(cr, uid, production_id,
                                                        data.product_qty, data.mode, data, context=context)
         mrp_obj = self.pool.get('mrp.production').browse(cr, uid, production_id)
-        account_move_ids = self.pool.get('account.move.line').search(cr, uid,
-                                                                     [('name', '=', mrp_obj.name), ('credit', '>', 0)])
+        # account_move_ids = self.pool.get('account.move.line').search(cr, uid,
+        #                                                              [('name', '=', mrp_obj.name), ('credit', '>', 0)])
         # move_list = []
         # for line in self.pool.get("account.move.line").browse(cr, uid, account_move_ids):
         #     move_list.append(line.credit)
@@ -183,8 +183,11 @@ class mrp_product_produce(models.Model):
         if bom_obj.sub_products:
             for sub_obj in bom_obj.sub_products:
                 sub_proportion += sub_obj.proportion
-        unit_price = float("%.4f" % (move_price + cost_price) * (1 - sub_proportion)) / self.produdct_qty
-        mrp_obj.product_id.write({'standard_price': unit_price})
+        unit_price = float("%.4f" % (move_price + cost_price) * (1 - sub_proportion)) / mrp_obj.product_qty
+        if mrp_obj.product_id.cost_method != 'average':
+            mrp_obj.product_id.write({'cost_method': 'average', 'standard_price': unit_price})
+        else:
+            mrp_obj.product_id.write({'standard_price': unit_price})
         return {}
 
 
