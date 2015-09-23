@@ -195,7 +195,7 @@ class qdodoo_account_invoice_inherit(models.Model):
         dummy, view_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_voucher', 'view_vendor_receipt_dialog_form')
 
         inv = self.browse(cr, uid, ids[0], context=context)
-        if inv.contract_id:
+        if inv.deposit_rate:
             default_amount = inv.type in ('out_refund', 'in_refund') and -inv.residual*inv.deposit_rate/100 or inv.residual*inv.deposit_rate/100
         else:
             default_amount = inv.type in ('out_refund', 'in_refund') and -inv.residual or inv.residual
