@@ -102,6 +102,7 @@ class qdodoo_redeem_car(models.Model):
         赎车
     """
     _name = 'qdodoo.redeem.car'    # 模型名称
+    _inherit = ['mail.thread']
 
     STATE_SELECTION = [
         ('draft', u'赎车申请'),
@@ -174,6 +175,8 @@ class qdodoo_redeem_car(models.Model):
     def btn_payment_message(self, cr, uid, ids, context=None):
         payment_obj = self.pool.get('qdodoo.payment.order')
         line_obj = self.pool.get('payment.line')
+        user_obj = self.pool.get('res.users')
+        currency = user_obj.browse(cr, uid, uid).company_id.currency_id.id
         obj = self.browse(cr, uid, ids[0])
         payment_new_ids = []
         lst_vals = {}
@@ -191,7 +194,7 @@ class qdodoo_redeem_car(models.Model):
                 for payment_line in payment_new_ids_new:
                     payment_new_ids.append(payment_line.id)
                     agency_id = line.car_department.payment_id.id
-                    line_obj.browse(cr, uid, agency_id).copy({'name':obj.pool.get('ir.sequence').get(cr, uid, 'payment.line'),'order_id':payment_line.id,'amount_currency':line.redeem_car,})
+                    line_obj.browse(cr, uid, agency_id).copy({'currency':currency,'name':obj.pool.get('ir.sequence').get(cr, uid, 'payment.line'),'order_id':payment_line.id,'amount_currency':line.redeem_car,})
         result = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'qdodoo_car_import_trade', 'view_qdodoo_payment_order_tree')
         view_id = result and result[1] or False
         result_form = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'qdodoo_car_import_trade', 'view_qdodoo_payment_order_form')
@@ -210,7 +213,6 @@ class qdodoo_redeem_car(models.Model):
     def wkf_send_rfq(self, cr, uid, ids, context=None):
         if not context:
             context= {}
-        state = self.browse(cr, uid, ids[0]).state
         ir_model_data = self.pool.get('ir.model.data')
         template_id = ir_model_data.get_object_reference(cr, uid, 'qdodoo_car_import_trade', 'email_template_redeem_id')[1]
         try:
@@ -223,7 +225,6 @@ class qdodoo_redeem_car(models.Model):
             'default_res_id': ids[0],
             'default_use_template': bool(template_id),
             'default_template_id': template_id,
-            'default_state': state,
             'default_composition_mode': 'comment',
         })
         return {
@@ -366,7 +367,6 @@ class qdodoo_settlement_order(models.Model):
     def wkf_send_rfq(self, cr, uid, ids, context=None):
         if not context:
             context= {}
-        state = self.browse(cr, uid, ids[0]).state
         ir_model_data = self.pool.get('ir.model.data')
         template_id = False
         try:
@@ -379,7 +379,6 @@ class qdodoo_settlement_order(models.Model):
             'default_res_id': ids[0],
             'default_use_template': bool(template_id),
             'default_template_id': template_id,
-            'default_state': state,
             'default_composition_mode': 'comment',
         })
         return {

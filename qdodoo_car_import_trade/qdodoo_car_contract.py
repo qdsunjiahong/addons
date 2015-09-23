@@ -995,6 +995,12 @@ class qdodoo_mail_compose_message_inherit(models.Model):
         if context.get('is_contract'):
             obj = self.pool.get('qdodoo.car.in.contract')
             obj.signal_workflow(cr, uid, context.get('active_ids'), 'send_rfq')
+        if context.get('agency_id'):
+            obj = self.pool.get('qdodoo.entrusted.agency')
+            obj.write(cr, uid, context.get('active_ids'), {'state':'confirmed'})
+        if context.get('redeem_id'):
+            obj = self.pool.get('qdodoo.redeem.car')
+            obj.write(cr, uid, context.get('active_ids'), {'state':'confirmed'})
         return super(qdodoo_mail_compose_message_inherit, self).send_mail(cr, uid, ids, context=context)
 
 class qdodoo_payment_model(models.Model):

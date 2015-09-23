@@ -59,12 +59,12 @@
                                 <field name="out_port" readonly="True"/>
                                 <field name="partial_shipment" readonly="True"/>
                                 <field name="trans_shipment" readonly="True"/>
-                                <field name="payment_type"/>
+                                <field name="payment_type" attrs="{'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
                                 <field name="payment_line" readonly="True"/>
                                 <field name="pricelist_id" readonly="True"/>
                                 <field name="insurance_type" attrs="{'readonly':[('state','not in',('draft','confirmed'))]}"/>
-                                <field name="documentary_month"/>
-                                <field name="documentary_year"/>
+                                <field name="documentary_month" attrs="{'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
+                                <field name="documentary_year" attrs="{'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
                             </group>
                         </group>
                         <label string="货物明细"/>

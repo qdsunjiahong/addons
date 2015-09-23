@@ -173,8 +173,8 @@
             <field name="arch" type="xml">
                 <form string="赎车">
                     <header>
-                        <button name="wkf_send_rfq" states="draft" string="电邮" type="object" class="oe_highlight"/>
-                        <button name="wkf_send_rfq" states="confirmed" string="重发电邮" type="object" class="oe_highlight"/>
+                        <button name="wkf_send_rfq" states="draft" string="电邮" type="object" context="{'redeem_id':True}" class="oe_highlight"/>
+                        <button name="wkf_send_rfq" states="confirmed" string="重发电邮" context="{'redeem_id':True}" type="object" class="oe_highlight"/>
                         <button name="print_quotation" string="打印" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>
                         <button name="print_quotation" string="重新打印" type="object" states="confirmed" class="oe_highlight" groups="base.group_user"/>
                         <button name="btn_message" string="短信" type="object" states="draft" class="oe_highlight" groups="base.group_user"/>

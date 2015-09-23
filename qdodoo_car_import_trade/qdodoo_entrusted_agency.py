@@ -133,6 +133,8 @@ class qdodoo_entrusted_agency(models.Model):
         return self.write(cr, uid, ids, {'state':'signed'})
 
     def write(self, cr, uid, ids, value, context=None):
+        if isinstance(ids, (int, long)):
+            ids = [ids]
         obj = self.browse(cr, uid, ids[0])
         if value.get('state') == 'done':
             res_id = self.search(cr, uid, [('state','=','done'),('contract_id','=',obj.contract_id.id)])
@@ -292,7 +294,7 @@ class qdodoo_entrusted_agency(models.Model):
             'account_id': order.partner_id.property_account_payable.id,
             'type': 'in_invoice',
             'partner_id': order.partner_id.id,
-            'currency_id': order.currency_id.id,
+            # 'currency_id': order.currency_id.id,
             'journal_id': len(journal_ids) and journal_ids[0] or False,
             'invoice_line': [(6, 0, line_ids)],
             'origin': order.name,
@@ -337,10 +339,8 @@ class qdodoo_entrusted_agency(models.Model):
             inv_data['date_invoice'] = datetime.now().date()
             inv_data['partner_id'] = order.agent_id.id
             inv_id = inv_obj.create(cr, uid, inv_data, context=context)
-
             # compute the invoice
             inv_obj.button_compute(cr, uid, [inv_id], context=context, set_total=True)
-
             # Link this new invoice to related purchase order
             order.write({'invoice_ids': [(4, inv_id)]})
             res = inv_id
@@ -495,7 +495,6 @@ class qdodoo_entrusted_agency(models.Model):
             'default_res_id': ids[0],
             'default_use_template': bool(template_id),
             'default_template_id': template_id,
-            'default_state': state,
             'default_composition_mode': 'comment',
         })
         return {
