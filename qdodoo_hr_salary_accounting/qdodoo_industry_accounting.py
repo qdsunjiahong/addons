@@ -1,0 +1,113 @@
+# -*- coding: utf-8 -*-
+###########################################################################################
+#
+#    module name for OpenERP
+#    Copyright (C) 2015 qdodoo Technology CO.,LTD. (<http://www.qdodoo.com/>).
+#
+###########################################################################################
+
+from openerp import models, fields, api, _
+from openerp.exceptions import except_orm
+import xlrd
+import base64
+
+
+class qdodoo_industry_accounting(models.Model):
+    _name = 'qdodoo.industry.accounting'
+    _rec_name = 'employee_id'
+    employee_id = fields.Many2one('hr.employee', string=u'姓名', required=True)
+    department_id = fields.Many2one('hr.department', string=u'部门', required=True)
+    company_id = fields.Many2one('res.company', string=u'公司', required=True)
+    date_time = fields.Many2one('account.period', string=u'日期', required=True)
+    industry_line_ids = fields.One2many('industry.accounting.line', 'industry_accounting_id', string=u'说明')
+
+    def onchange_emloyee_id(self, cr, uid, ids, employee_id, context=None):
+        res = {}
+        res['value'] = {}
+        if employee_id:
+            employee_obj = self.pool.get('hr.employee').browse(cr, uid, employee_id, context=context)
+            res['value']['department_id'] = employee_obj.department_id.id
+            res['value']['company_id'] = employee_obj.company_id.id
+        return res
+
+
+class qdodoo_industry_accounting_line(models.Model):
+    _name = 'industry.accounting.line'
+    name = fields.Char(string=u'说明')
+    number = fields.Char(string=u'编码')
+    qty = fields.Float(string=u'数量', digits=(16, 4))
+    contract_id = fields.Many2one('hr.contract', string=u'合同', required=True)
+    industry_accounting_id = fields.Many2one('qdodoo.industry.accounting', string=u'核算项', ondelete='cascade')
+
+
+class qdodoo_import_file(models.Model):
+    """
+    工资信息导入模型
+    """
+    _name = 'qdodoo.import.file'
+
+    company_id = fields.Many2one('res.company', string=u'公司', required=True)
+    date_time = fields.Many2one('account.period', string=u'日期', required=True)
+    import_file = fields.Binary(string="导入的Excel文件", required=True)
+
+    @api.one
+    def action_done(self):
+        values_list = []
+        values_list2 = []
+        values_dict2 = {}
+        if self.import_file:
+            try:
+                excel_obj = xlrd.open_workbook(file_contents=base64.decodestring(self.import_file))
+            except:
+                raise except_orm(_(u'警告'), _(u'请使用excel文件'))
+            excel_info = excel_obj.sheet_by_index(0)
+            nrows = excel_info.nrows
+            ncols = excel_info.ncols
+            date_from = self.date_time.date_start
+            date_to = self.date_time.date_stop
+            for row in range(1, nrows):
+                row_values = excel_info.row_values(row)
+                name = row_values[0]
+                employee_id = int(row_values[1])
+                employee_ids = self.env['hr.employee'].search(
+                    [('name', '=', name), ('id', '=', employee_id)])
+                if not len(employee_ids):
+                    raise except_orm(_(u'警告'), _(u'文件第%s行员工姓名或员工ID有误') % (row + 1))
+                department_id = employee_ids.department_id.id
+                contract_ids = self.env['hr.payslip'].get_contract(employee_ids, date_from, date_to)
+                if contract_ids:
+                    contract_record = self.env['hr.contract'].browse(contract_ids[0])
+                    contract_id = contract_record.id
+                else:
+                    raise except_orm(_(u'警告！'), _(u'员工%s未创建合同') % (employee_ids.name))
+                for col in range(2, ncols):
+                    hr_rule_obj = self.env['hr.rule.input'].search([('name', '=', excel_info.col_values(col)[0])])
+                    if len(hr_rule_obj) > 1:
+                        raise except_orm(_(u'警告'), _(u'工资规则%s重复创建') % (excel_info.col_values(col)[0]))
+                    elif not (hr_rule_obj):
+                        raise except_orm(_(u'警告'), _(u'工资规则%s未创建') % (excel_info.col_values(col)[0]))
+                    else:
+                        code = hr_rule_obj.code
+
+                    values_dict2['name'] = excel_info.col_values(col)[0]
+                    values_dict2['qty'] = excel_info.col_values(col)[row] or 0.0
+                    values_dict2['contract_id'] = contract_id
+                    values_dict2['number'] = code
+                    values_list.append((0, 0, values_dict2))
+                    values_dict2 = {}
+                values_dict1 = {
+                    'name': name,
+                    'employee_id': employee_id,
+                    'company_id': self.company_id.id,
+                    'date_time': self.date_time.id,
+                    'department_id': department_id,
+                    'industry_line_ids': values_list,
+                }
+                values_list2.append(values_dict1)
+                values_list = []
+            for line in values_list2:
+                self.env['qdodoo.industry.accounting'].create(line)
+
+    _defaults = {
+        'company_id': lambda self, cr, uid, c: self.pool.get('res.users').browse(cr, uid, uid, c).company_id.id
+    }
