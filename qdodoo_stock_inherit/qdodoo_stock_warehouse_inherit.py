@@ -38,9 +38,9 @@ class qdodoo_res_user_inherit(models.Model):
         super(qdodoo_res_user_inherit, self).write(cr, uid, ids, value, context=context)
         obj = self.browse(cr, uid, ids[0])
         if value.get('warehouse_id'):
+            sql_select = "delete from warehouse_user_rel where user_id=%s"%obj.id
+            cr.execute(sql_select)
             for line in obj.warehouse_id:
-                sql_select = "delete from warehouse_user_rel where user_id=%s"%obj.id
-                cr.execute(sql_select)
                 sql = """INSERT INTO warehouse_user_rel (user_id, warehouse_id) VALUES (%s, %s)"""%(obj.id, line.id)
                 cr.execute(sql)
         return True
