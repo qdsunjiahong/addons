@@ -23,6 +23,22 @@ class qdodoo_sale_import(models.Model):
 
     import_file = fields.Binary(string="导入的模板")
 
+    def update_product_location(self, cr, uid):
+        location_obj = self.pool.get('stock.location')
+        product_obj = self.pool.get('product.template')
+        # 获取{公司:[产品id]}数据集
+        dict_company = {}
+        for product_id in product_obj.browse(cr, uid, product_obj.search(cr, uid, [])):
+            if product_id.company_id.id in dict_company:
+                dict_company[product_id.company_id.id].append(product_id.id)
+            else:
+                dict_company[product_id.company_id.id] = [product_id.id]
+        location_ids = location_obj.search(cr, uid, [('usage','=','inventory'),('company_id','!=',False)])
+        for location_id in location_obj.browse(cr, uid, location_ids):
+            for product_new_id in dict_company.get(location_id.company_id.id):
+                product_obj.write(cr, uid, product_new_id, {'property_stock_inventory':location_id.id})
+        return True
+
     def import_data(self, cr, uid, ids, context=None):
         wiz = self.browse(cr, uid, ids[0])
         if wiz.import_file:
