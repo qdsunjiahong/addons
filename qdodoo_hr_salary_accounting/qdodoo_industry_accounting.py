@@ -37,6 +37,7 @@ class qdodoo_industry_accounting_line(models.Model):
     number = fields.Char(string=u'编码')
     qty = fields.Float(string=u'数量', digits=(16, 4))
     contract_id = fields.Many2one('hr.contract', string=u'合同', required=True)
+    period_id = fields.Many2one('account.period', required=True, string=u'会计期间')
     industry_accounting_id = fields.Many2one('qdodoo.industry.accounting', string=u'核算项', ondelete='cascade')
 
 
@@ -81,6 +82,10 @@ class qdodoo_import_file(models.Model):
                 else:
                     raise except_orm(_(u'警告！'), _(u'员工%s未创建合同') % (employee_ids.name))
                 for col in range(2, ncols):
+                    industry_accounting_ids = self.env['qdodoo.industry.accounting'].search(
+                        [('employee_id', '=', employee_id), ('date_time', '=', self.date_time.id)])
+                    if industry_accounting_ids:
+                        raise except_orm(_(u'警告'), _(u'员工%s已存在会计期为%s的工资核算项') % (employee_ids.name, self.date_time.name))
                     hr_rule_obj = self.env['hr.rule.input'].search([('name', '=', excel_info.col_values(col)[0])])
                     if len(hr_rule_obj) > 1:
                         raise except_orm(_(u'警告'), _(u'工资规则%s重复创建') % (excel_info.col_values(col)[0]))
@@ -93,6 +98,7 @@ class qdodoo_import_file(models.Model):
                     values_dict2['qty'] = excel_info.col_values(col)[row] or 0.0
                     values_dict2['contract_id'] = contract_id
                     values_dict2['number'] = code
+                    values_dict2['period_id'] = self.date_time.id
                     values_list.append((0, 0, values_dict2))
                     values_dict2 = {}
                 values_dict1 = {

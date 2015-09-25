@@ -78,7 +78,7 @@ class qdodoo_hr_dapartment_date(models.Model):
                 raise except_orm(_(u'警告！'), _(u'员工%s未创建合同') % (employee_obj.name))
             hr_user_id = employee_obj.user_id.id
             # worked_days_line_ids = self.env['hr.payslip'].get_worked_day_lines(contract_ids, date_from, date_to)
-            input_line_ids = self.get_inputs(contract_ids, date_from, date_to)
+            input_line_ids = self.get_inputs(contract_ids, self.date.id)
             model_data = self.env['ir.model.data']
             res = model_data.search([('name', '=', 'expenses_journal')])
             if res:
@@ -94,7 +94,7 @@ class qdodoo_hr_dapartment_date(models.Model):
         for i in create_list:
             self.env['hr.payslip'].create(i)
 
-    def get_inputs(self, cr, uid, contract_ids, date_from, date_to, context=None):
+    def get_inputs(self, cr, uid, contract_ids, period_id, context=None):
         res = []
         contract_obj = self.pool.get('hr.contract')
         rule_obj = self.pool.get('hr.salary.rule')
@@ -109,7 +109,8 @@ class qdodoo_hr_dapartment_date(models.Model):
                 if rule.input_ids:
                     for input in rule.input_ids:
                         industry_accounting_ids = self.pool.get('industry.accounting.line').search(cr, uid, [
-                            ('name', '=', input.name), ('contract_id', '=', contract.id)])
+                            ('name', '=', input.name), ('contract_id', '=', contract.id),
+                            ('period_id', '=', period_id)])
                         if not industry_accounting_ids:
                             raise except_orm(_(u'警告'),
                                              _(u'员工%s的工资规则%s未创建') % (contract.employee_id.name, input.name))

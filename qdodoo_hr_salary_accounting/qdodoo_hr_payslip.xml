@@ -13,6 +13,9 @@
                             <field name="import_file"/>
                         </group>
                         <group>
+                            <a href="/qdodoo_hr_salary_accounting/static/template.xls">点此进行模板下载</a>
+                        </group>
+                        <group>
                             <button name='btn_import_data' string='导入' type='object' class='oe_edit_only'
                                     states="draft"/>
                         </group>
