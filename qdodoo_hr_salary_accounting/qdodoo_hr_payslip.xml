@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_hr_payslip_inherit">
+            <field name="name">工资条</field>
+            <field name="model">hr.payslip</field>
+            <field name="inherit_id" ref="hr_payroll.view_hr_payslip_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//separator[@string='Other Inputs']"
+                       position="after">
+                    <group>
+                        <group>
+                            <field name="import_file"/>
+                        </group>
+                        <group>
+                            <button name='btn_import_data' string='导入' type='object' class='oe_edit_only'
+                                    states="draft"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

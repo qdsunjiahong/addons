@@ -8,3 +8,4 @@
 
 import wizard
 import qdodoo_industry_accounting
+import qdodoo_hr_payslip

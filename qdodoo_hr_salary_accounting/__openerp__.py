@@ -14,10 +14,11 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'hr', 'hr_attendance'],  # 依赖模块
+    'depends': ['base', 'hr', 'hr_attendance','hr_payroll'],  # 依赖模块
     'data': [
         'qdodoo_hr_employee_view.xml',
-        'qdodoo_industry_accounting_view.xml'
+        'qdodoo_industry_accounting_view.xml',
+        'qdodoo_hr_payslip.xml'
         # 'wizard/qdodoo_hr_department_date.xml'
     ],  # 更新XML,CSV
     'js': [
