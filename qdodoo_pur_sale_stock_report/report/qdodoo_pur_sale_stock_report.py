@@ -79,11 +79,11 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
         balance_obj = self.pool.get('qdodoo.previous.balance')
         # 获取昨天的日期
         yesterday = (datetime.datetime.strptime(self.start_date,'%Y-%m-%d') - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
-        balance_ids = balance_obj.search(self.cr, self.uid, [('date','=',yesterday),('product_id','in',product_lst)])
+        balance_ids = balance_obj.search(self.cr, self.uid, [('date','=',yesterday),('product_id','in',product_lst),('location_id','=',self.location_id)])
         for balance_id in balance_obj.browse(self.cr, self.uid, balance_ids):
             balance_num_dict[balance_id.product_id.id] = balance_id.balance_num
         if self.end_date:
-            balance_ids_new = balance_obj.search(self.cr, self.uid, [('date','=',self.end_date),('product_id','in',product_lst)])
+            balance_ids_new = balance_obj.search(self.cr, self.uid, [('date','=',self.end_date),('product_id','in',product_lst),('location_id','=',self.location_id)])
             for balance_id_new in balance_obj.browse(self.cr, self.uid, balance_ids_new):
                 balance_num_new_dict[balance_id_new.product_id.id] = balance_id_new.balance_num
         # 查询产品的采购数量
