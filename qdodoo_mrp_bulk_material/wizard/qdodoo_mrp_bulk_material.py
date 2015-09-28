@@ -73,14 +73,19 @@ class qdodoo_mrp_bulk_material(models.Model):
             product_list.append((0, 0, lines))
         pick_type_ids = self.env['stock.picking.type'].search(
             [('default_location_src_id', '=', self.localtion_dest_id.id),
-             ('code', '=', 'outgoing')])
-        if len(pick_type_ids) > 1:
-            raise _(_(u'错误'), _(u'创建失败!'))
-        elif not pick_type_ids:
-            raise _(_(u'错误'), _(u'创建失败!'))
-        picking_dict = {
-            'picking_type_id': pick_type_ids.id,
-            'origin': u'批量领料',
-            'move_lines': product_list,
-        }
-        self.env['stock.picking'].create(picking_dict)
+             ('code', 'in', ('outgoing', 'internal')),
+             ('default_location_dest_id', '=', self.location_id.id)])
+        if len(pick_type_ids) == 1:
+
+            picking_dict = {
+                'picking_type_id': pick_type_ids.id,
+                'origin': u'批量领料',
+                'move_lines': product_list,
+            }
+            self.env['stock.picking'].create(picking_dict)
+        elif len(pick_type_ids) > 2:
+            raise except_orm(_(u'警告'),
+                             _(u'源库位为%s，目的库位为%s的拣货单类型搜索除多个') % (self.localtion_dest_id.name, self.location_id.name))
+        else:
+            raise except_orm(_(u'警告'),
+                             _(u'源库位为%s，目的库位为%s的拣货单类型未创建') % (self.localtion_dest_id.name, self.location_id.name))
