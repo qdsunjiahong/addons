@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="qdodoo_mrp_bulk_material_form" model="ir.ui.view">
+            <field name="name">批量领料</field>
+            <field name="model">mrp.bulk.material</field>
+            <field name="arch" type="xml">
+                <form string="批量领料">
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="localtion_dest_id" />
+                            <field name="location_id"/>
+                            <field name="mrp_ids"/>
+                        </group>
+                        <footer>
+                            <button string="确定" name="action_done" type="object" class="oe_highlight"/>
+                            or
+                            <button string="取消" class="oe_link" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="qdodoo_action_mrp_bulk_material2" model="ir.actions.act_window">
+            <field name="name">批量领料</field>
+            <field name="res_model">mrp.bulk.material</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_mrp_bulk_material_form"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+        <record id="qdodoo_action_mrp_bulk_material" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+            <field eval="'mrp.production'" name="model"/>
+            <field name="name">批量领料</field>
+            <field eval="'ir.actions.act_window,'+str(qdodoo_action_mrp_bulk_material2)" name="value"/>
+        </record>
+    </data>
+</openerp>
