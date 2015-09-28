@@ -10,7 +10,7 @@
                         <group colspan="4" col="4">
                             <field name="localtion_dest_id" />
                             <field name="location_id"/>
-                            <field name="mrp_ids"/>
+                            <field name="mrp_ids" invisible="1"/>
                         </group>
                         <footer>
                             <button string="确定" name="action_done" type="object" class="oe_highlight"/>
