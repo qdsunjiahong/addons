@@ -85,7 +85,7 @@ class qdodoo_mrp_bulk_material(models.Model):
             self.env['stock.picking'].create(picking_dict)
         elif len(pick_type_ids) > 2:
             raise except_orm(_(u'警告'),
-                             _(u'源库位为%s，目的库位为%s的拣货单类型搜索除多个') % (self.localtion_dest_id.name, self.location_id.name))
+                             _(u'源库位为%s，目的库位为%s的拣货单类型搜索出多个') % (self.localtion_dest_id.name, self.location_id.name))
         else:
             raise except_orm(_(u'警告'),
                              _(u'源库位为%s，目的库位为%s的拣货单类型未创建') % (self.localtion_dest_id.name, self.location_id.name))
