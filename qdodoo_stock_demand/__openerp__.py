@@ -18,6 +18,7 @@
     'data': [
         'qdodoo_stock_demand_view.xml',
         'qdodoo_stock_demand_sequence_view.xml',
+        'qdodoo_procurement_order_inhert.xml',
         # 'qdodoo_stock_demand_inherit_view.xml'
         # 'security/account_security.xml',
         # ...

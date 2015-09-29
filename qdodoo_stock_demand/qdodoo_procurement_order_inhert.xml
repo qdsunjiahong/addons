@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="procurement_tree_view_inherit">
+            <field name="name">procurement.order.tree.inherit</field>
+            <field name="model">procurement.order</field>
+            <field name="inherit_id" ref="procurement.procurement_tree_view"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='origin']" position="after">
+                    <field name="associate_number"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="procurement_form_view_inherit">
+            <field name="name">procurement.order.form.inherit</field>
+            <field name="model">procurement.order</field>
+            <field name="inherit_id" ref="procurement.procurement_form_view"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//group[@string='Scheduling']" position="after">
+                    <group>
+                        <field name="associate_number"/>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>
