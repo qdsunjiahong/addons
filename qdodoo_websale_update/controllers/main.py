@@ -49,7 +49,7 @@ class qdodooo_website_update(website_sale):
     def shop(self, page=0, category=None, search='', **post):
         # 得到网页相关对象
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
-        print '====================================shop'
+        #print '====================================shop'
         # 得到搜索区间
         domain = request.website.sale_product_domain()
         # 如果存在搜索
@@ -104,30 +104,30 @@ class qdodooo_website_update(website_sale):
         # product_obj 得到产品模板
 
         product_obj = pool.get('product.template')
-        print  "context['pricelist']", context['pricelist']
+        #print  "context['pricelist']", context['pricelist']
         # 搜索产品价格表中的产品
         pricelist_version_ids = pool.get('product.pricelist.version').search(cr, uid,[('pricelist_id','=',context['pricelist'])],context=context)
-        print 'pricelist_version_ids',pricelist_version_ids
+        #print 'pricelist_version_ids',pricelist_version_ids
         pricelist_procuct_item_ids=pool.get('product.pricelist.item').search(cr,uid,[('price_version_id','in',pricelist_version_ids)],context=context)
-        print  'pricelist_procuct_item_ids',pricelist_procuct_item_ids
+        #print  'pricelist_procuct_item_ids',pricelist_procuct_item_ids
         pricelist_procuct_ids=[]
         for search_id in pricelist_procuct_item_ids:
             product_item=pool.get('product.pricelist.item').browse(cr,uid,search_id,context=context)[0]
-            print 'product_item',product_item
-            print 'pricelist_procuct_ids.product_id',product_item.product_id.id
+            #print 'product_item',product_item
+            #print 'pricelist_procuct_ids.product_id',product_item.product_id.id
             if product_item.product_id.id:
                 cr.execute("SELECT product_tmpl_id   FROM product_product where id=%s" % product_item.product_id.id)
                 pricelist_procuct_ids.append(cr.fetchall())
             else:
                 cr.execute("SELECT product_tmpl_id   FROM product_product")
                 pricelist_procuct_ids=cr.fetchall()
-                print 'else pricelist_procuct_ids:',pricelist_procuct_ids
+                #print 'else pricelist_procuct_ids:',pricelist_procuct_ids
                 break
         domain+=[('id','in',pricelist_procuct_ids)]
 
 
         # 更改查询数据
-        print 'finally if domain  is', domain
+        #print 'finally if domain  is', domain
         url = "/shop"
         # product_count 为过滤产品总数
         product_count = product_obj.search_count(cr, uid, domain, context=context)
@@ -144,13 +144,13 @@ class qdodooo_website_update(website_sale):
         pager = request.website.pager(url=url, total=product_count, page=page, step=PPG, scope=7, url_args=post)
 
         # 产品列表  产品模板搜索 PPG 当前页面产品数量    过滤pager['offset'] 这些数量   跟读 website_published 排序
-        print 'uid', uid, 'limit', PPG, 'offset', pager['offset']
+        #print 'uid', uid, 'limit', PPG, 'offset', pager['offset']
         product_ids = product_obj.search(cr, uid, domain, limit=PPG, offset=pager['offset'],
                                          order='website_published desc, website_sequence desc', context=context)
-        print 'product_ids', product_ids
+        #print 'product_ids', product_ids
         # 产品 查询对应的产品书
         products = product_obj.browse(cr, uid, product_ids, context=context)
-        print 'products', products
+        #print 'products', products
         style_obj = pool['product.style']
         style_ids = style_obj.search(cr, uid, [], context=context)
         styles = style_obj.browse(cr, uid, style_ids, context=context)
@@ -186,5 +186,5 @@ class qdodooo_website_update(website_sale):
             'style_in_product': lambda style, product: style.id in [s.id for s in product.website_style_ids],
             'attrib_encode': lambda attribs: werkzeug.url_encode([('attrib', i) for i in attribs]),
         }
-        print "======================shop products", values.get(products)
+        #print "======================shop products", values.get(products)
         return request.website.render("website_sale.products", values)

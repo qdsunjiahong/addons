@@ -10,6 +10,9 @@
     'name': '欧度电子商务升级',
     'description': '''
     网站页面升级
+    网站权限显示：
+        1.自定义taylor list
+        2.通过价格表控制不同客户的产品显示
     ''',
     'version': '1.0',  # 版本
     'category': 'Technology',  # 分类
