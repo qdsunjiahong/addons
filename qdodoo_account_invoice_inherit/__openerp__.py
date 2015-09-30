@@ -7,7 +7,7 @@
 ###########################################################################################
 
 {
-    'name' : 'Model',    #模块名称
+    'name' : 'Qdodoo Account Invoice Inherit',    #模块名称
     'version' : '1.0',    #版本
     'category' : 'Technology',    #分类
     'author' : 'qdodoo Technology',    #作者
@@ -16,7 +16,7 @@
     'images' : [],    #模块图片
     'depends' : ['base','account'],    #依赖模块
     'data': [
-        # 'security/account_security.xml',
+        'qdodoo_account_move_line_view.xml',
         # ...
     ],    #更新XML,CSV
     'js': [

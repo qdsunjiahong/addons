@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_form_qdodoo_read_account_move_line" model="ir.ui.view">
+            <field name="name">qdodoo.read.account.move.line.wizard.form</field>
+            <field name="model">qdodoo.read.account.move.line</field>
+            <field name="arch" type="xml">
+                <form string="查询对方科目">
+                    <div>
+                        *查询对方科目
+                    </div>
+
+                    <footer>
+                        <button name="btn_merge" string="查询" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window name="查询对方科目"
+            res_model="qdodoo.read.account.move.line"
+            src_model="account.move.line"
+            view_mode="form"
+            target="new"
+            multi="True"
+            key2="client_action_multi"
+            id="action_qdodoo_read_account_move_line"/>
+
+    </data>
+</openerp>
