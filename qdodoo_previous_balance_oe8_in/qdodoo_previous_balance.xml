@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_previous_inherit">
+            <field name="name">库存查询金额</field>
+            <field name="model">qdodoo.result.balance.statement</field>
+            <field name="inherit_id" ref="qdodoo_previous_balance_oe8.view_result_balance_statement_tree"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='current_balance']" position="after">
+                    <field name="total_mount"/>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</openerp>
