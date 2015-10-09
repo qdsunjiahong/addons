@@ -84,7 +84,7 @@
                 <field name="arch" type="xml">
                     <form string="同步北邮数据">
                         <group>
-                            <field name="get_date" required="True"/>
+                            <field name="get_date" required="True" placeholder="2015-08"/>
                         </group>
                         <footer>
                             <button name="btn_search" string="查询" type="object" context="{'get_date':get_date}" class="oe_highlight"/>
