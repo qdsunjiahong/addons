@@ -54,8 +54,32 @@ class account_move_line_original(osv.osv):
             res[line_id] = {'invoice':(invoice_id.get('invoice'), invoice_names[invoice_id.get('invoice')]),'original':invoice_id.get('original')}
         return res
 
+    def get_original2(self, cr, uid, obj, name, args, context=None):
+        if not args:
+            return []
+        account_ids = []
+        for line in args:
+            account_ids += self.pool.get('account.invoice').search(cr, uid, [('origin',line[1],line[2])])
+        return [('invoice','in',account_ids)]
+
+
     _columns = {
-        'original': fields.function(_invoice, string='源单据',type='char',multi="original"),
+        'original': fields.function(_invoice, string='源单据',type='char',multi="original", fnct_search=get_original2, store=False, select=True),
         'invoice': fields.function(_invoice, string='Invoice',
             type='many2one', relation='account.invoice', fnct_search=account_move_line._invoice_search,multi="original"),
     }
+
+    def create(self, cr, uid, valu, context=None):
+        res_id = super(account_move_line_original, self).create(cr, uid, valu, context=context)
+        obj = self.browse(cr, uid, res_id)
+        if obj.original:
+            super(account_move_line_original, self).write(cr, uid, res_id, {'original2':obj.original})
+        return res_id
+
+    def write(self, cr, uid, ids, valu, context=None):
+        super(account_move_line_original, self).write(cr, uid, ids, valu, context=context)
+        for obj in self.browse(cr, uid, ids):
+            if obj.original:
+                super(account_move_line_original, self).write(cr, uid, obj.id, {'original2':obj.original})
+        return True
+
