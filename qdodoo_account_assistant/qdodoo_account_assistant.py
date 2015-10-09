@@ -32,3 +32,17 @@ class qdodoo_sale_order(models.Model):
                     return super(qdodoo_sale_order, self).create(cr, uid, values, context=context)
         else:
             return super(qdodoo_sale_order, self).create(cr, uid, values, context=context)
+
+    @api.one
+    def write(self, values):
+        if not self.project_id and not values.get('project_id',[]):
+            if self.order_line:
+                for line in self.order_line:
+                    if line.product_id.categ_id.property_stock_account_output_categ.required_assistant == True:
+                        raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
+                    else:
+                        return super(qdodoo_sale_order, self).write(values)
+            else:
+                return super(qdodoo_sale_order, self).write(values)
+        else:
+            return super(qdodoo_sale_order, self).write(values)
