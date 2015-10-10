@@ -14,7 +14,7 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'account', ],  # 依赖模块
+    'depends': ['base', 'stock', 'stock_account'],  # 依赖模块
     'data': [
         # 'wizard/qdodoo_search_balance_statement.xml',
         # 'qdodoo_previous_balance.xml',
