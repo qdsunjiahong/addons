@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <openerp>
+        <data>
+            <record model="ir.ui.view" id="res_partner_inherit_outstock_form">
+                <field name="name">res_partner_inherit_outstock</field>
+                <field name="model">res.partner</field>
+                <field name="inherit_id" ref="purchase.view_partner_property_form"/>
+                <field name="arch" type="xml">
+                        <field name="property_product_pricelist_purchase" position="after">
+                            <field name="out_stock" />
+                        </field>
+                </field>
+            </record>
+
+
+        </data>
+    </openerp>
