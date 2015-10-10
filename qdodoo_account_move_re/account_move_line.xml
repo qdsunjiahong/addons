@@ -93,10 +93,10 @@
                                 <field name="debit" sum="Total Debit"/>
                                 <field name="credit" sum="Total Credit"/>
                                 <field name="analytic_account_id" groups="analytic.group_analytic_accounting"/>
-                                <field name="amount_currency" readonly="1"/>
+                                <field name="amount_currency"/>
                                 <field name="currency_id" groups="base.group_multi_currency"/>
                                 <field name="tax_code_id"/>
-                                <field name="tax_amount" readonly="1"/>
+                                <field name="tax_amount"/>
                                 <field name="state"/>
                                 <field name="reconcile_id"/>
                                 <field name="reconcile_partial_id"/>
