@@ -14,7 +14,7 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'mrp', 'mrp_byproduct', 'stock', 'account', 'stock_account'],  # 依赖模块
+    'depends': ['base', 'mrp', 'mrp_byproduct', 'stock', 'account', 'stock_account', 'qdodoo_account_move_re'],  # 依赖模块
     'data': [
 
     ],  # 更新XML,CSV

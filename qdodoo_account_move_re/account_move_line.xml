@@ -100,6 +100,7 @@
                                 <field name="state"/>
                                 <field name="reconcile_id"/>
                                 <field name="reconcile_partial_id"/>
+                                <field name="location_in_id" readonly="1"/>
                             </tree>
                         </field>
                         <field name="narration" colspan="4" placeholder="Add an internal note..." nolabel="1"
