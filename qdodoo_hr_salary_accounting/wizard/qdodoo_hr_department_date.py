@@ -88,13 +88,7 @@ class qdodoo_hr_dapartment_date(models.Model):
             hr_user_id = employee_obj.user_id.id
             # worked_days_line_ids = self.env['hr.payslip'].get_worked_day_lines(contract_ids, date_from, date_to)
             input_line_ids = self.get_inputs(contract_ids, self.date.id)
-            journal_id = self.journal_id
-            # model_data = self.env['ir.model.data']
-            # res = model_data.search([('name', '=', 'expenses_journal')])
-            # if res:
-            #     journal_id = model_data.browse(res[0]).res_id
-            # else:
-            #     journal_id = False
+            journal_id = self.journal_id.id
             create_dict = {'employee_id': employee_id, 'date_from': date_from, 'date_to': date_to,
                            'name': name, 'hr_user_id': hr_user_id, 'contract_id': contract_id,
                            'struct_id': struct_id, 'hr_department_id': hr_department_id,
@@ -102,6 +96,7 @@ class qdodoo_hr_dapartment_date(models.Model):
                            'input_line_ids': input_line_ids}
             create_list.append(create_dict)
         for i in create_list:
+            print i
             self.env['hr.payslip'].create(i)
 
     def get_inputs(self, cr, uid, contract_ids, period_id, context=None):
