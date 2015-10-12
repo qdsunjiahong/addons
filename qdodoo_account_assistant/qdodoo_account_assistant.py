@@ -20,8 +20,8 @@ class qdodoo_sale_order(models.Model):
     _inherit = 'sale.order'
 
     def create(self, cr, uid, values, context=None):
-        if values['order_line']:
-            for line in values['order_line']:
+        if values.get('order_line', []):
+            for line in values.get('order_line', []):
                 print line
                 product_id = line[-1]['product_id']
                 product_obj = self.pool.get('product.product').browse(cr, uid, product_id)
@@ -35,7 +35,7 @@ class qdodoo_sale_order(models.Model):
 
     @api.one
     def write(self, values):
-        if not self.project_id and not values.get('project_id',[]):
+        if not self.project_id and not values.get('project_id', []):
             if self.order_line:
                 for line in self.order_line:
                     if line.product_id.categ_id.property_stock_account_output_categ.required_assistant == True:
