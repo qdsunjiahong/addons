@@ -42,17 +42,19 @@ class qdodoo_stock_picking(models.Model):
         packops = self.env['stock.pack.operation'].search(
             ['&', ('picking_id', '=', self.picking_id.id), '!', ('id', 'in', processed_ids)])
         packops.unlink()
-
-        # Execute the transfer of the picking  default_location_dest_id
-
         self.picking_id.do_transfer()
+
+        #####创建发票
         location_model_cus, lo_id = self.env['ir.model.data'].get_object_reference('stock', 'stock_location_suppliers')
         location_model_cus2, lo_id2 = self.env['ir.model.data'].get_object_reference('stock',
                                                                                      'stock_location_customers')
-        if self.picking_id.picking_type_id.default_location_src_id.id in (lo_id, lo_id2):
+
+        if self.picking_id.picking_type_id.default_location_src_id.id in (
+                lo_id, lo_id2) and self.picking_id.picking_type_id.code != 'internal':
             onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': fields.date.today()})
             onshipping_id.create_invoice()
-        elif self.picking_id.picking_type_id.default_location_dest_id.id in (lo_id, lo_id2):
+        elif self.picking_id.picking_type_id.default_location_dest_id.id in (
+                lo_id, lo_id2) and self.picking_id.picking_type_id.code != 'internal':
             onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': fields.date.today()})
             onshipping_id.create_invoice()
         return True
