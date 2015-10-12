@@ -76,8 +76,8 @@ class account_move_line_original(osv.osv):
             super(account_move_line_original, self).write(cr, uid, res_id, {'original2':obj.original})
         return res_id
 
-    def write(self, cr, uid, ids, valu, context=None):
-        super(account_move_line_original, self).write(cr, uid, ids, valu, context=context)
+    def write(self, cr, uid, ids, valu, context=None, check=True):
+        super(account_move_line_original, self).write(cr, uid, ids, valu, context=context, check=check)
         for obj in self.browse(cr, uid, ids):
             if obj.original:
                 super(account_move_line_original, self).write(cr, uid, obj.id, {'original2':obj.original})
