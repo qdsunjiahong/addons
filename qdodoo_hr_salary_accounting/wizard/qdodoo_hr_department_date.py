@@ -96,7 +96,6 @@ class qdodoo_hr_dapartment_date(models.Model):
                            'input_line_ids': input_line_ids}
             create_list.append(create_dict)
         for i in create_list:
-            print i
             self.env['hr.payslip'].create(i)
 
     def get_inputs(self, cr, uid, contract_ids, period_id, context=None):
