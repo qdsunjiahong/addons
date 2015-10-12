@@ -14,7 +14,7 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'hr', 'hr_attendance','hr_payroll'],  # 依赖模块
+    'depends': ['base', 'hr', 'hr_attendance','hr_payroll','hr_payroll_account'],  # 依赖模块
     'data': [
         'qdodoo_hr_employee_view.xml',
         'qdodoo_industry_accounting_view.xml',

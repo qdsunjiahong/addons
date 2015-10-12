@@ -17,6 +17,10 @@
                             <h1>
                                 <field name="company_id" readonly="1"/>
                             </h1>
+                            <label for="journal_id" string="工资分录"/>
+                            <h1>
+                                <field name="journal_id" domain="[('company_id','=',company_id)]"/>
+                            </h1>
                             <field name="hr_employee_ids" invisible="1"/>
                         </group>
                         <footer>
