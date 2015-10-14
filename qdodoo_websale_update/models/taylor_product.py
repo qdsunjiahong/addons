@@ -18,7 +18,7 @@ class taylor_template(models.Model):
 
 
     def add_price_list(self ,cr ,uid, ids, context):
-        print 'add_price_list args uid',uid,'ids ', ids ,'context',context
+        #print 'add_price_list args uid',uid,'ids ', ids ,'context',context
 
         pricelist_prolate_obj=self.pool.get('pricelist.prolate.relation')
         price_list_obj=self.pool.get('product.pricelist')
@@ -29,8 +29,8 @@ class taylor_template(models.Model):
         pric_var_now=""
         pricelist_prolate_list=pricelist_prolate_obj.search(cr ,uid ,[('ref_product_template','=',ids)],context=context)
         for prolate_obj in pricelist_prolate_obj.browse(cr ,uid ,pricelist_prolate_list,context=context):
-            print 'prolate_obj_id',prolate_obj
-            print 'prolate_obj_id.ref_product_pricelist :',prolate_obj.ref_product_pricelist.id
+            #print 'prolate_obj_id',prolate_obj
+            #print 'prolate_obj_id.ref_product_pricelist :',prolate_obj.ref_product_pricelist.id
 
             #遍历价格表版本
             for pric_ver in pricr_list_version.browse(cr, uid ,pricr_list_version.search(cr ,uid ,[('pricelist_id','=',prolate_obj.ref_product_pricelist.id)],context=context),context=context):
@@ -40,7 +40,7 @@ class taylor_template(models.Model):
                 elif fields.datetime.now()<pric_ver.date_end and fields.datetime.now()>pric_ver.date_end:
                     pric_var_now=pric_ver.id
                     break
-            print 'pric_var_now is ',pric_var_now
+            #print 'pric_var_now is ',pric_var_now
             if not pric_var_now:
                 raise Warning(_('比例值在0-1之间'))
 
@@ -59,7 +59,7 @@ class taylor_template(models.Model):
                     price_lis_it_id=price_lis_item.create(cr,uid,values,context=context)
                     if price_lis_it_id:
                         pricelist_prolate_obj.write(cr ,uid ,prolate_obj.id,{'success':True},context=context)
-                
+
 
 
 
@@ -90,7 +90,7 @@ class pricelist_prolate_relation(models.Model):
     #
     @api.constrains('proportion')
     def proportion_constrains(self):
-        print '99999999999999999999',self.proportion
+        #print '99999999999999999999',self.proportion
         if self.proportion < 0 or self.proportion > 1:
             raise Warning(_('比例值在0-1之间'))
 

@@ -19,7 +19,7 @@ class qdodoo_pageer(table_compute):
     PPG = 60
 
     def __init__(self):
-        print '============================table_compute_init  only init no return'
+        #print '============================table_compute_init  only init no return'
         self.table = {}
 
     def _check_place(self, posx, posy, sizex, sizey):
@@ -106,7 +106,7 @@ class qdodooo_website_update(website_sale):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # product_obj = pool['product.product']
         partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid, context=context).partner_id
-        print 'user ref partner is ===', int(partner)
+        #print 'user ref partner is ===', int(partner)
         # 读取当前客户的出库库位
         output_warehouse = pool.get('res.partner').browse(cr, uid, int(partner)).out_stock
         sale_order = ""
@@ -116,11 +116,11 @@ class qdodooo_website_update(website_sale):
                 cr.execute(sql)
                 product_id = cr.fetchall()[0]
                 sale_order = request.website.sale_get_order(force_create=1)
-                print 'sale_order is =============', sale_order
+                #print 'sale_order is =============', sale_order
                 sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
-        print 'finally sale_order is ==', int(sale_order)
+        #print 'finally sale_order is ==', int(sale_order)
         if output_warehouse:
-            print 'output_warehouse is ===', int(output_warehouse)
+            #print 'output_warehouse is ===', int(output_warehouse)
             pool.get('sale.order').write(cr, SUPERUSER_ID, int(sale_order), {'warehouse_id': int(output_warehouse)})
         return request.redirect("/shop/cart")
         # #得到销售订单
@@ -228,7 +228,7 @@ class qdodooo_website_update(website_sale):
                 all_id = cr.fetchall()
                 for sql_id in all_id:
                     if sql_id not in pricelist_procuct_ids:
-                        print  'sql_id is ', sql_id[0]
+                        #print  'sql_id is ', sql_id[0]
                         pricelist_procuct_ids.append(sql_id[0])
             # 如果又没有类别 又没有产品
             if not product_item.product_id.id and not product_item.categ_id:
@@ -311,11 +311,11 @@ class qdodooo_website_update(website_sale):
             'style_in_product': lambda style, product: style.id in [s.id for s in product.website_style_ids],
             'attrib_encode': lambda attribs: werkzeug.url_encode([('attrib', i) for i in attribs]),
         }
-        print "======================shop products", values
+        #print "======================shop products", values
         return request.website.render("website_sale.products", values)
 
     def checkout_values(self, data=None):
-        print '===============================checkout_values'
+        #print '===============================checkout_values'
         # 得到基本的对象和基本的数据
         cr, uid, context, registry = request.cr, request.uid, request.context, request.registry
         orm_partner = registry.get('res.partner')
@@ -327,15 +327,15 @@ class qdodooo_website_update(website_sale):
         country_ids = orm_country.search(cr, SUPERUSER_ID, [], context=context)
         # 得到国家数据
         countries = orm_country.browse(cr, SUPERUSER_ID, country_ids, context)
-        print 'countries', countries
+        #print 'countries', countries
         # 搜索出当前国家的状态？  啥状态？？？
         states_ids = state_orm.search(cr, SUPERUSER_ID, [], context=context)
         # 得到状态值
         states = state_orm.browse(cr, SUPERUSER_ID, states_ids, context)
-        print 'states', states
+        #print 'states', states
         # 得到当前用户的供应商
         partner = orm_user.browse(cr, SUPERUSER_ID, request.uid, context).partner_id
-        print 'partner', partner
+        #print 'partner', partner
 
         # 初始化订单
         order = None
@@ -345,7 +345,7 @@ class qdodooo_website_update(website_sale):
         shipping_ids = []
         checkout = {}
 
-        print '22222222222 checkout is all value ======', checkout
+        #print '22222222222 checkout is all value ======', checkout
         # 如果没有
         if not data:
             # 如果当前的用户不为  当前站点所显示的id
@@ -359,7 +359,7 @@ class qdodooo_website_update(website_sale):
                     #checkout['city_id'] = checkout.get('city').id
                     checkout['city'] = checkout.get('city').name
 
-                print '3333333333333 checkout is all value ======', checkout
+                #print '3333333333333 checkout is all value ======', checkout
             else:
                 order = request.website.sale_get_order(force_create=1, context=context)
                 if order.partner_id:
@@ -385,7 +385,7 @@ class qdodooo_website_update(website_sale):
                 shipping_id = order.partner_shipping_id.id
 
         shipping_ids = list(set(shipping_ids) - set([partner.id]))
-        print '111111111111111111111111111checkout is all value ======', checkout
+        #print '111111111111111111111111111checkout is all value ======', checkout
         if shipping_id == partner.id:
             shipping_id = 0
         elif shipping_id > 0 and shipping_id not in shipping_ids:
@@ -411,7 +411,7 @@ class qdodooo_website_update(website_sale):
                                                                          context=context)
                 if country_ids:
                     checkout['country_id'] = country_ids[0]
-        print 'checkout is all value ======', checkout
+        #print 'checkout is all value ======', checkout
         values = {
             'countries': countries,
             'states': states,
@@ -426,7 +426,7 @@ class qdodooo_website_update(website_sale):
 
     @http.route(['/shop/confirm_order'], type='http', auth="public", website=True)
     def confirm_order(self, **post):
-        print '===============================confirm_order'
+        #print '===============================confirm_order'
         cr, uid, context, registry = request.cr, request.uid, request.context, request.registry
 
         # 得到销售订单
@@ -440,7 +440,7 @@ class qdodooo_website_update(website_sale):
         if redirection:
             return redirection
 
-        print "confirm_order post is===========", post
+        #print "confirm_order post is===========", post
 
         if post.get('city'):
             city_id = registry.get('hm.city').search(cr, SUPERUSER_ID, [('name', '=', post.get('city'))])
@@ -450,7 +450,7 @@ class qdodooo_website_update(website_sale):
                 print '城市有误 不给处理'
                 # return
         # 得到全局变量
-        print 'confirm_order post is ',post
+        #print 'confirm_order post is ',post
         values = self.checkout_values(post)
 
         values["error"] = self.checkout_form_validate(values["checkout"])
@@ -472,7 +472,7 @@ class qdodooo_website_update(website_sale):
         for a transaction. State at this point :
          - UDPATE ME
         """
-        print '======================/shop/payment/validate start'
+        #print '======================/shop/payment/validate start'
         # 得到常用的几个字段和值
         cr, uid, context = request.cr, request.uid, request.context
         # 初始化email
@@ -501,8 +501,8 @@ class qdodooo_website_update(website_sale):
             # 还是在判断下 当前订单号 和缓存中的是否一致
             assert order.id == request.session.get('sale_last_order_id')
         # 如果 没有订单  跳转到销售页面
-        print 'payment order is',order
-        print 'payment amount_total is',order.amount_total
+        #print 'payment order is',order
+        #print 'payment amount_total is',order.amount_total
         #print 'tx is',tx
 
         if not order or not order.amount_total :
@@ -558,7 +558,7 @@ class qdodooo_website_update(website_sale):
            paying / canceling
         """
 
-        print '===============================payment'
+        #print '===============================payment'
         #得到常用的环境变量
         cr, uid, context = request.cr, request.uid, request.context
         #得到相关对象
@@ -566,12 +566,12 @@ class qdodooo_website_update(website_sale):
         payment_obj = request.registry.get('payment.acquirer')
         sale_order_obj = request.registry.get('sale.order')
 
-        print 'payment post is :',post
+        #print 'payment post is :',post
 
         #得到当前销售订单
         order = request.website.sale_get_order(context=context)
 
-        print 'payment order is ========',order
+        #print 'payment order is ========',order
         #判断是否需要重定向
         redirection = self.checkout_redirection(order)
         if redirection:
@@ -622,7 +622,7 @@ class qdodooo_website_update(website_sale):
                         'return_url': '/shop/payment/validate',
                     },
                     context=render_ctx)
-        print 'website_sale.payment is ====',values
+        #print 'website_sale.payment is ====',values
         return request.website.render("website_sale.payment", values)
 
 
