@@ -48,8 +48,11 @@ class qdodoo_hr_dapartment_date(models.Model):
         period_ids = self.pool.get('account.period').search(cr, uid, [('date_start', '<=', date_now_new),
                                                                       ('date_stop', '>=', date_now_new),
                                                                       ('company_id', '=', company_id)])
+        if period_ids:
 
-        return period_ids[0]
+            return period_ids[0]
+        else:
+            return False
 
     def _defaul_get_journal_id(self, cr, uid, context=None):
         model_data = self.pool.get('ir.model.data')
