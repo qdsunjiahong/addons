@@ -43,8 +43,8 @@ class qdodoo_industry_accounting_line(models.Model):
     contract_id = fields.Many2one('hr.contract', string=u'合同', required=True)
     period_id = fields.Many2one('account.period', required=True, string=u'会计期间')
     number_l = fields.Selection([(1, 1),
-                               (2, 2),
-                               (3, 3)], string=u'工资发放序列号', required=True)
+                                 (2, 2),
+                                 (3, 3)], string=u'工资发放序列号', required=True)
     industry_accounting_id = fields.Many2one('qdodoo.industry.accounting', string=u'核算项', ondelete='cascade')
 
 
@@ -61,7 +61,7 @@ class qdodoo_import_file(models.Model):
     date_time = fields.Many2one('account.period', string=u'日期', required=True)
     import_file = fields.Binary(string="导入的Excel文件", required=True)
 
-    @api.one
+    @api.multi
     def action_done(self):
         values_list = []
         values_list2 = []
@@ -79,25 +79,27 @@ class qdodoo_import_file(models.Model):
             for row in range(1, nrows):
                 row_values = excel_info.row_values(row)
                 name = row_values[0]
-                employee_id = int(row_values[1])
-                employee_ids = self.env['hr.employee'].search(
-                    [('name', '=', name), ('id', '=', employee_id)])
-                if not len(employee_ids):
-                    raise except_orm(_(u'警告'), _(u'文件第%s行员工姓名或员工ID有误') % (row + 1))
-                department_id = employee_ids.department_id.id
-                company_id = employee_ids.company_id.id
-                contract_ids = self.env['hr.payslip'].get_contract(employee_ids, date_from, date_to)
+                en_no = row_values[1]  # 修改未en_no
+                en_nos = self.env['hr.employee'].search(
+                    [('name', '=', name), ('e_no', '=', en_no)])
+                if not len(en_nos):
+                    raise except_orm(_(u'警告'), _(u'文件第%s行员工姓名或员工编号有误') % (row + 1))
+                elif len(en_nos) > 1:
+                    raise except_orm(_(u'警告'), _(u'员工编号为%s且员工姓名为%s搜索出多个') % (name, en_no))
+                department_id = en_nos.department_id.id
+                company_id = en_nos.company_id.id
+                contract_ids = self.env['hr.payslip'].get_contract(en_nos, date_from, date_to)
                 if contract_ids:
                     contract_record = self.env['hr.contract'].browse(contract_ids[0])
                     contract_id = contract_record.id
                 else:
-                    raise except_orm(_(u'警告！'), _(u'员工%s未创建合同') % (employee_ids.name))
+                    raise except_orm(_(u'警告！'), _(u'员工%s未创建合同') % (en_nos.name))
                 for col in range(2, ncols):
                     industry_accounting_ids = self.env['qdodoo.industry.accounting'].search(
-                        [('employee_id', '=', employee_id), ('date_time', '=', self.date_time.id),
+                        [('employee_id', '=', en_nos.id), ('date_time', '=', self.date_time.id),
                          ('number', '=', self.number)])
                     if industry_accounting_ids:
-                        raise except_orm(_(u'警告'), _(u'员工%s已存在会计期为%s的工资核算项') % (employee_ids.name, self.date_time.name))
+                        raise except_orm(_(u'警告'), _(u'员工%s已存在会计期为%s的工资核算项') % (en_nos.name, self.date_time.name))
                     hr_rule_obj = self.env['hr.rule.input'].search([('name', '=', excel_info.col_values(col)[0])])
                     if len(hr_rule_obj) > 1:
                         raise except_orm(_(u'警告'), _(u'工资规则%s重复创建') % (excel_info.col_values(col)[0]))
@@ -111,12 +113,12 @@ class qdodoo_import_file(models.Model):
                     values_dict2['contract_id'] = contract_id
                     values_dict2['number'] = code
                     values_dict2['period_id'] = self.date_time.id
-                    values_dict2['number_l']=self.number
+                    values_dict2['number_l'] = self.number
                     values_list.append((0, 0, values_dict2))
                     values_dict2 = {}
                 values_dict1 = {
                     'number': self.number,
-                    'employee_id': employee_id,
+                    'employee_id': en_nos.id,
                     'company_id': company_id,
                     'date_time': self.date_time.id,
                     'department_id': department_id,
@@ -124,8 +126,28 @@ class qdodoo_import_file(models.Model):
                 }
                 values_list2.append(values_dict1)
                 values_list = []
+            inv_ids = []
             for line in values_list2:
-                self.env['qdodoo.industry.accounting'].create(line)
+                cre_obj = self.env['qdodoo.industry.accounting'].create(line)
+                inv_ids.append(cre_obj.id)
+
+            ####返回页面
+            mod_obj = self.env['ir.model.data']
+            if len(inv_ids) > 0:
+                mo, view_id = mod_obj.get_object_reference('qdodoo_hr_salary_accounting',
+                                                           'qdodoo_industry_accounting_view_tree')
+                mo_form, view_id_form = mod_obj.get_object_reference('qdodoo_hr_salary_accounting',
+                                                                     'qdodoo_industry_accounting_view_form')
+                return {
+                    'name': _('工资核算'),
+                    'view_type': 'form',
+                    "view_mode": 'tree,form',
+                    'res_model': 'qdodoo.industry.accounting',
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', inv_ids)],
+                    'views': [(view_id, 'tree'), (view_id_form, 'form')],
+                    'view_id': [view_id],
+                }
 
     _defaults = {
         'company_id': lambda self, cr, uid, c: self.pool.get('res.users').browse(cr, uid, uid, c).company_id.id

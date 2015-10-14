@@ -113,11 +113,9 @@ class qdodoo_hr_dapartment_date(models.Model):
             i_list.append(cre_obj.id)
 
         mod_obj = self.env['ir.model.data']
-        act_obj = self.pool.get('ir.actions.act_window')
-        dummy, action_id = mod_obj.get_object_reference('hr_payroll', 'act_hr_employee_payslip_list')
+
         inv_ids = i_list
-        # for po in self.browse(self.ids):
-        #     inv_ids += [invoice.id for invoice in po.invoice_ids]
+
         if len(inv_ids) > 0:
             mo, view_id = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_tree')
             mo_form, view_id_form = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_form')
