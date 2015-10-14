@@ -162,7 +162,7 @@ class pricelist_prolate_relation(models.Model):
 
     def _get_company(self, cr  ,uid, ids ,context=None):
         user=self.pool.get('res.users')
-        print 'user is ',user
+        #print 'user is ',user
         return  user.browse(cr,uid,uid).company_id.id
 
     _defaults =  {

@@ -384,9 +384,9 @@
                             <div class="oe_structure"/>
                         </div>
                         <div class="col-lg-3 col-lg-offset-1 col-sm-3 text-muted" id="right_column">
-                            <h4>账户余额为：</h4>
+                            <h4 style="color:red;">账户余额为：</h4>
                             <t t-if="not credit">
-                                <input type="text" name="show_yue" value="0" readonly="True"/>
+                                <input type="text" name="show_yue" value="0" readonly="True" style="color:red;"/>
                             </t>
                             <t t-if="credit">
                                 <input type="text" name="show_yue" t-att-value="credit" readonly="True"/>

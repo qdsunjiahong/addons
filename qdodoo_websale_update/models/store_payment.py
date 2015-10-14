@@ -13,7 +13,7 @@ class store_deposit(models.Model):
     remarks = fields.Text(string='备注')
 
     def _get_user(self, cr, uid, ids, context=None):
-        print '111111111111111111'
+        #print '111111111111111111'
         user = self.pool.get('res.users')
         return user.browse(cr, uid, uid).name
 
