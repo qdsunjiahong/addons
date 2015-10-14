@@ -13,6 +13,7 @@
                             <field name="department_id"/>
                             <field name="company_id"/>
                             <field name="date_time"/>
+                            <field name="number"/>
                         </group>
                         <notebook colspan="4">
                             <page string="核算明细">
@@ -22,6 +23,7 @@
                                         <field name="number"/>
                                         <field name="qty"/>
                                         <field name="contract_id" string="合同"/>
+                                        <field name="number_l"/>
                                     </tree>
                                 </field>
                             </page>
@@ -36,6 +38,7 @@
             <field name="model">qdodoo.industry.accounting</field>
             <field name="arch" type="xml">
                 <tree string="工资核算">
+                    <field name="number"/>
                     <field name="employee_id"/>
                     <field name="department_id"/>
                     <field name="company_id"/>
@@ -63,7 +66,8 @@
                 <form string="工资核算">
                     <sheet>
                         <group colspan="4" col="4">
-                            <field name="company_id"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="number"/>
                             <field name="date_time"
                                    domain="[('company_id','=',company_id),('state','not in',('done',))]"/>
                         </group>

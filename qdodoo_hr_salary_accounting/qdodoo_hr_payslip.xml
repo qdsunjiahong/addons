@@ -23,5 +23,17 @@
                 </xpath>
             </field>
         </record>
+        <record model="ir.ui.view" id="qdodoo_hr_payslip_view_hr_payslip_tree">
+            <field name="name">工资条</field>
+            <field name="model">hr.payslip</field>
+            <field name="inherit_id" ref="hr_payroll.view_hr_payslip_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']"
+                       position="after">
+                    <field name="number_l"/>
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </openerp>
