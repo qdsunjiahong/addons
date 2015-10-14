@@ -22,14 +22,18 @@
                             <page string="价格表">
                              <field name="ref_pricelist_prolate">
                                  <tree editable="bottom">
-                                 <field name="ref_product_pricelist"/>
-                                <field name="proportion"/>
-                                 <field name="fixed"/>
-                                 <field name="to_toal"/>
+                                  <field name="ref_product_pricelist"/>
+                                  <field name="proportion"/>
+                                  <field name="fixed"/>
+                                  <field name="to_toal"/>
                                   <field name="success"/>
+                                  <field name="comparison"/>
                                  </tree>
+
                              </field>
                                 <button string="添加到价格表"  type="object" name="add_price_list"/>
+                                <button string="字段同步"  type="object" name="synchronous_field"/>
+                                <button string="同步数据" type="object" name="add_synchronous_field"/>
                             </page>
                      </xpath>
                 </field>

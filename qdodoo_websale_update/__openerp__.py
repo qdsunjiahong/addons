@@ -22,7 +22,8 @@
     'images': [],  # 模块图片
     'depends': ['base', 'hr','website_sale','hm','product'],  # 依赖模块
     'data': ['views/qdodoo_website_tempview.xml',
-             'views/res_partner_inherit.xml',],
+             'views/res_partner_inherit.xml',
+             'views/door_deposit.xml',],
     'application': True,  # 是否认证
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
