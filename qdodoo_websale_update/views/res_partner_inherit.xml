@@ -13,5 +13,27 @@
             </record>
 
 
+            <record model="ir.ui.view" id="pricelist_prolate_show_form">
+                <field name="name">pricelist_prolate_show_form</field>
+                <field name="model">product.template</field>
+                <field name="inherit_id" ref="product.product_template_only_form_view"/>
+                <field name="arch" type="xml">
+                     <xpath expr="//page[@string='Variants']" position="after">
+                            <page string="价格表">
+                             <field name="ref_pricelist_prolate">
+                                 <tree editable="bottom">
+                                 <field name="ref_product_pricelist"/>
+                                <field name="proportion"/>
+                                 <field name="fixed"/>
+                                 <field name="to_toal"/>
+                                  <field name="success"/>
+                                 </tree>
+                             </field>
+                                <button string="添加到价格表"  type="object" name="add_price_list"/>
+                            </page>
+                     </xpath>
+                </field>
+            </record>
+
         </data>
     </openerp>

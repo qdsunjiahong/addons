@@ -450,6 +450,7 @@ class qdodooo_website_update(website_sale):
                 print '城市有误 不给处理'
                 # return
         # 得到全局变量
+        print 'confirm_order post is ',post
         values = self.checkout_values(post)
 
         values["error"] = self.checkout_form_validate(values["checkout"])
@@ -565,6 +566,8 @@ class qdodooo_website_update(website_sale):
         payment_obj = request.registry.get('payment.acquirer')
         sale_order_obj = request.registry.get('sale.order')
 
+        print 'payment post is :',post
+
         #得到当前销售订单
         order = request.website.sale_get_order(context=context)
 
@@ -594,8 +597,10 @@ class qdodooo_website_update(website_sale):
         # 得到我想要的账号余额
         partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid).partner_id
         have_money = pool.get('res.partner').browse(cr, SUPERUSER_ID, partner.id).credit
-        print 'have_money is ===========', have_money
-        values['credit'] = have_money
+        if have_money>=0:
+            values['credit'] = 0
+        else:
+            values['credit'] = abs(have_money)
         # fetch all registered payment means
         # if tx:
         #     acquirer_ids = [tx.acquirer_id.id]

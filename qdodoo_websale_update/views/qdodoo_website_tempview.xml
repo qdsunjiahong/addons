@@ -175,28 +175,42 @@
                       <label class="control-label" for="zip" style="font-weight: normal">Zip / Postal Code</label>
                       <input type="text" name="zip" class="form-control" t-att-value="checkout.get('zip')" readonly="True"/>
                   </div>
-                  <div t-attf-class="form-group #{error.get('country_id') and 'has-error' or ''} col-lg-6">
+                  <div t-attf-class="form-group #{error.get('country_id') and 'has-error' or ''} col-lg-6" >
                       <label class="control-label" for="country_id">Country</label>
-                      <select name="country_id" class="form-control" readonly="True">
+                      <t t-foreach="countries or []" t-as="country">
+                              <t t-if="country.id == checkout.get('country_id')">
+                                  <input type="text" name="country_id" class="form-control" t-att-value="country.id" readonly="True" style="display:none"/>
+                                  <input type="text" name="country_name" class="form-control" t-att-value="country.name" readonly="True" />
+                              </t>
+                      </t>
+                      <!--<select name="country_id" class="form-control" readonly="True" >
                           <option value="">Country...</option>
                           <t t-foreach="countries or []" t-as="country">
                               <option t-att-value="country.id" t-att-selected="country.id == checkout.get('country_id')"><t t-esc="country.name"/></option>
                           </t>
-                      </select>
+                      </select>-->
                   </div>
-                  <div t-attf-class="form-group #{error.get('state_id') and 'has-error' or ''} col-lg-6">
+                  <div t-attf-class="form-group #{error.get('state_id') and 'has-error' or ''} col-lg-6" >
                       <label class="control-label" for="state_id" style="font-weight: normal">State / Province</label>
-                      <select name="state_id" class="form-control" readonly="True">
+                      <t t-foreach="states or []" t-as="state">
+                          <t t-if="state.id == checkout.get('state_id')">
+                              <input type="text" name="state_id" class="form-control" t-att-value="state.id" readonly="True" style="display:none"/>
+                              <input type="text" name="state_name" class="form-control" t-att-value="state.name" readonly="True" />
+                          </t>
+                      </t>
+                      <!--
+                      <select name="state_id" class="form-control" readonly="True" >
                           <option value="">select...</option>
                           <t t-foreach="states or []" t-as="state">
                               <option t-att-value="state.id" style="display:none;" t-att-data-country_id="state.country_id.id" t-att-selected="state.id == checkout.get('state_id')"><t t-esc="state.name"/></option>
                           </t>
                       </select>
+                      -->
                   </div>
 
                   <div class="clearfix"/>
 
-                  <div class="form-group col-lg-12">
+                  <div class="form-group col-lg-12" style="display:none;">
                       <label>Shipping</label>
                       <select name="shipping_id" class="form-control" readonly="True">
                           <option value="0">Ship to the same address</option>
@@ -215,7 +229,7 @@
                       </select>
                   </div>
               </div>
-              <div class="js_shipping row mb16" t-att-style="not shipping_id and 'display:none' or ''">
+              <div class="js_shipping row mb16" t-att-style="not shipping_id and 'display:none' or ''" style="display:none;">
                   <h3 class="oe_shipping col-lg-12 mt16">Shipping Information</h3>
 
                   <div t-attf-class="form-group #{error.get('shipping_name') and 'has-error' or ''} col-lg-6">
@@ -239,18 +253,18 @@
                       <label class="control-label" for="shipping_zip" style="font-weight: normal">Zip / Postal Code</label>
                       <input type="text" name="shipping_zip" class="form-control" t-att-value="checkout.get('shipping_zip', '')" t-att-readonly=" 'readonly' if shipping_id &gt;= 0 else ''" readonly="True"/>
                   </div>
-                  <div t-attf-class="form-group #{error.get('shipping_country_id') and 'has-error' or ''} col-lg-6">
+                  <div t-attf-class="form-group #{error.get('shipping_country_id') and 'has-error' or ''} col-lg-6" >
                       <label class="control-label" for="shipping_country_id">Country</label>
-                      <select name="shipping_country_id" class="form-control" t-att-disabled="  'disabled' if shipping_id &gt;= 0 else ''"  readonly="True">
+                     <select name="shipping_country_id" class="form-control" t-att-disabled="  'disabled' if shipping_id &gt;= 0 else ''"   >
                           <option value="">Country...</option>
                           <t t-foreach="countries or []" t-as="country">
                               <option t-att-value="country.id" t-att-selected="country.id == checkout.get('shipping_country_id')"><t t-esc="country.name"/></option>
                           </t>
                       </select>
                   </div>
-                  <div t-attf-class="form-group #{error.get('shipping_state_id') and 'has-error' or ''} col-lg-6">
+                  <div t-attf-class="form-group #{error.get('shipping_state_id') and 'has-error' or ''} col-lg-6" >
                       <label class="control-label" for="shipping_state_id" style="font-weight: normal">State / Province</label>
-                      <select name="shipping_state_id" class="form-control" t-att-readonly="  'readonly' if shipping_id &gt;= 0 else ''" readonly="True">
+                      <select name="shipping_state_id" class="form-control" t-att-readonly="  'readonly' if shipping_id &gt;= 0 else ''" >
                           <option value="">State / Province...</option>
                           <t t-foreach="states or []" t-as="state">
                               <option t-att-value="state.id" style="display:none;" t-att-data-country_id="state.country_id.id" t-att-selected="state.id == checkout.get('shipping_state_id')"><t t-esc="state.name"/></option>
@@ -388,25 +402,7 @@
                                     Change Address
                                 </a>
                             </div>
-                            <t>
-                                <h4 class="mt32">Ship To:</h4>
-                                <t t-if="website_sale_order.partner_shipping_id and website_sale_order.partner_shipping_id.id != website_sale_order.partner_invoice_id.id">
-                                    <div t-field="order.partner_shipping_id" t-field-options='{
-                                    "widget": "contact",
-                                    "fields": ["address", "name", "phone"]
-                                    }'/>
-                                </t>
-                                <address
-                                        t-if="website_sale_order.partner_shipping_id.id == website_sale_order.partner_invoice_id.id">
-                                    Ship to the same address
-                                </address>
-                                <div class="mb32">
-                                    <a href="/shop/checkout">
-                                        <span class="fa fa-arrow-right"/>
-                                        Change Address
-                                    </a>
-                                </div>
-                            </t>
+
                         </div>
                     </div>
                     <div class="js_payment mb64 row" t-if="acquirers and website_sale_order.amount_total"
