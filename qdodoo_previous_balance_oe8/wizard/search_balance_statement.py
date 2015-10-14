@@ -78,6 +78,8 @@ class qdodoo_search_balance_statement(osv.Model):
         # 前期结余
         balance_num_dict = {}
         balance_num_new_dict = {}
+        balance_mount_dict = {}
+        balance_mount_new_dict = {}
         balance_obj = self.pool.get("qdodoo.previous.balance")
         # 获取昨天的日期
         yesterday = (datetime.datetime.strptime(start_date, DEFAULT_SERVER_DATETIME_FORMAT) - datetime.timedelta(
@@ -87,12 +89,14 @@ class qdodoo_search_balance_statement(osv.Model):
                                                    ('location_id', '=', location_id)])
         for balance_brw in balance_obj.browse(cr, uid, balance_ids):
             balance_num_dict[balance_brw.product_id.id] = balance_brw.balance_num
+            balance_mount_dict[balance_brw.product_id.id] = balance_brw.balance_money
         if end_date:
             balance_ids_new = balance_obj.search(cr, uid,
                                                  [('date', '=', end_date), ('location_id', '=', location_id),
                                                   ('product_id', 'in', product_list)])
             for balance_brw_new in balance_obj.browse(cr, uid, balance_ids_new):
                 balance_num_new_dict[balance_brw_new.product_id.id] = balance_brw_new.balance_num
+                balance_mount_new_dict[balance_brw_new.product_id.id] = balance_brw_new.balance_money
 
         # 根据id获取产品名字、内部编号、分类id
         dict_product = {}
@@ -106,7 +110,7 @@ class qdodoo_search_balance_statement(osv.Model):
 
         # 入库数量
         num_dict = {}
-
+        move_in_mount = {}
         move_in_list = []
         move_obj = self.pool.get("stock.move")
 
@@ -116,12 +120,15 @@ class qdodoo_search_balance_statement(osv.Model):
         for move_brw in move_obj.browse(cr, uid, move_ids):
             if move_brw.product_id.id in num_dict:
                 num_dict[move_brw.product_id.id] += move_brw.product_qty
+                move_in_mount[move_brw.product_id.id] += move_brw.product_qty * move_brw.price_unit
             else:
                 num_dict[move_brw.product_id.id] = move_brw.product_qty
+                move_in_mount[move_brw.product_id.id] = move_brw.product_qty * move_brw.price_unit
             move_in_list.append(move_brw.product_id.id)
 
         # 查询产品的出库数量
         move_out_dict = {}
+        move_out_mount = {}
         move_out_list = []
         move_out_ids = move_obj.search(cr, uid,
                                        [('product_id', 'in', product_list), ('state', '=', 'done'),
@@ -130,8 +137,10 @@ class qdodoo_search_balance_statement(osv.Model):
         for move_out_id in move_obj.browse(cr, uid, move_out_ids):
             if move_out_id.product_id.id in move_out_dict:
                 move_out_dict[move_out_id.product_id.id] += move_out_id.product_qty
+                move_out_mount[move_out_id.product_id.id] += move_out_id.price_unit * move_out_id.product_qty
             else:
                 move_out_dict[move_out_id.product_id.id] = move_out_id.product_qty
+                move_out_mount[move_out_id.product_id.id] = move_out_id.price_unit * move_out_id.product_qty
             move_out_list.append(move_out_id.product_id.id)
 
         product_list_new = list(set(move_in_list + move_out_list))
@@ -139,11 +148,19 @@ class qdodoo_search_balance_statement(osv.Model):
         for product_l in product_list_new:
             result['name'] = location_id_name  # 库位名称
             result['product_name'] = dict_product.get(product_l, '')  # 产品名称
-            result['product_id']=product_l
-            result['pre_balance'] = balance_num_dict.get(product_l, 0.0)  # 前期结余数量#
+            result['product_id'] = product_l
+            result['pre_balance'] = balance_num_dict.get(product_l, 0.0)  # 前期结余数量
+            result['pre_balance_mount'] = balance_mount_dict.get(product_l, 0.0)  # 前期结余金额
             result['storage_quantity_period'] = num_dict.get(product_l, 0.0)  # 本期入库数量
+            result['storege_quantity_period_mount'] = move_in_mount.get(product_l, 0.0)  # 本期入库金额
             result['number_of_library'] = move_out_dict.get(product_l, 0.0)  # 本期出库数量
-            result['current_balance'] = balance_num_new_dict.get(product_l, product_dict.get(product_l, 0.0))  # 本期结余数量
+            result['number_of_lib_mount'] = move_out_mount.get(product_l, 0.0)  # 本期出库金额
+            result['current_balance'] = balance_num_dict.get(product_l, 0.0) + num_dict.get(product_l,
+                                                                                            0.0) - move_out_dict.get(
+                product_l, 0.0)  # 本期结余数量
+            result['current_balance_mount'] = balance_mount_dict.get(product_l, 0.0) + move_in_mount.get(product_l,
+                                                                                                         0.0) - move_out_mount.get(
+                product_l, 0.0)
             self.pool.get("qdodoo.result.balance.statement").create(cr, uid, result,
                                                                     context=context)
 
@@ -163,7 +180,12 @@ class qdodoo_result_balance_statement(osv.Model):
         'product_id': fields.many2one('product.product', u'产品'),
         'name': fields.char(u'库位'),
         'pre_balance': fields.float(string=u'前期结余数量'),
+        'pre_balance_mount': fields.float(digits=(16, 4), string=u'前期结余金额'),
         'storage_quantity_period': fields.float(string=u'本期入库数量'),
+        'storege_quantity_period_mount': fields.float(digits=(16, 4), string=u'本期入库金额'),
         'number_of_library': fields.float(string=u'本期出库数量'),
+        'number_of_lib_mount': fields.float(digits=(16, 4), string=u'本期出库金额'),
         'current_balance': fields.float(string=u'本期结余数量'),
+        'current_balance_mount': fields.float(digits=(16, 4), string=u'本期结余金额'),
+
     }

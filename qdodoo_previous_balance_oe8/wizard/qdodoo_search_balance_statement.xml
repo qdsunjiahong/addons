@@ -46,9 +46,13 @@
                     <field name="product_id"/>
                     <field name="name"/>
                     <field name="pre_balance"/>
+                    <field name="pre_balance_mount"/>
                     <field name="storage_quantity_period"/>
+                    <field name="storege_quantity_period_mount"/>
                     <field name="number_of_library"/>
+                    <field name="number_of_lib_mount"/>
                     <field name="current_balance"/>
+                    <field name="current_balance_mount"/>
                 </tree>
             </field>
         </record>
