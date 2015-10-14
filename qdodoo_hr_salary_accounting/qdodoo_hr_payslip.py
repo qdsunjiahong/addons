@@ -16,6 +16,10 @@ class qdodoo_hr_payslip(models.Model):
     _inherit = 'hr.payslip'
 
     import_file = fields.Binary(string=u'导入excel文件')
+    number_l = fields.Selection([(1, 1),
+                               (2, 2),
+                               (3, 3)], string=u'工资发放序列号', required=True)
+
     @api.one
     def btn_import_data(self):
         excel_ids = []

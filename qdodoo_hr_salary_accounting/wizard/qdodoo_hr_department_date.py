@@ -23,6 +23,9 @@ class qdodoo_hr_dapartment_date(models.Model):
     company_id = fields.Many2one("res.company", string=u'公司')
     date = fields.Many2one('account.period', string=u'工资核算月份', required=True)
     journal_id = fields.Many2one('account.journal', string=u'工资分录', required=True)
+    number = fields.Selection([(1, 1),
+                               (2, 2),
+                               (3, 3)], string=u'工资发放序列号', required=True)
     hr_employee_ids = fields.Char(string=u'员工')
 
     def _default_get_company(self, cr, uid, ids, context=None):
@@ -68,7 +71,7 @@ class qdodoo_hr_dapartment_date(models.Model):
         'journal_id': _defaul_get_journal_id,
     }
 
-    @api.one
+    @api.multi
     def action_done(self):
         create_list = []
         employee_ids = self.hr_employee_ids.split(';')
@@ -90,18 +93,46 @@ class qdodoo_hr_dapartment_date(models.Model):
                 raise except_orm(_(u'警告！'), _(u'员工%s未创建合同') % (employee_obj.name))
             hr_user_id = employee_obj.user_id.id
             # worked_days_line_ids = self.env['hr.payslip'].get_worked_day_lines(contract_ids, date_from, date_to)
-            input_line_ids = self.get_inputs(contract_ids, self.date.id)
+            input_line_ids = self.get_inputs(contract_ids, self.date.id, self.number)
             journal_id = self.journal_id.id
+            hr_ids = self.env['hr.payslip'].search(
+                [('employee_id', '=', employee_id), ('date_from', '=', date_from), ('date_to', '=', date_to),
+                 ('state', '!=', 'cancel'),('number_l','=',self.number)])
+            if hr_ids:
+                raise except_orm(_(u'警告'), _(u'员工%s的当前期间工资条已存在') % (employee_obj.name))
             create_dict = {'employee_id': employee_id, 'date_from': date_from, 'date_to': date_to,
                            'name': name, 'hr_user_id': hr_user_id, 'contract_id': contract_id,
                            'struct_id': struct_id, 'hr_department_id': hr_department_id,
                            'company_id': company_id, 'journal_id': journal_id, 'state': 'draft',
+                           'number_l': self.number,
                            'input_line_ids': input_line_ids}
             create_list.append(create_dict)
+        i_list = []
         for i in create_list:
-            self.env['hr.payslip'].create(i)
+            cre_obj = self.env['hr.payslip'].create(i)
+            i_list.append(cre_obj.id)
 
-    def get_inputs(self, cr, uid, contract_ids, period_id, context=None):
+        mod_obj = self.env['ir.model.data']
+
+        inv_ids = i_list
+
+        if len(inv_ids) > 0:
+            mo, view_id = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_tree')
+            mo_form, view_id_form = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_form')
+            return {
+                'name': _('员工工资条'),
+                'view_type': 'form',
+                "view_mode": 'tree,form',
+                'res_model': 'hr.payslip',
+                'type': 'ir.actions.act_window',
+                'domain': [('id', 'in', inv_ids)],
+                'views': [(view_id, 'tree'), (view_id_form, 'form')],
+                'view_id': [view_id],
+            }
+        else:
+            raise except_orm(_(u'警告'), _(u'创建工资条失败!'))
+
+    def get_inputs(self, cr, uid, contract_ids, period_id, number_l, context=None):
         res = []
         contract_obj = self.pool.get('hr.contract')
         rule_obj = self.pool.get('hr.salary.rule')
@@ -117,7 +148,7 @@ class qdodoo_hr_dapartment_date(models.Model):
                     for input in rule.input_ids:
                         industry_accounting_ids = self.pool.get('industry.accounting.line').search(cr, uid, [
                             ('name', '=', input.name), ('contract_id', '=', contract.id),
-                            ('period_id', '=', period_id)])
+                            ('period_id', '=', period_id),('number_l','=',number_l)])
                         if not industry_accounting_ids:
                             raise except_orm(_(u'警告'),
                                              _(u'员工%s的工资规则%s未创建') % (contract.employee_id.name, input.name))

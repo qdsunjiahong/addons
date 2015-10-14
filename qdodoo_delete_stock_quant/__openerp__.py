@@ -7,19 +7,18 @@
 ###########################################################################################
 
 {
-    'name': u'工资核算模块',  # 模块名称
+    'name': u'运输库位库存清空',  # 模块名称
     'version': '1.0',  # 版本
     'category': 'Technology',  # 分类
     'author': 'qdodoo Technology',  # 作者
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'hr', 'hr_attendance', 'hr_payroll', 'hr_payroll_account'],  # 依赖模块
+    'depends': ['base', 'hr', 'hr_payroll', 'account'],  # 依赖模块
     'data': [
-        'qdodoo_hr_employee_view.xml',
-        'qdodoo_industry_accounting_view.xml',
-        'qdodoo_hr_payslip.xml'
-        # 'wizard/qdodoo_hr_department_date.xml'
+        # 'qdodoo_bom_setting.xml',
+        # 'qdodoo_stock_move_inherit.xml'
+        # ...
     ],  # 更新XML,CSV
     'js': [
         # 'static/src/js/account_move_reconciliation.js',
@@ -45,7 +44,7 @@
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
     'description': """
-    工资核算模块
+    运输库位库存清空
     """,
 }
 

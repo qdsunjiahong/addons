@@ -14,7 +14,7 @@ class qdodoo_pop_change(models.Model):
     _auto = False
 
     # product_id = fields.Many2one('product.product', string=u'产品')
-    product_name = fields.Char( string=u'产品')
+    product_name = fields.Char(string=u'产品')
     delivery_place = fields.Many2one('stock.location', string=u'交货地点')
     date_planned = fields.Datetime(string=u'订单日期')
     unit_price = fields.Float(string=u'单价', digits=(16, 4))
@@ -29,16 +29,18 @@ class qdodoo_pop_change(models.Model):
                     po.id as id,
                     pp.name_template as product_name,
                     po.date_order as date_planned,
-                    pol.price_unit as unit_price,
-                    pol.company_id as company_id,
-                    pol.partner_id as partner_id,
+                    ail.price_unit as unit_price,
+                    po.company_id as company_id,
+                    po.partner_id as partner_id,
                     spt.default_location_dest_id as delivery_place
-                from purchase_order_line pol
-                    LEFT JOIN purchase_order po ON po.id = pol.order_id
+                from account_invoice_line ail
+                    LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id
+                    LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id=ai.id
+                    LEFT JOIN purchase_order po ON po.id = pir.purchase_id
                     LEFT JOIN stock_picking_type spt ON po.picking_type_id = spt.id
-                    LEFT JOIN product_product pp on pp.id=pol.product_id
-                where po.state = 'done'
+                    LEFT JOIN product_product pp on pp.id=ail.product_id
+                where po.state = 'done' and ai.state != 'cancel'
                 group by
-                    po.id,pp.name_template,po.date_order,pol.price_unit,spt.default_location_dest_id,po.state,po.picking_type_id,pol.order_id,pol.company_id,pol.partner_id
+                    po.id,pp.name_template,po.date_order,ail.price_unit,spt.default_location_dest_id,po.company_id,po.partner_id,ai.id,ail.invoice_id,pir.invoice_id,pir.purchase_id,po.picking_type_id,spt.id,pp.id,ail.product_id,ai.state
             )
         """)

@@ -8,19 +8,18 @@
                 <form string="工资核算" version="7.0">
                     <sheet>
                         <group>
-                            <label for="date" string="工资核算月份"/>
-                            <h1>
-                                <field name="date"
-                                       domain="[('company_id','=',company_id),('state','not in',('done',))]"/>
-                            </h1>
-                            <label for="company_id" string="公司"/>
-                            <h1>
-                                <field name="company_id" readonly="1"/>
-                            </h1>
-                            <label for="journal_id" string="工资分录"/>
-                            <h1>
-                                <field name="journal_id" domain="[('company_id','=',company_id)]"/>
-                            </h1>
+
+
+                            <field name="date"
+                                   domain="[('company_id','=',company_id),('state','not in',('done',))]"/>
+
+
+                            <field name="number"/>
+
+                            <field name="company_id" invisible="1"/>
+
+                            <field name="journal_id" domain="[('company_id','=',company_id)]"/>
+
                             <field name="hr_employee_ids" invisible="1"/>
                         </group>
                         <footer>
