@@ -14,10 +14,9 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'hr', 'hr_payroll', 'account'],  # 依赖模块
+    'depends': ['base', 'stock'],  # 依赖模块
     'data': [
-        # 'qdodoo_bom_setting.xml',
-        # 'qdodoo_stock_move_inherit.xml'
+        'qdodoo_stock_quant_delete.xml',
         # ...
     ],  # 更新XML,CSV
     'js': [
@@ -44,7 +43,7 @@
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
     'description': """
-    运输库位库存清空
+    会计凭证金额、不含税金额只读
     """,
 }
 

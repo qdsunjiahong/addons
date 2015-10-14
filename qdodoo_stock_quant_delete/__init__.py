@@ -1,0 +1,1 @@
+import qdodoo_stock_quant_delete
