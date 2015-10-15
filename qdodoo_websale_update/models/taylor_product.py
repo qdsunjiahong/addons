@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from openerp import models, fields, api, _
-
+import datetime
 
 class taylor_template(models.Model):
     """
@@ -38,7 +38,7 @@ class taylor_template(models.Model):
                 if not pric_ver.date_start and not pric_ver.date_end:
                     pric_var_now = pric_ver.id
                     break
-                elif fields.datetime.now() < pric_ver.date_end and fields.datetime.now() > pric_ver.date_end:
+                elif fields.datetime.now()<datetime.datetime.strptime(pric_ver.date_end, "%Y-%m-%d") and fields.datetime.now()>datetime.datetime.strptime(pric_ver.date_start, "%Y-%m-%d"):
                     pric_var_now = pric_ver.id
                     break
             #r如果存在价格版本
@@ -102,10 +102,12 @@ class taylor_template(models.Model):
 
             #遍历价格表版本
             for pric_ver in pricr_list_version.browse(cr, uid ,pricr_list_version.search(cr ,uid ,[('pricelist_id','=',prolate_obj.ref_product_pricelist.id)],context=context),context=context):
+                print 'fields.datetime.now() is ',fields.datetime.now(),'pric_ver.date_end',pric_ver.date_end,'pric_ver.date_end',pric_ver.date_end
+                print type(fields.datetime.now()),'==',type(pric_ver.date_end),'====',type(pric_ver.date_end)
                 if  not pric_ver.date_start and  not  pric_ver.date_end:
                     pric_var_now=pric_ver.id
                     break
-                elif fields.datetime.now()<pric_ver.date_end and fields.datetime.now()>pric_ver.date_end:
+                elif fields.datetime.now()<datetime.datetime.strptime(pric_ver.date_end, "%Y-%m-%d") and fields.datetime.now()>datetime.datetime.strptime(pric_ver.date_start, "%Y-%m-%d"):
                     pric_var_now=pric_ver.id
                     break
             #print 'pric_var_now is ',pric_var_now
@@ -170,7 +172,8 @@ class pricelist_prolate_relation(models.Model):
 
     }
     def compute_toal(self):
-        self.to_toal = (1 + self.proportion) * self.ref_product_template.list_price + self.fixed
+        for self_obj in self:
+            self_obj.to_toal = (1 + self_obj.proportion) * self_obj.ref_product_template.list_price + self_obj.fixed
 
 
     # def compute_public_price(self):
@@ -184,6 +187,7 @@ class pricelist_prolate_relation(models.Model):
     #     #print '99999999999999999999',self.proportion
     #     if self.proportion < 0 or self.proportion > 1:
     #         raise Warning(_('比例值在0-1之间'))
+
 
 
 
