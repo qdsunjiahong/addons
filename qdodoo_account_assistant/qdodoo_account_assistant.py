@@ -19,6 +19,7 @@ class qdodoo_account_account_inherit(models.Model):
 class qdodoo_sale_order(models.Model):
     _inherit = 'sale.order'
 
+
     def create(self, cr, uid, values, context=None):
         if values.get('order_line', []):
             for line in values.get('order_line', []):
@@ -33,16 +34,9 @@ class qdodoo_sale_order(models.Model):
         else:
             return super(qdodoo_sale_order, self).create(cr, uid, values, context=context)
 
-    @api.one
-    def write(self, values):
-        if not self.project_id and not values.get('project_id', []):
-            if self.order_line:
-                for line in self.order_line:
-                    if line.product_id.categ_id.property_stock_account_output_categ.required_assistant == True:
-                        raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
-                    else:
-                        return super(qdodoo_sale_order, self).write(values)
-            else:
-                return super(qdodoo_sale_order, self).write(values)
-        else:
-            return super(qdodoo_sale_order, self).write(values)
+
+
+class qdodoo_purchase_order(models.Model):
+    _inherit = 'purchase.order.line'
+    required_assistant = fields.Boolean(
+        related='product_id.categ_id.property_stock_account_input_categ.required_assistant', string=u'辅助核算想必填')
