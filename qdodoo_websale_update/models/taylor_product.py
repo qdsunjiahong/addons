@@ -102,19 +102,19 @@ class taylor_template(models.Model):
         pricelist_prolate_list=pricelist_prolate_obj.search(cr ,uid ,[('ref_product_template','=',ids)],context=context)
         for prolate_obj in pricelist_prolate_obj.browse(cr ,uid ,pricelist_prolate_list,context=context):
             #print 'prolate_obj_id',prolate_obj
-            print 'prolate_obj_id.ref_product_pricelist :',prolate_obj.ref_product_pricelist.id
+            #print 'prolate_obj_id.ref_product_pricelist :',prolate_obj.ref_product_pricelist.id
 
             #遍历价格表版本
             for pric_ver in pricr_list_version.browse(cr, uid ,pricr_list_version.search(cr ,uid ,[('pricelist_id','=',prolate_obj.ref_product_pricelist.id)],context=context),context=context):
-                print 'fields.datetime.now() is ',fields.datetime.now(),'pric_ver.date_end',pric_ver.date_end,'pric_ver.date_end',pric_ver.date_end
-                print type(fields.datetime.now()),'==',type(pric_ver.date_end),'====',type(pric_ver.date_end)
+                #print 'fields.datetime.now() is ',fields.datetime.now(),'pric_ver.date_end',pric_ver.date_end,'pric_ver.date_end',pric_ver.date_end
+                #print type(fields.datetime.now()),'==',type(pric_ver.date_end),'====',type(pric_ver.date_end)
                 if  not pric_ver.date_start and  not  pric_ver.date_end:
                     pric_var_now=pric_ver.id
                     break
                 elif fields.datetime.now()<datetime.datetime.strptime(pric_ver.date_end, "%Y-%m-%d") and fields.datetime.now()>datetime.datetime.strptime(pric_ver.date_start, "%Y-%m-%d"):
                     pric_var_now=pric_ver.id
                     break
-            print 'pric_var_now is ',pric_var_now
+            #print 'pric_var_now is ',pric_var_now
             if not pric_var_now:
                 raise Warning(_('没有这个价格表，请重新选择'))
                 continue
@@ -180,6 +180,55 @@ class pricelist_prolate_relation(models.Model):
         for self_obj in self:
             self_obj.to_toal = (1 + self_obj.proportion) * self_obj.ref_product_template.list_price + self_obj.fixed
 
+
+
+    def unlink(self, cr, uid, ids, context=None):
+        """
+        1.查找匹配的价格表
+        2.得到价格表版本
+        3.遍历此价格表版本中的列
+        4.查找匹配的选项
+        5.删除
+        :param cr:
+        :param uid:
+        :param ids:
+        :param context:
+        :return:
+        """
+        pricelist_prolate_obj=self.pool.get('pricelist.prolate.relation')
+        price_lst_item=self.pool.get('product.pricelist.item')
+        pricr_list_version=self.pool.get("product.pricelist.version")
+        product_pro=self.pool.get('product.product')
+        pric_var_now=""
+
+        print '9999999999999999999999999999999999999999'
+        #查找匹配的价格表
+        print 'ref_product_template is ',ids
+        pricelist_prolate_list=pricelist_prolate_obj.search(cr ,uid ,[('id','=',ids)],context=context)
+        for prolate_obj in pricelist_prolate_obj.browse(cr ,uid ,pricelist_prolate_list,context=context):
+            #查询出产品模版对应的产品
+            product_list=product_pro.search(cr ,uid ,[('product_tmpl_id','=',prolate_obj.ref_product_template.id)])
+            #遍历价格表版本
+            for pric_ver in pricr_list_version.browse(cr, uid ,pricr_list_version.search(cr ,uid ,[('pricelist_id','=',prolate_obj.ref_product_pricelist.id)],context=context),context=context):
+                #print 'fields.datetime.now() is ',fields.datetime.now(),'pric_ver.date_end',pric_ver.date_end,'pric_ver.date_end',pric_ver.date_end
+                #print type(fields.datetime.now()),'==',type(pric_ver.date_end),'====',type(pric_ver.date_end)
+                if  not pric_ver.date_start and  not  pric_ver.date_end:
+                    pric_var_now=pric_ver.id
+                    break
+                elif fields.datetime.now()<datetime.datetime.strptime(pric_ver.date_end, "%Y-%m-%d") and fields.datetime.now()>datetime.datetime.strptime(pric_ver.date_start, "%Y-%m-%d"):
+                    pric_var_now=pric_ver.id
+                    break
+            print 'pric_var_now is ',pric_var_now
+            if not pric_var_now:
+                raise Warning(_('没有这个价格表，请重新选择'))
+                continue
+            print 'productt_id is ',product_list ,'product_tmpl_id',prolate_obj.ref_product_template.id
+            #查找对应的产品
+            pro_lst_item_lst=price_lst_item.search(cr ,uid ,['|',('product_id','in',product_list),('product_tmpl_id','=',prolate_obj.ref_product_template.id)])
+            print 'unlink pro_lst_item_lst',pro_lst_item_lst
+            price_lst_item.unlink(cr,uid,pro_lst_item_lst,context=context)
+
+        return super(pricelist_prolate_relation, self).unlink(cr, uid, ids, context=context)
 
     #重写UNLINK方法
 
