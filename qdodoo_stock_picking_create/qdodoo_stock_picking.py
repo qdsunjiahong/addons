@@ -43,16 +43,15 @@ class qdodoo_stock_picking(models.Model):
             ['&', ('picking_id', '=', self.picking_id.id), '!', ('id', 'in', processed_ids)])
         packops.unlink()
         self.picking_id.do_transfer()
-
         #####创建发票
         ite_obj = self.item_ids[0]
         location_model_cus, lo_id = self.env['ir.model.data'].get_object_reference('stock', 'stock_location_suppliers')
         location_model_cus2, lo_id2 = self.env['ir.model.data'].get_object_reference('stock',
                                                                                      'stock_location_customers')
-        if ite_obj.sourceloc_id.id in (lo_id, lo_id2):
+        if ite_obj.sourceloc_id.id in (lo_id, lo_id2) and self.picking_id.invoice_state == '2binvoiced':
             onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': fields.date.today()})
             onshipping_id.create_invoice()
-        elif ite_obj.destinationloc_id.id in (lo_id, lo_id2):
+        elif ite_obj.destinationloc_id.id in (lo_id, lo_id2) and self.picking_id.invoice_state == '2binvoiced':
             onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': fields.date.today()})
             onshipping_id.create_invoice()
         return True
