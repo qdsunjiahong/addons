@@ -150,17 +150,11 @@ class qdodoo_search_balance_statement(osv.Model):
             result['product_name'] = dict_product.get(product_l, '')  # 产品名称
             result['product_id'] = product_l
             result['pre_balance'] = balance_num_dict.get(product_l, 0.0)  # 前期结余数量
-            result['pre_balance_mount'] = balance_mount_dict.get(product_l, 0.0)  # 前期结余金额
             result['storage_quantity_period'] = num_dict.get(product_l, 0.0)  # 本期入库数量
-            result['storege_quantity_period_mount'] = move_in_mount.get(product_l, 0.0)  # 本期入库金额
             result['number_of_library'] = move_out_dict.get(product_l, 0.0)  # 本期出库数量
-            result['number_of_lib_mount'] = move_out_mount.get(product_l, 0.0)  # 本期出库金额
             result['current_balance'] = balance_num_dict.get(product_l, 0.0) + num_dict.get(product_l,
                                                                                             0.0) - move_out_dict.get(
                 product_l, 0.0)  # 本期结余数量
-            result['current_balance_mount'] = balance_mount_dict.get(product_l, 0.0) + move_in_mount.get(product_l,
-                                                                                                         0.0) - move_out_mount.get(
-                product_l, 0.0)
             self.pool.get("qdodoo.result.balance.statement").create(cr, uid, result,
                                                                     context=context)
 
@@ -180,12 +174,8 @@ class qdodoo_result_balance_statement(osv.Model):
         'product_id': fields.many2one('product.product', u'产品'),
         'name': fields.char(u'库位'),
         'pre_balance': fields.float(string=u'前期结余数量'),
-        'pre_balance_mount': fields.float(digits=(16, 4), string=u'前期结余金额'),
         'storage_quantity_period': fields.float(string=u'本期入库数量'),
-        'storege_quantity_period_mount': fields.float(digits=(16, 4), string=u'本期入库金额'),
         'number_of_library': fields.float(string=u'本期出库数量'),
-        'number_of_lib_mount': fields.float(digits=(16, 4), string=u'本期出库金额'),
         'current_balance': fields.float(string=u'本期结余数量'),
-        'current_balance_mount': fields.float(digits=(16, 4), string=u'本期结余金额'),
 
     }
