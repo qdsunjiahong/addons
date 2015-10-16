@@ -10,6 +10,7 @@ from openerp.osv import osv, fields
 from openerp.tools.translate import _
 import datetime
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT, DEFAULT_SERVER_DATETIME_FORMAT
+from openerp.exceptions import except_orm
 
 
 class qdodoo_search_balance_statement(osv.Model):
@@ -53,6 +54,13 @@ class qdodoo_search_balance_statement(osv.Model):
         # 获取查询条件中的开始时间和结束时间
         now_date = datetime.datetime.now().strftime('%Y-%m-%d')
         start_date = data['start_date'] + " 00:00:01"
+        read_dict = self.pool.get('qdodoo.previous.balance').read(cr, uid, [1], ['date'])[0]
+        if start_date <= read_dict['date']:
+            date_start_limit = (
+                datetime.datetime.strptime(read_dict['date'], DEFAULT_SERVER_DATE_FORMAT) - datetime.timedelta(
+                    days=-1)).strftime(
+                DEFAULT_SERVER_DATE_FORMAT)
+            raise except_orm(_(u'警告'), _(u'开始时间超出查询范围，开始时间最早只能为%s') % (date_start_limit))
 
         end_date = (data['end_date'] if data['end_date'] else now_date) + " 23:59:59"
         location_obj = self.pool.get('stock.location')
