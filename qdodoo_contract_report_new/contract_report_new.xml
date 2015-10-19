@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_contract_report_view_tree" model="ir.ui.view">
+            <field name="name">合同报表</field>
+            <field name="model">qdodoo.contract.report</field>
+            <field name="arch" type="xml">
+                <tree string="工资核算">
+                    <field name="contract_type"/>
+                    <field name="partner_id"/>
+                    <field name="number"/>
+                    <field name="contract_company"/>
+                    <field name="manager_id"/>
+                    <field name="contract_state"/>
+                </tree>
+            </field>
+        </record>
+        <record id="search_qdodoo_contract_report_view" model="ir.ui.view">
+            <field name="name">合同报表</field>
+            <field name="model">qdodoo.contract.report</field>
+            <field name="arch" type="xml">
+                <search string="合同报表">
+                    <field name="contract_type"/>
+                    <field name="partner_id"/>
+                    <field name="manager_id"/>
+                    <field name="contract_company"/>
+                    <group string="分组按">
+                        <filter string="合同状态" domain="[]" context="{'group_by' : 'contract_state'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                    </group>
+
+                </search>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_contract_report_view_tree" model="ir.actions.act_window">
+            <field name="name">合同报表</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.contract.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="qdodoo_contract_report_view_tree"/>
+            <field name="search_view_id" ref="search_qdodoo_contract_report_view"/>
+        </record>
+
+
+        <record id="qdodoo_search_contract_form" model="ir.ui.view">
+            <field name="name">合同报表</field>
+            <field name="model">qdodoo.search.contract</field>
+            <field name="arch" type="xml">
+                <form string="工资核算">
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="确定" name="action_done" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_search_contract_form" model="ir.actions.act_window">
+            <field name="name">合同报表</field>
+            <field name="res_model">qdodoo.search.contract</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_search_contract_form"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" action="action_qdodoo_search_contract_form"
+                  id="menu_qdodoo_search_contract"
+                  parent="base.menu_procurement_management_supplier_name"/>
+    </data>
+</openerp>
