@@ -264,7 +264,7 @@ class qdodooo_website_update(website_sale):
                                          order='website_published desc, website_sequence desc', context=context)
         # print 'product_ids', product_ids
         # 产品 查询对应的产品书
-        products = product_obj.browse(cr, uid, product_ids, context=context)
+        products = product_obj.browse(cr, SUPERUSER_ID, product_ids, context=context)
         # print 'products', products
         style_obj = pool['product.style']
         style_ids = style_obj.search(cr, uid, [], context=context)
@@ -307,7 +307,7 @@ class qdodooo_website_update(website_sale):
                                                                        context=context)
         # print categs,'222222222222222222222',request.session
         for i in products:
-            print 'virtual_available is' ,i.virtual_available
+            print 'virtual_name is ',i.name,'virtual_available is' ,i.virtual_available
             break
         values = {
             'search': search,
@@ -474,6 +474,7 @@ class qdodooo_website_update(website_sale):
         if values["error"]:
             return request.website.render("website_sale.checkout", values)
 
+        print 'values["checkout"] is ',values["checkout"]
         self.checkout_form_save(values["checkout"])
 
         request.session['sale_last_order_id'] = order.id

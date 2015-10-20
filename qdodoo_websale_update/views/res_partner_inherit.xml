@@ -22,7 +22,7 @@
                             <page string="价格表">
                              <field name="ref_pricelist_prolate">
                                  <tree editable="bottom">
-                                  <field name="ref_product_pricelist"/>
+                                  <field name="proce_version"/>
                                   <field name="proportion"/>
                                   <field name="fixed"/>
                                   <field name="to_toal"/>

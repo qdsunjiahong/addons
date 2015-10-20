@@ -98,11 +98,11 @@
                                     </td>
                                     <td>
                                         <t t-if=" not product.virtual_available or 0>product.virtual_available">
-                                            <input type="text" class="form-control"   value="0"  id="virtual_available" readonly="True" size="10"/>
+                                            <input type="text" class="form-control" t-att-name="product.id"  value="0"  id="virtual_available" readonly="True" size="10"/>
 
                                         </t>
                                         <t t-if="product.virtual_available >0">
-                                            <input type="text" class="form-control"   t-att-value="int(product.virtual_available)"  id="virtual_available" readonly="True" size="10"/>
+                                            <input type="text" class="form-control"  t-att-name="product.id"  t-att-value="int(product.virtual_available)"  id="virtual_available" readonly="True" size="10"/>
                                         </t>
                                     </td>
 
@@ -121,7 +121,7 @@
                                                 </a>
                                             </span>
                                             <input type="text" class="js_quantity form-control" data-min="0"
-                                                   t-att-name="product.id" value="0" id="product_id"  t-att-max="int(product.virtual_available)"/>
+                                                   t-att-name="product.id" value="0" id="product_id"  t-att-max="int(product.virtual_available)" />
                                             <span class="input-group-addon" >
                                                 <a t-attf-href="#" class="mb8 float_left js_add_cart_json">
                                                     <i class="fa fa-plus"></i>
