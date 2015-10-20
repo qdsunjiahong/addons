@@ -18,7 +18,7 @@ class qdodoo_hr_payslip(models.Model):
     import_file = fields.Binary(string=u'导入excel文件')
     number_l = fields.Selection([(1, 1),
                                (2, 2),
-                               (3, 3)], string=u'工资发放序列号', required=True)
+                               (3, 3)], string=u'工资发放序列号')
 
     @api.one
     def btn_import_data(self):
@@ -31,8 +31,7 @@ class qdodoo_hr_payslip(models.Model):
             excel_info = excel_obj.sheet_by_index(0)
             nrows = excel_info.nrows
             for row in range(1, nrows):
-                if excel_info.row_values(row)[0] == self.employee_id.name and int(
-                        excel_info.row_values(row)[1]) == self.employee_id.id:
+                if excel_info.row_values(row)[0] == self.employee_id.name and excel_info.row_values(row)[1] == self.e_no:
                     excel_ids.append(row)
             row_new = excel_ids[0]
             if len(excel_ids) > 1:

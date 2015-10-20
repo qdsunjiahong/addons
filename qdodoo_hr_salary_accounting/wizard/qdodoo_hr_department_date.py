@@ -97,7 +97,7 @@ class qdodoo_hr_dapartment_date(models.Model):
             journal_id = self.journal_id.id
             hr_ids = self.env['hr.payslip'].search(
                 [('employee_id', '=', employee_id), ('date_from', '=', date_from), ('date_to', '=', date_to),
-                 ('state', '!=', 'cancel'),('number_l','=',self.number)])
+                 ('state', '!=', 'cancel'), ('number_l', '=', self.number)])
             if hr_ids:
                 raise except_orm(_(u'警告'), _(u'员工%s的当前期间工资条已存在') % (employee_obj.name))
             create_dict = {'employee_id': employee_id, 'date_from': date_from, 'date_to': date_to,
@@ -115,7 +115,11 @@ class qdodoo_hr_dapartment_date(models.Model):
         mod_obj = self.env['ir.model.data']
 
         inv_ids = i_list
-
+        for inv_i in self.env['hr.payslip'].browse(inv_ids):
+            try:
+                inv_i.compute_sheet([inv_i.id])
+            except:
+                pass
         if len(inv_ids) > 0:
             mo, view_id = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_tree')
             mo_form, view_id_form = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_form')
@@ -148,7 +152,7 @@ class qdodoo_hr_dapartment_date(models.Model):
                     for input in rule.input_ids:
                         industry_accounting_ids = self.pool.get('industry.accounting.line').search(cr, uid, [
                             ('name', '=', input.name), ('contract_id', '=', contract.id),
-                            ('period_id', '=', period_id),('number_l','=',number_l)])
+                            ('period_id', '=', period_id), ('number_l', '=', number_l)])
                         if not industry_accounting_ids:
                             raise except_orm(_(u'警告'),
                                              _(u'员工%s的工资规则%s未创建') % (contract.employee_id.name, input.name))
