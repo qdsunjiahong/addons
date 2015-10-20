@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_medal_report_tree2" model="ir.ui.view">
+            <field name="name">勋章报表</field>
+            <field name="model">qdodoo.medal.report</field>
+            <field name="arch" type="xml">
+                <tree string="勋章报表">
+                    <field name="department_id"/>
+                    <field name="medal_id"/>
+                    <field name="number"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_qdodoo_stock_in_report2" model="ir.actions.act_window">
+            <field name="name">勋章报表</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.medal.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="qdodoo_medal_report_tree2"/>
+        </record>
+        <record id="qdodoo_medal_report_tree" model="ir.ui.view">
+            <field name="name">勋章报表</field>
+            <field name="model">qdodoo.medal.report</field>
+            <field name="arch" type="xml">
+                <tree string="勋章报表">
+                    <field name="invisible_field"/>
+                    <field name="department_id"/>
+                    <field name="employee_id"/>
+                    <field name="job_id"/>
+                    <field name="medal_id"/>
+                    <field name="number"/>
+                    <field name="reason"/>
+                    <field name="date"/>
+                    <field name="user_id"/>
+
+                </tree>
+            </field>
+        </record>
+        <record id="action_qdodoo_stock_in_report" model="ir.actions.act_window">
+            <field name="name">勋章报表</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.medal.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="qdodoo_medal_report_tree"/>
+        </record>
+
+        <record id="qdodoo_search_medal_form" model="ir.ui.view">
+            <field name="name">勋章查询</field>
+            <field name="model">qdodoo.search.medal</field>
+            <field name="arch" type="xml">
+                <form string="勋章查询">
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="employee_id" domain="[('company_id','=',company_id)]"/>
+                            <field name="department_id" domain="[('company_id','=',company_id)]"/>
+                            <field name="company_id"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="查询" name="btn_search" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_search_medal" model="ir.actions.act_window">
+            <field name="name">勋章查询</field>
+            <field name="res_model">qdodoo.search.medal</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_search_medal_form"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" name="勋章查询" action="action_qdodoo_search_medal"
+                  id="menu_qdodoo_search_medal"
+                  parent="hr_gamification.menu_hr_gamification"/>
+
+    </data>
+</openerp>
