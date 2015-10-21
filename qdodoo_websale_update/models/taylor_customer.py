@@ -20,7 +20,9 @@ class taylor_customer(osv.Model):
     _inherit = 'res.partner'    # 继承客户数据模型
 
     _columns = {    # 定义字段
-        'out_stock': fields.many2one('stock.warehouse','出库库位' ),
+        'out_stock': fields.many2one('stock.warehouse','出库库位'),
     }
+
+
 
 

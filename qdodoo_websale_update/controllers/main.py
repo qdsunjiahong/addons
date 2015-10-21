@@ -102,8 +102,20 @@ class qdodooo_website_update(website_sale):
     """
 
     @http.route(['/shop/bat/cart'], type='http', auth="public", methods=['POST'], website=True)
-    def add_all_product(self, add_qty=1, set_qty=0, **kw):
+    def add_all_product(self, add_qty=1, set_qty=0,**kw):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        print 'all kw is ',kw
+        if not context.get('pricelist'):
+            # pricelist 得到价格表 例如product.pricelist(25,)
+            pricelist = self.get_pricelist()
+            # 将pricelist写入字典
+            context['pricelist'] = int(pricelist)
+        else:
+            # 存在 就在product.pricelist 查询出相应的价格列表 价格表
+            pricelist = pool.get('product.pricelist').browse(cr, uid, context['pricelist'], context)
+
+
+        # product_obj 得到产品模板
         # product_obj = pool['product.product']
         partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid, context=context).partner_id
         # print 'user ref partner is ===', int(partner)
@@ -117,7 +129,10 @@ class qdodooo_website_update(website_sale):
                 product_id = cr.fetchall()[0]
                 sale_order = request.website.sale_get_order(force_create=1)
                 # print 'sale_order is =============', sale_order
+                print 'value is ',value,'pricelist.multipl is ',pricelist.multipl
+                value=int(value)*pricelist.multipl
                 sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
+
         # print 'finally sale_order is ==', int(sale_order)
         if output_warehouse:
             # print 'output_warehouse is ===', int(output_warehouse)
@@ -126,6 +141,8 @@ class qdodooo_website_update(website_sale):
         # #得到销售订单
         # request.website.sale_get_order(force_create=1)._cart_update(product_id=int(product_id), add_qty=float(add_qty), set_qty=float(set_qty))
         # return request.redirect("/shop/cart")
+
+
 
     # 检测到路径中包含/shop
     @http.route(['/shop',
@@ -193,6 +210,8 @@ class qdodooo_website_update(website_sale):
         else:
             # 存在 就在product.pricelist 查询出相应的价格列表 价格表
             pricelist = pool.get('product.pricelist').browse(cr, uid, context['pricelist'], context)
+
+
         # product_obj 得到产品模板
 
 
