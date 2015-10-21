@@ -26,8 +26,8 @@ class qdodoo_purchase_stock_state(models.Model):
         """
             self.env.cr.execute(query, record.ids)
             picks = self.env.cr.fetchall()
+            pick_list = []
             for pick_id, po_id in picks:
-                pick_list = []
                 pick_list.append(pick_id)
             if len(pick_list) > 1:
                 state_list = []
