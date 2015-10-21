@@ -127,9 +127,7 @@ class qdodoo_hr_dapartment_date(models.Model):
 
         inv_ids = i_list
         for inv_i in self.env['hr.payslip'].browse(inv_ids):
-            try:
                 inv_i.compute_sheet()
-            except:
                 pass
         if len(inv_ids) > 0:
             mo, view_id = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_tree')
@@ -239,10 +237,7 @@ class qdodoo_hr_dapartment_date(models.Model):
 
         inv_ids = i_list
         for inv_i in self.env['hr.payslip'].browse(inv_ids):
-            try:
-                inv_i.compute_sheet()
-            except:
-                pass
+            inv_i.compute_sheet()
         if len(inv_ids) > 0:
             mo, view_id = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_tree')
             mo_form, view_id_form = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_form')
