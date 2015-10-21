@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_purchase_order_tree_stock_state">
+            <field name="name">采购订单增加入库状态</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="after">
+                    <field name="stock_in_state"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
