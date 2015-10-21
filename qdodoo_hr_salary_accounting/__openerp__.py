@@ -18,7 +18,8 @@
     'data': [
         'qdodoo_hr_employee_view.xml',
         'qdodoo_industry_accounting_view.xml',
-        'qdodoo_hr_payslip.xml'
+        'qdodoo_hr_payslip.xml',
+        'qdodoo_industry_accounting_view2.xml'
         # 'wizard/qdodoo_hr_department_date.xml'
     ],  # 更新XML,CSV
     'js': [

@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="hr_department_date_view3" model="ir.ui.view">
+            <field name="name">工资核算</field>
+            <field name="model">hr.department.date</field>
+            <field name="arch" type="xml">
+                <form string="工资核算" version="7.0">
+                    <sheet>
+                        <group>
+
+
+                            <field name="date"
+                                   domain="[('company_id','=',company_id),('state','not in',('done',))]"/>
+
+
+                            <field name="number"/>
+
+                            <field name="company_id" invisible="1"/>
+
+                            <field name="journal_id" domain="[('company_id','=',company_id)]"/>
+
+                            <field name="industry_accounting_ids"/>
+                        </group>
+                        <footer>
+                            <button string="确定" name="action_done2" type="object" class="oe_highlight"/>
+                            or
+                            <button string="取消" class="oe_link" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="qdodoo_qction_hr_deaprtment3" model="ir.actions.act_window">
+            <field name="name">工资条批量核算</field>
+            <field name="res_model">hr.department.date</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_hr_salary_accounting.hr_department_date_view3"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+        <record id="qdodoo_qction_hr_deaprtment3" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+            <field eval="'qdodoo.industry.accounting'" name="model"/>
+            <field name="name">工资条批量核算</field>
+            <field eval="'ir.actions.act_window,'+str(qdodoo_qction_hr_deaprtment3)" name="value"/>
+        </record>
+    </data>
+</openerp>
