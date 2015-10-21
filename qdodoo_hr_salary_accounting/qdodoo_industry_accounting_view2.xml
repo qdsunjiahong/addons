@@ -20,7 +20,7 @@
 
                             <field name="journal_id" domain="[('company_id','=',company_id)]"/>
 
-                            <field name="industry_accounting_ids"/>
+                            <field name="industry_accounting_ids" invisible="1"/>
                         </group>
                         <footer>
                             <button string="确定" name="action_done2" type="object" class="oe_highlight"/>
