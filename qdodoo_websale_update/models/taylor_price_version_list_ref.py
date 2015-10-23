@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from openerp import models, fields, _, api
-
+from openerp.exceptions import except_orm
 
 class taylor_price_version_list(models.Model):
     """
@@ -53,7 +53,15 @@ class taylor_pricce_version(models.Model):
 
 class taylor_pricce_list(models.Model):
 
-    _inherit = "product.pricelist"
+    _inherit = "product.pricelist.item"
 
     multipl= fields.Float('倍数')
 
+    _defaults = {
+        'multipl':1,
+    }
+
+    @api.constrains('multipl')
+    def _check_quantity_price(self):
+        if self.multipl<0:
+            raise except_orm(_('Warning!'),_('警告,倍数必须大于0！'))

@@ -20,3 +20,4 @@ class store_deposit(models.Model):
     _defaults = {
         'name': _get_user,
     }
+

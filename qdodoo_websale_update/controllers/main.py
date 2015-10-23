@@ -11,7 +11,7 @@ from  openerp.addons.website_sale.controllers.main import *
 from openerp import http
 from openerp.http import request
 from  openerp.tools.translate import GettextAlias
-
+import  datetime
 _ = GettextAlias()
 
 
@@ -113,8 +113,8 @@ class qdodooo_website_update(website_sale):
         else:
             # 存在 就在product.pricelist 查询出相应的价格列表 价格表
             pricelist = pool.get('product.pricelist').browse(cr, uid, context['pricelist'], context)
-
-
+        multiple=request.session.get('taylor_session')
+        print 'multiple is ',multiple
         # product_obj 得到产品模板
         # product_obj = pool['product.product']
         partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid, context=context).partner_id
@@ -128,9 +128,10 @@ class qdodooo_website_update(website_sale):
                 cr.execute(sql)
                 product_id = cr.fetchall()[0]
                 sale_order = request.website.sale_get_order(force_create=1)
+                print 'key is ',key
+                print 'this multiple.get(key)',multiple.get(int(key))
+                value=int(value)* multiple.get(int(key))
                 # print 'sale_order is =============', sale_order
-                print 'value is ',value,'pricelist.multipl is ',pricelist.multipl
-                value=int(value)*pricelist.multipl
                 sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
 
         # print 'finally sale_order is ==', int(sale_order)
@@ -219,46 +220,75 @@ class qdodooo_website_update(website_sale):
         # print  "context['pricelist']", context['pricelist']
         # 搜索产品价格表中的产品
         pricelist_version_ids = pool.get('product.pricelist.version').search(cr, uid, [
-            ('pricelist_id', '=', context['pricelist'])], context=context)
-        # print 'pricelist_version_ids',pricelist_version_ids
+            ('pricelist_id', '=', pricelist.id)], context=context)
+        version=""
+        #取得生效的价格表
+        for version_id in pool.get('product.pricelist.version').browse(cr ,uid ,pricelist_version_ids,context=context):
+
+            if  not version_id.date_start and not version_id.date_end:
+                version=version_id.id
+                break
+            elif datetime.datetime.strptime(version_id.date_start,'%Y-%m-%d') < datetime.datetime.now() and datetime.datetime.strptime(version_id.date_end,'%Y-%m-%d') >datetime.datetime.now():
+                version=version_id.id
+                break
+            else:
+                continue
+        print 'version is ',version
+        #查询到相应的价格表
         pricelist_procuct_item_ids = pool.get('product.pricelist.item').search(cr, uid, [
-            ('price_version_id', 'in', pricelist_version_ids)], context=context)
+            ('price_version_id', '=', version)])
         # print  'pricelist_procuct_item_ids',pricelist_procuct_item_ids
         pricelist_procuct_ids = []
-        for search_id in pricelist_procuct_item_ids:
-            product_item = pool.get('product.pricelist.item').browse(cr, uid, search_id, context=context)[0]
-            # print 'product_item',product_item
-            # print 'pricelist_procuct_ids.product_id',product_item.product_id.id
-            # 如果存在产品类别
-            if product_item.categ_id:
-                # print "============================="
-                # print 'product_item.categ_id is ==', product_item.categ_id
-                product_ids = pool.get('product.product').search(cr, uid,
-                                                                 [('categ_id', 'child_of', product_item.categ_id.id)])
-                temp_ids = pool.get('product.product').browse(cr, uid, product_ids)
-                # print 'product_ids is ========', product_ids
+        key={}
+        product_item_dict={}
+        #搜索出相应的价格表明细
+        i=0
+        product_list_item=pool.get('product.pricelist.item').browse(cr, uid, pricelist_procuct_item_ids, context=context)
+        print 'product_list_item is ',product_list_item
+        for product_item in product_list_item:
+            #查询出相应的行
+
+            print '%s product_item.multipl'% i,product_item.multipl
+            i=i+1
+            if not  product_item.multipl:
+                product_item_dict[product_item.id]=1
+
+            #如果存在产品模板
+            if product_item.product_tmpl_id:
+                if product_item.product_tmpl_id.id not in pricelist_procuct_ids:
+                    pricelist_procuct_ids.append(product_item.product_tmpl_id.id)
+                    key[product_item.product_tmpl_id.id]=product_item.multipl
+            if  product_item.categ_id:
+                product_ids = product_obj.search(cr, uid,[('categ_id', 'child_of', product_item.categ_id.id)])
+                temp_ids = product_obj.browse(cr, uid, product_ids)
                 for temp_id in temp_ids:
                     # print  'temp_id is ===',temp_id.product_tmpl_id.id
                     if temp_id.product_tmpl_id.id not in pricelist_procuct_ids:
                         pricelist_procuct_ids.append(temp_id.product_tmpl_id.id)
-                        # cr.execute("SELECT product_tmpl_id   FROM product_product where categ_id.id %s" % product_item.categ_id)
-                        # pricelist_procuct_ids.append(cr.fetchall())
-            if product_item.product_id.id:
+                        key[temp_id.product_tmpl_id.id]=product_item.multipl
+            if  product_item.product_id:
+                #先查询出相应的产品模板id
                 cr.execute("SELECT product_tmpl_id   FROM product_product where id=%s" % product_item.product_id.id)
                 all_id = cr.fetchall()
                 for sql_id in all_id:
                     if sql_id not in pricelist_procuct_ids:
                         # print  'sql_id is ', sql_id[0]
                         pricelist_procuct_ids.append(sql_id[0])
-            # 如果又没有类别 又没有产品
-            if not product_item.product_id.id and not product_item.categ_id:
-                cr.execute("SELECT product_tmpl_id   FROM product_product")
-                pricelist_procuct_ids = cr.fetchall()
+                        key[sql_id[0]]=product_item.multipl
+            print  'this.product_item is ',product_item
+            if not product_item.product_id.id and not product_item.categ_id and not product_item.product_tmpl_id :
+                cr.execute("SELECT id   FROM product_template")
+                list=[]
+                for i in cr.fetchall():
+                    list.append(i[0])
+                pricelist_procuct_ids=list
+                for i in pricelist_procuct_ids:
+                    key[i]=product_item.multipl
                 # print 'else pricelist_procuct_ids:',pricelist_procuct_ids
                 break
-        # print 'finally pricelist_procuct_ids is ===',pricelist_procuct_ids
-        domain += [('id', 'in', pricelist_procuct_ids)]
 
+        request.session['taylor_session']=key
+        domain += [('id', 'in', pricelist_procuct_ids)]
 
         # 更改查询数据
         # print 'finally if domain  is', domain
@@ -328,6 +358,8 @@ class qdodooo_website_update(website_sale):
         for i in products:
             print 'virtual_name is ',i.name,'virtual_available is' ,i.virtual_available
             break
+        #print 'key is ',key
+
         values = {
             'search': search,
             'category': category,
@@ -336,6 +368,7 @@ class qdodooo_website_update(website_sale):
             'pager': pager,
             'pricelist': pricelist,
             'products': products,
+            'key':key,
             'bins': table_compute().process(products),
             'rows': PPR,
             'styles': styles,

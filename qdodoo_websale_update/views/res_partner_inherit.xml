@@ -26,6 +26,7 @@
                                   <field name="proportion"/>
                                   <field name="fixed"/>
                                   <field name="to_toal"/>
+                                  <field name="multipl"/>
                                   <field name="success"/>
                                   <field name="comparison"/>
                                  </tree>

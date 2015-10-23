@@ -2,7 +2,7 @@
 
 from openerp import models, fields, api, _
 import datetime
-
+from openerp.exceptions import except_orm
 
 class taylor_template(models.Model):
     """
@@ -78,6 +78,7 @@ class taylor_template(models.Model):
                     value = {
                         'price_discount': prolate_obj.proportion,
                         'price_surcharge': prolate_obj.fixed,
+                        'multipl':prolate_obj.multipl,
                     }
                     price_lis_item.write(cr, uid, prolate_obj.price_version_item_id, value, context=context)
         self.synchronous_field(cr, uid, ids, context)
@@ -105,6 +106,7 @@ class taylor_template(models.Model):
                         'product_tmpl_id': prolate_obj.ref_product_template.id,
                         'price_discount': prolate_obj.proportion,
                         'price_surcharge': prolate_obj.fixed,
+                        'multipl':prolate_obj.multipl,
                         'base': 1,
                     }
                     values['product_id'] = product_id
@@ -120,6 +122,7 @@ class taylor_template(models.Model):
                         'product_tmpl_id': prolate_obj.ref_product_template.id,
                         'price_discount': prolate_obj.proportion,
                         'price_surcharge': prolate_obj.fixed,
+                        'multipl':prolate_obj.multipl,
                         'base': 1,
                     }
                     values['product_id'] = product_id
@@ -137,6 +140,7 @@ class pricelist_prolate_relation(models.Model):
     success = fields.Boolean(string='是否创建', readonly=True)
     comparison = fields.Float(string="对比值", readonly=True)
 
+    multipl=fields.Float(string='倍数')
     proce_version=fields.Many2one('product.pricelist.version','价格表版本',required=True)
     company = fields.Many2one('res.company', string='公司')
     price_version_item_id = fields.Integer(string='对应的价格表版本行')
@@ -154,12 +158,19 @@ class pricelist_prolate_relation(models.Model):
 
     _defaults = {
         'company': _get_company,
+        'multipl':1,
 
     }
+
+    @api.constrains('multipl')
+    def _check_quantity_price(self):
+        if self.multipl<0:
+            raise except_orm(_('Warning!'),_('警告,倍数必须大于0！'))
 
     def compute_toal(self):
         for self_obj in self:
             self_obj.to_toal = (1 + self_obj.proportion) * self_obj.ref_product_template.list_price + self_obj.fixed
+
 
     def unlink(self, cr, uid, ids, context=None):
         """
