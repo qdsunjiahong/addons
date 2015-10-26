@@ -6,7 +6,7 @@ from openerp import models, fields, api
 class stock_quant_delete(models.Model):
     _name = 'stock.quant.delete'
 
-    date_time = fields.Date(string=u'时间')
+    date_time = fields.Date(string=u'时间', required=True)
 
     @api.one
     def action_done(self):
@@ -37,7 +37,7 @@ class stock_quant_delete(models.Model):
             quant_obj = self.env['stock.quant']
             quant_ids = quant_obj.search([('location_id', '=', location_id)])
             for quant_id in quant_ids:
-                if quant_id.product_id.id in product_list:
-                    quant_id.write({'qty': move_dict.get(quant_id.product_id.id, 0.0)})
-                else:
+                if move_dict.get(quant_id.product_id.id, 0) <= 0:
                     quant_id.write({'qty': 0.0})
+                else:
+                    quant_id.write({'qty': move_dict.get(quant_id.product_id.id, 0.0)})
