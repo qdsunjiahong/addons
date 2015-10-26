@@ -45,7 +45,7 @@ class qdodoo_cron_saleorder(osv.Model):
         # 测试url
         # html_url = r"http://221.215.106.214:8080/ci/webservices/index.php/api/b2test/order/sql/2015-02-01"
         # 正式url
-        html_url = r"http://123.129.242.98:8080/bbw/webservices/index.php/api/b2erp/morder/sql/" + yearsday
+        html_url = r"http://221.215.106.214:8080/bbw/webservices/index.php/api/b2erp/morder/sql/" + yearsday
         # print html_url
         # 获得html工作流
         html_stream = urllib2.urlopen(html_url)
