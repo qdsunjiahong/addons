@@ -49,6 +49,7 @@ class qdodoo_search_compare_product_cost(models.Model):
                             mp.id as id,
                             mp.product_id as product_id,
                             mp.product_qty as product_qty,
+                            sm.product_id as product_id_y,
                             mp.analytic_account as assistant_id,
                             sm.price_unit as price_unit,
                             sm.product_uom_qty as product_uom_qty,
@@ -57,6 +58,8 @@ class qdodoo_search_compare_product_cost(models.Model):
                             LEFT JOIN stock_move sm ON sm.raw_material_production_id = %s
                             LEFT JOIN mrp_production_product_line mppl ON mppl.production_id = %s and mppl.product_id = sm.product_id
                         where mp.id=%s and mp.state='done' and sm.product_uom_qty>0 and mp.date_planned >= '%s' and mp.date_planned <= '%s'
+                        group by
+                            sm.product_id,mp.state,mp.date_planned,mp.id,mp.product_id,mp.product_qty,mp.analytic_account,sm.price_unit,sm.product_uom_qty,mppl.product_qty,sm.raw_material_production_id,mppl.production_id,mppl.product_id
                         """ % (mrp_id.id, mrp_id.id, mrp_id.id, datetime_start, datetime_end)
 
                     self.env.cr.execute(sql)
@@ -66,17 +69,25 @@ class qdodoo_search_compare_product_cost(models.Model):
                     actual_amount = 0
                     theoretical_amount = 0
                     assistant_id = False
-                    print result
+                    product_list = []
+                    actual_num_dict = {}
                     if result:
                         for i in result:
-                            mp_id, product_id1, product_qty1, assistant_id1, price_unit1, product_uom_qty1, product_qty_2 = i
+                            mp_id, product_id1, product_qty1, product_id_y, assistant_id1, price_unit1, product_uom_qty1, product_qty_2 = i
                             if not product_qty_2:
                                 product_qty_2 = 0
-                            product_id = product_id1
-                            product_qty += product_qty1
-                            assistant_id = assistant_id1
-                            actual_amount += price_unit1 * product_uom_qty1
-                            theoretical_amount = theoretical_amount + price_unit1 * product_qty_2
+                            if (product_id_y, product_id1, assistant_id, product_id_y, price_unit1,
+                                product_qty_2) in product_list:
+                                actual_num_dict[(product_id_y, product_id1, assistant_id, product_id_y, price_unit1,
+                                                 product_qty_2)] += product_uom_qty1
+                            else:
+                                actual_num_dict[(product_id_y, product_id1, assistant_id, product_id_y, price_unit1,
+                                                 product_qty_2)] = product_uom_qty1
+                                product_list.append(
+                                    (product_id_y, product_id1, assistant_id, product_id_y, price_unit1, product_qty_2))
+                        for product_key in product_list:
+                            actual_amount += product_key[4] * product_key[-1]
+                            theoretical_amount += product_key[4] * actual_num_dict.get(product_key, 0)
                         data = {
                             'product_id': product_id,
                             'product_qty': product_qty,
