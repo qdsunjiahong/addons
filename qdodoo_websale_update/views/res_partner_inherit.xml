@@ -7,7 +7,8 @@
                 <field name="inherit_id" ref="purchase.view_partner_property_form"/>
                 <field name="arch" type="xml">
                         <field name="property_product_pricelist_purchase" position="after">
-                            <field name="out_stock" domain="[('company_id','=',company_id)]"/>
+                            <field name="out_stock" domain="[('company_id','=',company_id)]" on_change="change_out_stock_id(out_stock)"/>
+                            <field name="location_id" />
                         </field>
                 </field>
             </record>

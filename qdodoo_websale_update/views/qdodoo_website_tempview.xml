@@ -57,6 +57,7 @@
                         </thead>
                         <tbody>
                             <t t-foreach="products" t-as="product">
+                              <t t-if="product_num.get(product.id) >0">
                                 <tr>
                                     <td align="center">
                                         <a itemprop="url"
@@ -101,23 +102,23 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <t t-if=" not product.virtual_available or 0>product.virtual_available">
+                                        <t t-if=" not product_num.get(product.id) or 0>product_num.get(product.id)">
                                             <input type="text" class="form-control"   value="0"  id="virtual_available" readonly="True" size="10"/>
 
                                         </t>
-                                        <t t-if="product.virtual_available >0">
-                                            <input type="text" class="form-control"   t-att-value="int(product.virtual_available)"  id="virtual_available"   readonly="True" size="10"/>
+                                        <t t-if="product_num.get(product.id) >0">
+                                            <input type="text" class="form-control"   t-att-value="int(product_num.get(product.id))"  id="virtual_available"   readonly="True" size="10"/>
                                         </t>
                                     </td>
 
                                     <td>
-                                    <t t-if=" not product.virtual_available or 0>product.virtual_available">
+                                    <t t-if=" not product_num.get(product.id) or 0>product_num.get(product.id)">
                                           <div class="css_quantity input-group oe_website_spinner">
                                             <input type="text" class="js_quantity form-control" data-min="0"
                                                    t-att-name="product.id" value="0" id="product_id"   readonly="True"/>
                                         </div>
                                      </t>
-                                    <t t-if="product.virtual_available >0">
+                                    <t t-if="product_num.get(product.id) >0">
                                           <div class="css_quantity input-group oe_website_spinner">
                                             <span class="input-group-addon">
                                                 <a t-attf-href="#" class="mb8 js_add_cart_json">
@@ -125,7 +126,7 @@
                                                 </a>
                                             </span>
                                             <input type="text" class="js_quantity form-control" data-min="0"
-                                                   t-att-name="product.id" value="0" id="product_id"  t-att-max="int(product.virtual_available)" />
+                                                   t-att-name="product.id" value="0" id="product_id"  t-att-max="int(product_num.get(product.id))" />
                                             <span class="input-group-addon" >
                                                 <a t-attf-href="#" class="mb8 float_left js_add_cart_json">
                                                     <i class="fa fa-plus"></i>
@@ -139,6 +140,7 @@
                                         <input type="text" class="form-control"   t-att-value="key.get(product.id)"  id="beishu"   readonly="True" size="3"/>
                                     </td>
                                 </tr>
+                                </t>
                             </t>
                         </tbody>
                     </table>

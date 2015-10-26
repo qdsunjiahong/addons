@@ -11,6 +11,7 @@ from  openerp.addons.website_sale.controllers.main import *
 from openerp import http
 from openerp.http import request
 from  openerp.tools.translate import GettextAlias
+from openerp.exceptions import except_orm
 import  datetime
 _ = GettextAlias()
 
@@ -114,7 +115,7 @@ class qdodooo_website_update(website_sale):
             # 存在 就在product.pricelist 查询出相应的价格列表 价格表
             pricelist = pool.get('product.pricelist').browse(cr, uid, context['pricelist'], context)
         multiple=request.session.get('taylor_session')
-        print 'multiple is ',multiple
+        #print 'multiple is ',multiple
         # product_obj 得到产品模板
         # product_obj = pool['product.product']
         partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid, context=context).partner_id
@@ -123,20 +124,21 @@ class qdodooo_website_update(website_sale):
         output_warehouse = pool.get('res.partner').browse(cr, uid, int(partner)).out_stock
         sale_order = ""
         for key, value in kw.items():
-            if int(value) > 0:
-                sql = "SELECT id   FROM product_product where product_tmpl_id=%s" % key
-                cr.execute(sql)
-                product_id = cr.fetchall()[0]
-                sale_order = request.website.sale_get_order(force_create=1)
-                print 'key is ',key
-                print 'this multiple.get(key)',multiple.get(int(key))
-                value=int(value)* multiple.get(int(key))
-                # print 'sale_order is =============', sale_order
-                sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
+            if  int(value) > 0:
+                if  key !='category':
+                    sql = "SELECT id   FROM product_product where product_tmpl_id=%s" % key
+                    cr.execute(sql)
+                    product_id = cr.fetchall()[0]
+                    sale_order = request.website.sale_get_order(force_create=1)
+                    #print 'key is ',key
+                    #print 'this multiple.get(key)',multiple.get(int(key))
+                    value=int(value)* multiple.get(int(key))
+                    # print 'sale_order is =============', sale_order
+                    sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
 
         # print 'finally sale_order is ==', int(sale_order)
         if output_warehouse:
-            # print 'output_warehouse is ===', int(output_warehouse)
+            print 'output_warehouse is ===', int(output_warehouse),'type ',type(int(output_warehouse)),'sale_order is ',sale_order
             pool.get('sale.order').write(cr, SUPERUSER_ID, int(sale_order), {'warehouse_id': int(output_warehouse)})
         return request.redirect("/shop/cart")
         # #得到销售订单
@@ -156,9 +158,12 @@ class qdodooo_website_update(website_sale):
         PPG = 60
         # 得到网页相关对象
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
-        # print '====================================shop'
+        print '====================================shop',context
         # 得到搜索区间
         domain = request.website.sale_product_domain()
+
+        #得到库位的id
+
 
         # 如果存在搜索
         if search:
@@ -244,11 +249,11 @@ class qdodooo_website_update(website_sale):
         #搜索出相应的价格表明细
         i=0
         product_list_item=pool.get('product.pricelist.item').browse(cr, uid, pricelist_procuct_item_ids, context=context)
-        print 'product_list_item is ',product_list_item
+        #print 'product_list_item is ',product_list_item
         for product_item in product_list_item:
             #查询出相应的行
 
-            print '%s product_item.multipl'% i,product_item.multipl
+            #print '%s product_item.multipl'% i,product_item.multipl
             i=i+1
             if not  product_item.multipl:
                 product_item_dict[product_item.id]=1
@@ -275,7 +280,7 @@ class qdodooo_website_update(website_sale):
                         # print  'sql_id is ', sql_id[0]
                         pricelist_procuct_ids.append(sql_id[0])
                         key[sql_id[0]]=product_item.multipl
-            print  'this.product_item is ',product_item
+            #print  'this.product_item is ',product_item
             if not product_item.product_id.id and not product_item.categ_id and not product_item.product_tmpl_id :
                 cr.execute("SELECT id   FROM product_template")
                 list=[]
@@ -289,6 +294,7 @@ class qdodooo_website_update(website_sale):
 
         request.session['taylor_session']=key
         domain += [('id', 'in', pricelist_procuct_ids)]
+
 
         # 更改查询数据
         # print 'finally if domain  is', domain
@@ -308,11 +314,12 @@ class qdodooo_website_update(website_sale):
         pager = request.website.pager(url=url, total=product_count, page=page, step=PPG, scope=7, url_args=post)
 
         # 产品列表  产品模板搜索 PPG 当前页面产品数量    过滤pager['offset'] 这些数量   跟读 website_published 排序
-        # print 'uid', uid, 'limit', PPG, 'offset', pager['offset']
+        print 'uid', uid, 'limit', PPG, 'offset', pager['offset'],'domain',domain
         product_ids = product_obj.search(cr, uid, domain, limit=PPG, offset=pager['offset'],
                                          order='website_published desc, website_sequence desc', context=context)
         # print 'product_ids', product_ids
         # 产品 查询对应的产品书
+        product_num=self.get_local_num_dict(product_ids)
         products = product_obj.browse(cr, SUPERUSER_ID, product_ids, context=context)
         # print 'products', products
         style_obj = pool['product.style']
@@ -349,18 +356,17 @@ class qdodooo_website_update(website_sale):
         attributes_obj = request.registry['product.attribute']
         attributes_ids = attributes_obj.search(cr, uid, [], context=context)
         attributes = attributes_obj.browse(cr, uid, attributes_ids, context=context)
-        print 'request.session.get is ;',request.session.get('taylot_categs'),'request.session.get type is ',type(request.session.get('taylot_categs'))
+        #print 'request.session.get is ;',request.session.get('taylot_categs'),'request.session.get type is ',type(request.session.get('taylot_categs'))
         from_currency = pool.get('product.price.type')._get_field_currency(cr, uid, 'list_price', context)
         to_currency = pricelist.currency_id
         compute_currency = lambda price: pool['res.currency']._compute(cr, uid, from_currency, to_currency, price,
                                                                        context=context)
         # print categs,'222222222222222222222',request.session
-        for i in products:
-            print 'virtual_name is ',i.name,'virtual_available is' ,i.virtual_available
-            break
+
         #print 'key is ',key
 
         values = {
+            'product_num':product_num,
             'search': search,
             'category': category,
             'attrib_values': attrib_values,
@@ -382,6 +388,46 @@ class qdodooo_website_update(website_sale):
         }
         #print "======================shop products", values
         return request.website.render("website_sale.products", values)
+
+
+    def get_local_num_dict(self, template_ids ):
+        '''
+        通过产品模板id和 当前UID查询出当前门店对应的库位
+        返回库位中每个产品模板对应数量的字典
+        1.通过产品ID找到对应的产品
+        2.在QUant中搜索所有
+        :param template_id: 产品模板列表
+        :return:  产品模板 对应的产品数量
+        '''
+        print 'template_ids is ',template_ids
+        #先设定常用变量
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        #查询出当前客户
+        partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid, context=context)
+        local_id=partner.location_id.id
+        product_obj=pool.get('product.product')
+        quant_obj=pool.get('stock.quant')
+        if not  local_id:
+            raise except_orm(_('Warning!'),_('当前没有有效的库位信息，请检查客户资料是否正确！'))
+        re_dict={}
+        for temp_id in  template_ids:
+            #先查询出产品模版对应的产品
+            product_id=product_obj.search(cr ,SUPERUSER_ID ,[('product_tmpl_id','=',int(temp_id))],limit=1)
+            #根据产品ID查询出产quant中的数量
+            re_dict[int(temp_id)]=0
+            if product_id:
+                product_id=product_id[0]
+                print 'prodict_id  is ',product_id,'local_id is ',local_id
+                for quant in   quant_obj.browse(cr ,SUPERUSER_ID ,quant_obj.search(cr ,uid ,[('location_id','=',local_id),('product_id','=',product_id)])):
+                    print 'quan.qty is',quant.qty
+                    re_dict[int(temp_id)]+=quant.qty
+        print re_dict
+        return re_dict
+
+
+
+
+
 
     def checkout_values(self, data=None):
         # print '===============================checkout_values'
@@ -480,7 +526,7 @@ class qdodooo_website_update(website_sale):
                                                                          context=context)
                 if country_ids:
                     checkout['country_id'] = country_ids[0]
-        print 'checkout is all value ======', checkout
+        #print 'checkout is all value ======', checkout
         values = {
             'countries': countries,
             'states': states,
@@ -526,7 +572,7 @@ class qdodooo_website_update(website_sale):
         if values["error"]:
             return request.website.render("website_sale.checkout", values)
 
-        print 'values["checkout"] is ',values["checkout"]
+        #print 'values["checkout"] is ',values["checkout"]
         self.checkout_form_save(values["checkout"])
 
         request.session['sale_last_order_id'] = order.id
