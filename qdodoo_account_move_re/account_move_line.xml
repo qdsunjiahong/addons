@@ -110,5 +110,15 @@
 
             </field>
         </record>
+        <record model="ir.ui.view" id="view_move_line_tree2">
+            <field name="name">库位</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_move_line_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='state']" position="after">
+                    <field name="location_in_id"/>
+                </xpath>
+            </field>
+        </record>
     </data>
 </openerp>
