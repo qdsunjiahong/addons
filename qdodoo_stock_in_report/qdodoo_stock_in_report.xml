@@ -28,6 +28,7 @@
                     <field name="code"/>
                     <field name="product_qty"/>
                     <field name="product_amount"/>
+                    <field name="location_id"/>
                 </tree>
             </field>
         </record>
@@ -50,6 +51,9 @@
                         <group colspan="4" col="4">
                             <field name="date_start"/>
                             <field name="date_end"/>
+                        </group>
+                        <group>
+                            <field name="location_id"/>
                         </group>
                     </sheet>
                     <footer>
