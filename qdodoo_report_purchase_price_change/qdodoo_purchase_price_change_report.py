@@ -24,8 +24,13 @@ class qdodoo_purchase_price_change_report(models.Model):
 class qdodoo_purchase_price_change_search(models.Model):
     _name = 'purchase.price.change.search'
 
+    def _get_company_id(self):
+        user_obj = self.env['res.users'].browse(self.env.uid)
+        return user_obj.company_id.id
+
     date_start = fields.Date(string=u'开始日期', required=True)
     date_end = fields.Date(string=u'结束日期')
+    company_id = fields.Many2one('res.company', string=u'公司', required=True, default=_get_company_id)
 
     @api.multi
     def action_search(self):
@@ -46,10 +51,10 @@ class qdodoo_purchase_price_change_search(models.Model):
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
                     LEFT JOIN stock_picking_type spt ON po.picking_type_id = spt.id
                     LEFT JOIN product_product pp on pp.id=ail.product_id
-                where po.state = 'done' and ai.state != 'cancel' and po.date_order >= '%s' and po.date_order <= '%s'
+                where po.state = 'done' and ai.state != 'cancel' and po.date_order >= '%s' and po.date_order <= '%s' and po.company_id = %s
                 group by
                     po.id,pp.name_template,po.date_order,ail.price_unit,spt.default_location_dest_id,po.company_id,po.partner_id,ai.id,ail.invoice_id,pir.invoice_id,pir.purchase_id,po.picking_type_id,spt.id,pp.id,ail.product_id,ai.state
-                """ % (datetime_start, datetime_end)
+                """ % (datetime_start, datetime_end, self.company_id.id)
         else:
             sql = """
                 select
@@ -65,10 +70,10 @@ class qdodoo_purchase_price_change_search(models.Model):
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
                     LEFT JOIN stock_picking_type spt ON po.picking_type_id = spt.id
                     LEFT JOIN product_product pp on pp.id=ail.product_id
-                where po.state = 'done' and ai.state != 'cancel' and po.date_order >= '%s'
+                where po.state = 'done' and ai.state != 'cancel' and po.date_order >= '%s' and po.company_id = %s
                 group by
                     po.id,pp.name_template,po.date_order,ail.price_unit,spt.default_location_dest_id,po.company_id,po.partner_id,ai.id,ail.invoice_id,pir.invoice_id,pir.purchase_id,po.picking_type_id,spt.id,pp.id,ail.product_id,ai.state
-                """ % datetime_start
+                """ % (datetime_start, self.company_id.id)
         self.env.cr.execute(sql)
         result = self.env.cr.fetchall()
         return_list = []

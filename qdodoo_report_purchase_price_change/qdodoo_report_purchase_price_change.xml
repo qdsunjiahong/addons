@@ -52,6 +52,9 @@
                             <field name="date_start"/>
                             <field name="date_end"/>
                         </group>
+                        <group>
+                            <field name="company_id"/>
+                        </group>
                     </sheet>
                     <footer>
                         <button string="查询" name="action_search" type="object" class="oe_highlight"/>
