@@ -13,6 +13,7 @@
                             </div>
                             <h1>
                                 <field name="name"/>
+
                             </h1>
                             <div class="oe_edit_only">
                                 <label for="partner_ids"/>
@@ -25,6 +26,7 @@
                             <page string="日志详情">
                                 <group>
                                     <group>
+                                        <field name="employee" invisible="1      "/>
                                         <field name="c_date" readonly="1"/>
                                         <field name="user_id" invisible="1"/>
                                         <!--<field name="end_date"/>-->
