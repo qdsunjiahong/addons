@@ -15,13 +15,31 @@
                 </graph>
             </field>
         </record>
+
+        <record id="view_qdodoo_arrival_rate_report_tree" model="ir.ui.view">
+            <field name="name">qdodoo.arrival.rate.report.tree</field>
+            <field name="model">qdodoo.arrival.rate.report</field>
+            <field name="arch" type="xml">
+                <tree>
+                <field name="purchase_id" />
+                <field name="delivery_nmu_rate"/>
+                <field name="product_id"/>
+                <field name="price"/>
+                <field name="order_num"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="delivery_num"/>
+                </tree>
+            </field>
+        </record>
+
         <record model="ir.actions.act_window" id="action_view_qdodoo_arrival_rate_report_graph">
             <field name="name">到货率报表</field>
             <field name="res_model">qdodoo.arrival.rate.report</field>
             <field name="view_type">form</field>
-            <field name="view_mode">graph</field>
+            <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_qdodoo_arrival_rate_report_graph"/>
         </record>
-        <menuitem name="到货率报表" parent="base.next_id_73" sequence="10" action="action_view_qdodoo_arrival_rate_report_graph" id="menu_action_view_qdodoo_arrival_rate_report_graph"/>
+        <menuitem name="到货率报表" parent="base.next_id_73" sequence="10" action="action_qdodoo_pur_sale_stock_wizard" id="menu_action_view_qdodoo_arrival_rate_report_graph"/>
     </data>
 </openerp>

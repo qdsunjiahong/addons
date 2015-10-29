@@ -6,7 +6,6 @@
 #
 ###########################################################################################
 
-import report    #引入模型
-import wizard
+import qdodoo_arrival_rate_report    #引入模型
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

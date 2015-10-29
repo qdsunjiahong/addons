@@ -16,7 +16,9 @@
     'images' : [],    #模块图片
     'depends' : ['base'],    #依赖模块
     'data': [
+         'wizard/qdodoo_arrival_rate_report.xml',
         'report/qdodoo_arrival_rate_report_view.xml',
+
         # ...
     ],    #更新XML,CSV
     'js': [

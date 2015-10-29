@@ -34,6 +34,7 @@ class qdodoo_arrival_rate_report(osv.Model):
     }
 
     def init(self, cr):
+
         tools.drop_view_if_exists(cr, 'qdodoo_arrival_rate_report')
         cr.execute("""
             create or replace view qdodoo_arrival_rate_report as (
