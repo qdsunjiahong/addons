@@ -33,12 +33,12 @@ class qdodoo_purchase_stock_state(models.Model):
             for pick_id, po_id in picks:
                 pick_list.append(pick_id)
                 po_list.append(po_id)
+
             for po_obj in self.browse(list(set(po_list))):
                 for line_po in po_obj.order_line:
                     po_num += line_po.product_qty
-
             if pick_list:
-                for pick_obj in picking_obj.browse(pick_list):
+                for pick_obj in picking_obj.browse(list(set(pick_list))):
                     for move_l in pick_obj.move_lines:
                         in_num += move_l.product_uom_qty
                 if po_num > in_num:
