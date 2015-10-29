@@ -3,7 +3,14 @@
         <data>
 <!--周转率form视图-->
         <!-- Holiday on resource leave -->
-
+        <record id="act_hr_employee_workdata" model="ir.actions.act_window">
+            <field name="name">工作日志</field>
+            <field name="res_model">qdodoo.work.details</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('employee','=',active_id)]</field>
+            <!--<field name="view_id" eval="hr_holidays_leaves_assign_tree_view"/>-->
+        </record>
     <record id="view_employee_adddata"  model="ir.ui.view">
             <field name="name">hr.employee.adddata.inherit</field>
             <field name="model">hr.employee</field>
@@ -20,14 +27,7 @@
                 </xpath>
             </field>
         </record>
-        <record id="act_hr_employee_workdata" model="ir.actions.act_window">
-            <field name="name">工作日志</field>
-            <field name="model">qdodoo.work.details</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
-            <field name="domain">[('employee','=',active_id)]</field>
-            <!--<field name="view_id" eval="hr_holidays_leaves_assign_tree_view"/>-->
-        </record>
+
                     <!--<act_window name="库存周转率"-->
                     <!--res_model="qdodoo.warehouse.ratesearch"-->
                     <!--src_model="product.product"-->
