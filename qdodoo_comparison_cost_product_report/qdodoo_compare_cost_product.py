@@ -67,7 +67,6 @@ class qdodoo_search_compare_product_cost(models.Model):
                     price_unit_dict = {}
                     if result:
                         for i in result:
-                            print i, 111
                             mp_id, product_id1, product_qty1, product_id_y, assistant_id1, price_unit1, product_uom_qty1 = i
                             price_unit_dict[product_id_y] = price_unit1
                             actual_amount += product_uom_qty1 * price_unit1
@@ -108,8 +107,6 @@ class qdodoo_search_compare_product_cost(models.Model):
 
                     create_obj = self.env['compare.product.cost'].create(data)
                     result_ids.append(create_obj.id)
-                # else:
-                #     raise except_orm(_(u'警告'), _(u'为查询到%s数据')%mrp_id.id)
             view_model, view_id = self.env['ir.model.data'].get_object_reference(
                 'qdodoo_comparison_cost_product_report', 'qdodoo_compare_cost_report_tree')
             return {
