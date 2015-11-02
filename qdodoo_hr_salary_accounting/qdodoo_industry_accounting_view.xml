@@ -8,6 +8,9 @@
             <field name="arch" type="xml">
                 <form string="工资核算">
                     <sheet string="工资核算">
+                        <header>
+                            <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                        </header>
                         <group colspan="4" col="4">
                             <field name="employee_id" on_change="onchange_emloyee_id(employee_id)"/>
                             <field name="department_id"/>
@@ -43,6 +46,7 @@
                     <field name="department_id"/>
                     <field name="company_id"/>
                     <field name="date_time"/>
+                    <field name="state"/>
                 </tree>
             </field>
         </record>

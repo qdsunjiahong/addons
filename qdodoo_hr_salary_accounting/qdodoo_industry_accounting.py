@@ -23,6 +23,7 @@ class qdodoo_industry_accounting(models.Model):
     department_id = fields.Many2one('hr.department', string=u'部门', required=True)
     company_id = fields.Many2one('res.company', string=u'公司', required=True)
     date_time = fields.Many2one('account.period', string=u'日期', required=True)
+    state = fields.Selection([('draft', u'草稿'), ('done', u'完成')], string=u'状态', default='draft')
     industry_line_ids = fields.One2many('industry.accounting.line', 'industry_accounting_id', string=u'说明')
 
     def onchange_emloyee_id(self, cr, uid, ids, employee_id, context=None):

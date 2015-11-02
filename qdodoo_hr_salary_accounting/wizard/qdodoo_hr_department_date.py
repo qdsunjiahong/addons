@@ -34,7 +34,6 @@ class qdodoo_hr_dapartment_date(models.Model):
 
     def _default_get_employee(self, cr, uid, context=None):
         employee_ids = ''
-        # print context
         if context.get('active_model') == 'hr.employee':
             active_ids = context.get('active_ids', []) or []
             employee_obj = self.pool.get('hr.employee')
@@ -86,9 +85,11 @@ class qdodoo_hr_dapartment_date(models.Model):
     def action_done(self):
         create_list = []
         employee_ids = self.hr_employee_ids.split(';')
+        m_model, m_id = self.env['ir.model.data'].get_object_reference('hr_payroll', 'action_view_hr_payslip_form')
         for employee_id in employee_ids:
             employee_id = int(employee_id)
             employee_obj = self.env['hr.employee'].browse(employee_id)
+            # in_d_obj=self.env['qdodoo.industry.accounting'].search([('employee_id','=',employee_id),('date_time','=',self.date.id),('')])
             date_from = self.date.date_start
             date_to = self.date.date_stop
             company_id = employee_obj.company_id.id
@@ -121,15 +122,20 @@ class qdodoo_hr_dapartment_date(models.Model):
         i_list = []
         for i in create_list:
             cre_obj = self.env['hr.payslip'].create(i)
+
+            cre_obj_new = cre_obj.with_context({}, lang=self._context.get('lang', 'zh_CN'),
+                                               tz=self._context.get('tz', 'Asia/Shanghai'),
+                                               uid=self._context.get('uid', 1),
+                                               params={'action': m_id})
+            cre_obj_new.compute_sheet()
             i_list.append(cre_obj.id)
 
         mod_obj = self.env['ir.model.data']
-
-        inv_ids = i_list
-        for inv_i in self.env['hr.payslip'].browse(inv_ids):
-                inv_i.compute_sheet()
-                pass
-        if len(inv_ids) > 0:
+        in_d_ids = self.env['qdodoo.industry.accounting'].search(
+            [('employee_id', '=', employee_id), ('date_time', '=', self.date.id), ('number', '=', self.number)])
+        if len(in_d_ids) == 1:
+            in_d_ids.write({'state': 'done'})
+        if len(i_list) > 0:
             mo, view_id = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_tree')
             mo_form, view_id_form = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_form')
             return {
@@ -138,7 +144,7 @@ class qdodoo_hr_dapartment_date(models.Model):
                 "view_mode": 'tree,form',
                 'res_model': 'hr.payslip',
                 'type': 'ir.actions.act_window',
-                'domain': [('id', 'in', inv_ids)],
+                'domain': [('id', 'in', i_list)],
                 'views': [(view_id, 'tree'), (view_id_form, 'form')],
                 'view_id': [view_id],
             }
@@ -159,7 +165,6 @@ class qdodoo_hr_dapartment_date(models.Model):
             for rule in rule_obj.browse(cr, uid, sorted_rule_ids, context=context):
                 if rule.input_ids:
                     for input in rule.input_ids:
-                        print input.name,contract.id,period_id,number_l
                         industry_accounting_ids = self.pool.get('industry.accounting.line').search(cr, uid, [
                             ('name', '=', input.name), ('contract_id', '=', contract.id),
                             ('period_id', '=', period_id), ('number_l', '=', number_l)])
@@ -169,6 +174,18 @@ class qdodoo_hr_dapartment_date(models.Model):
                         elif len(industry_accounting_ids) > 1:
                             raise except_orm(_(u'警告'), _(u'员工%s工资核算中的工资规则%s出现重复') % (
                                 contract.employee_id.name, input.name))
+                        industry_accounting_ids_obj = self.pool.get('industry.accounting.line').read(cr, uid,
+                                                                                                     industry_accounting_ids,
+                                                                                                     [
+                                                                                                         'industry_accounting_id'])
+
+                        industry_id = industry_accounting_ids_obj[0].get('industry_accounting_id', False)
+                        if industry_id:
+                            industry_id_obj = self.pool.get('qdodoo.industry.accounting').browse(cr, uid,
+                                                                                                 industry_id[0])
+                            if industry_id_obj.state == 'done':
+                                raise except_orm(_(u'警告'), _(u'员工%s%s工资核算项状态已经完成！') % (
+                                    industry_id_obj.employee_id.name, industry_id_obj.date_time.name))
                         industry_accounting_obj = self.pool.get('industry.accounting.line').browse(cr, uid,
                                                                                                    industry_accounting_ids[
                                                                                                        0])
@@ -188,14 +205,18 @@ class qdodoo_hr_dapartment_date(models.Model):
         create_list = []
         number_list = []
         industry_accounting_list = []
+        m_model, m_id = self.env['ir.model.data'].get_object_reference('hr_payroll', 'action_view_hr_payslip_form')
         industry_accounting_ids = self.industry_accounting_ids.split(';')
         for i in industry_accounting_ids:
             industry_accounting_list.append(int(i))
         for industry_accounting_id in self.env['qdodoo.industry.accounting'].browse(industry_accounting_list):
+            # if industry_accounting_id.state == 'done':
+            #     raise except_orm(_(u'警告'), _(u'员工%s%s工资核算项状态已经完成！') % (
+            #         industry_accounting_id.employee_id.name, industry_accounting_id.date_time.name))
             employee_ids.append(industry_accounting_id.employee_id.id)
             number_list.append(industry_accounting_id.number)
         if len(list(set(number_list))) > 1:
-            raise except_orm(_(u'警告'), _(u'一次只能选择相同序列号'))
+            raise except_orm(_(u'警告'), _(u'一次只能选择一个序列号'))
         for employee_id in employee_ids:
             employee_obj = self.env['hr.employee'].browse(employee_id)
             date_from = self.date.date_start
@@ -213,7 +234,6 @@ class qdodoo_hr_dapartment_date(models.Model):
                 raise except_orm(_(u'警告！'), _(u'员工%s未创建合同') % (employee_obj.name))
             hr_user_id = employee_obj.user_id.id
             # worked_days_line_ids = self.env['hr.payslip'].get_worked_day_lines(contract_ids, date_from, date_to)
-            print contract_ids, self.number
             input_line_ids = self.get_inputs(contract_ids, self.date.id, self.number)
             journal_id = self.journal_id.id
             hr_ids = self.env['hr.payslip'].search(
@@ -231,14 +251,19 @@ class qdodoo_hr_dapartment_date(models.Model):
         i_list = []
         for i in create_list:
             cre_obj = self.env['hr.payslip'].create(i)
+            m_model, m_id = self.env['ir.model.data'].get_object_reference('hr_payroll', 'action_view_hr_payslip_form')
+
+            cre_obj_new = cre_obj.with_context({}, lang=self._context.get('lang', 'zh_CN'),
+                                               tz=self._context.get('tz', 'Asia/Shanghai'),
+                                               uid=self._context.get('uid', 1),
+                                               params={'action': m_id})
+            cre_obj_new.compute_sheet()
             i_list.append(cre_obj.id)
 
         mod_obj = self.env['ir.model.data']
-
-        inv_ids = i_list
-        for inv_i in self.env['hr.payslip'].browse(inv_ids):
-            inv_i.compute_sheet()
-        if len(inv_ids) > 0:
+        for j in self.env['qdodoo.industry.accounting'].browse(industry_accounting_list):
+            j.write({'state': 'done'})
+        if len(i_list) > 0:
             mo, view_id = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_tree')
             mo_form, view_id_form = mod_obj.get_object_reference('hr_payroll', 'view_hr_payslip_form')
             return {
@@ -247,7 +272,7 @@ class qdodoo_hr_dapartment_date(models.Model):
                 "view_mode": 'tree,form',
                 'res_model': 'hr.payslip',
                 'type': 'ir.actions.act_window',
-                'domain': [('id', 'in', inv_ids)],
+                'domain': [('id', 'in', i_list)],
                 'views': [(view_id, 'tree'), (view_id_form, 'form')],
                 'view_id': [view_id],
             }

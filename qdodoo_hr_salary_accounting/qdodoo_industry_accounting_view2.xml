@@ -41,7 +41,7 @@
             <field name="context">{}</field>
             <field name="target">new</field>
         </record>
-        <record id="qdodoo_qction_hr_deaprtment3" model="ir.values">
+        <record id="qdodoo_qction_hr_deaprtment_ac" model="ir.values">
             <field eval="'client_action_multi'" name="key2"/>
             <field eval="'qdodoo.industry.accounting'" name="model"/>
             <field name="name">工资条批量核算</field>
