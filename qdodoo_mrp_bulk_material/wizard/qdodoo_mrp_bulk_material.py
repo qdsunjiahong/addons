@@ -76,6 +76,8 @@ class qdodoo_mrp_bulk_material(models.Model):
              ('wh_qc_stock_loc_id', '=', self.location_id.id),
              ('wh_pack_stock_loc_id', '=', self.location_id.id),
              ('wh_output_stock_loc_id', '=', self.location_id.id), ('lot_stock_id', '=', self.location_id.id)])
+        if not out_warehopuse or not in_warehopuse:
+            raise except_orm(_(u'警告'), _(u'不能选择视图类型的库位'))
 
         if out_warehopuse.id == in_warehopuse.id:
             for key in product_dict.keys():
