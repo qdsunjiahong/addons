@@ -1,6 +1,47 @@
 <?xml version='1.0' encoding='utf-8'?>
 <openerp>
     <data>
+        <record id="qdodoo_compare_cost_report_form" model="ir.ui.view">
+            <field name="name">产品标准原料成本与实际成本对比汇总表</field>
+            <field name="model">compare.product.cost</field>
+            <field name="arch" type="xml">
+                <form string="产品标准原料成本与实际成本对比汇总表">
+                    <sheet>
+                        <group col="4" colspan="4">
+                            <!--<field name="mo_name"/>-->
+                            <field name="product_id"/>
+                            <field name="product_qty"/>
+                            <field name="location_id"/>
+                            <field name="assistant_id"/>
+                            <field name="actual_amount"/>
+                            <field name="actual_price"/>
+                            <field name="theoretical_amount"/>
+                            <field name="theoretical_price"/>
+                            <field name="save_amount"/>
+                            <field name="price_save"/>
+                            <field name="amount_difference_rate"/>
+                        </group>
+                        <notebook>
+                            <page string="报表明细">
+                                <field name="line_ids">
+                                    <tree string="报表明细" editable="bottom">
+                                        <field name="mo_name"/>
+                                        <field name="product_id"/>
+                                        <field name="actual_amount"/>
+                                        <field name="actual_price"/>
+                                        <field name="theoretical_amount"/>
+                                        <field name="theoretical_price"/>
+                                        <field name="save_amount"/>
+                                        <field name="price_save"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
         <record id="qdodoo_compare_cost_report_tree" model="ir.ui.view">
             <field name="name">产品标准原料成本与实际成本对比汇总表</field>
             <field name="model">compare.product.cost</field>
