@@ -74,8 +74,14 @@ class qdodoo_search_compare_product_cost(models.Model):
                     price_amount_dict = {}  # 实际原料金额
                     product_price_list = []  # 实际原料
                     sm_num_dict = {}
-                    product_num_dict[
-                        (mrp_id.id, mrp_id.name, mrp_id.product_id.id, mrp_id.analytic_account.id)] = mrp_id.product_qty
+                    if mrp_id.move_created_ids2:
+                        for move_l in mrp_id.move_created_ids2:
+                            if move_l.state != 'cancel':
+                                product_num_dict[
+                                    (mrp_id.id, mrp_id.name, mrp_id.product_id.id,
+                                     mrp_id.analytic_account.id)] = product_num_dict.get(
+                                    (mrp_id.id, mrp_id.name, mrp_id.product_id.id,
+                                     mrp_id.analytic_account.id), 0) + move_l.product_uom_qty
                     sql = """
                         select
                             mp.id,
@@ -147,7 +153,7 @@ class qdodoo_search_compare_product_cost(models.Model):
                 if len(list(set(actual_amount_list + theoretical_amount_list))):
                     for product_l in list(set(actual_amount_list + theoretical_amount_list)):
                         product_key = product_l[2:]
-                        sss=actual_amount_dict.get(product_l, 0) - theoretical_amount_dict.get(product_l, 0)
+                        sss = actual_amount_dict.get(product_l, 0) - theoretical_amount_dict.get(product_l, 0)
                         if product_key in key_list:
                             product_total_a[product_key] += actual_amount_dict.get(product_l, 0)
                             product_total_t[product_key] += theoretical_amount_dict.get(product_l, 0)
