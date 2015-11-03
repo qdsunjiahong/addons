@@ -59,7 +59,7 @@ class qdodoo_arrival_wizard(osv.osv_memory):
                     'type': 'ir.actions.act_window',
                     'views': [(view_id_form, 'tree')],
                     'view_id': [view_id_form],
-                    'domain':[('id','in',pirse_ids)]
+                    'domain':[('purchase_id','in',pirse_ids)]
                 }
 
 
