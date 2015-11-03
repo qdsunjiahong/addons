@@ -69,12 +69,14 @@ class account_payment_select(osv.osv):
 
     def search_entries(self, cr, uid, ids, context=None):
         line_obj = self.pool.get('account.move.line')
+        payment_obj = self.pool.get('payment.order')
         mod_obj = self.pool.get('ir.model.data')
         if context is None:
             context = {}
         data = self.browse(cr, uid, ids, context=context)[0]
+        payment_id = payment_obj.browse(cr, uid, context.get('active_id'))
         search_due_date = data.duedate
-        domain = [('reconcile_id', '=', False),('log_is_two','=',False) ,('account_id.type', '=', 'payable'),('account_id.reconcile', '=', True)]#('credit', '>', 0),
+        domain = [('partner_id','=',payment_id.payment_supplier.id),('reconcile_id', '=', False),('log_is_two','=',False) ,('account_id.type', '=', 'payable'),('account_id.reconcile', '=', True)]#('credit', '>', 0),
         domain = domain + ['|', ('date_maturity', '<=', search_due_date), ('date_maturity', '=', False)]
         line_ids = line_obj.search(cr, uid, domain, context=context)
         context = dict(context, line_ids=line_ids)
@@ -147,8 +149,8 @@ class account_move_line_inherit(osv.osv):
         return r
     _columns = {
         'log_is_two':fields.boolean(u'是否是第二次选择'),
-        'amount_to_pay': fields.function(_amount_residual,
-            type='float', string='Amount to pay', fnct_search=account_move_line._to_pay_search),
+        # 'amount_to_pay': fields.function(_amount_residual,
+        #     type='float', string='Amount to pay', fnct_search=account_move_line._to_pay_search),
     }
     _default= {
         'log_is_two':False,
