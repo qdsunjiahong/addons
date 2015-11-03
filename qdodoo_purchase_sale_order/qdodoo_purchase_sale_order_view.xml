@@ -42,10 +42,7 @@
                 </xpath>
 
                 <xpath expr="//field[@name='picking_type_id']" position="replace">
-                    <field name="picking_type_id" on_change="onchange_picking_type_id(picking_type_id, context)"
-                           domain="[('code','=','incoming'),('warehouse_id.company_id.id','=',company_id)]"
-                           options="{'no_create': True}" context="{'special_shortened_wh_name': True}"
-                           groups="stock.group_locations"/>
+                    <field name="picking_type_id"  on_change="onchange_picking_type_id(picking_type_id, context)" domain="[('code','=','incoming'),('warehouse_id.company_id.id','=',company_id)]" options="{'no_create': True}" context="{'special_shortened_wh_name': True}" groups="stock.group_locations"/>
                 </xpath>
 
                 <xpath expr="//field[@name='order_line']" position="replace">
@@ -70,18 +67,6 @@
                         </tree>
                     </field>
                 </xpath>
-
-            </field>
-        </record>
-        <record model="ir.ui.view" id="qdodoo_res_company_add_project_id">
-            <field name="name">辅助核算项</field>
-            <field name="model">res.company</field>
-            <field name="inherit_id" ref="base.view_company_form"/>
-            <field name="arch" type="xml">
-
-                <field name="parent_id" position="before">
-                    <field name="analytic_account_id"/>
-                </field>
 
             </field>
         </record>
