@@ -12,6 +12,14 @@ from openerp import models, fields, api, _
 class account_periodly_search(models.Model):
     _name = 'account.periodly.search'
 
+    # @api.multi
+    def _get_company_id(self):
+        return self.env['res.users'].browse(self.env.uid).company_id.id
+
+    start_p = fields.Many2one('account.period', string=u'开始期间')
+    end_p = fields.Many2one('account.period', string=u'结束期间')
+    company_id = fields.Many2one('res.company', string=u'公司', default=_get_company_id)
+
     @api.multi
     def btn_search(self):
         sql = """
@@ -29,9 +37,9 @@ class account_periodly_search(models.Model):
                 left join account_account a on (l.account_id = a.id)
                 left join account_move am on (am.id=l.move_id)
                 left join account_period p on (am.period_id=p.id)
-            where l.state != 'draft'
+            where l.state != 'draft' and l.date >= '%s' and l.date <= '%s' and l.company_id = %s
             group by p.id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id ,l.debit, l.credit
-        """
+        """ % (self.start_p.date_start, self.end_p.date_stop,self.company_id.id)
         self.env.cr.execute(sql)
         key_list = []
         debit_dict = {}

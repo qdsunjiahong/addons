@@ -177,6 +177,13 @@
             <field name="model">account.periodly.search</field>
             <field name="arch" type="xml">
                 <form string="科目余额表">
+                    <sheet>
+                        <group col="4" colspan="4">
+                            <field name="start_p" domain="[('company_id','=',company_id),('state','=','draft')]"/>
+                            <field name="end_p" domain="[('company_id','=',company_id),('state','=','draft')]"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </sheet>
                     <footer>
                         <button string="查询" name="btn_search" type="object" class="oe_highlight"/>
                         or
