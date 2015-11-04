@@ -71,7 +71,9 @@ class qdodoo_mrp_bulk_material(models.Model):
             type_obj1 = self.env['stock.picking.type'].search(
                 [('default_location_src_id', '=', self.localtion_dest_id.id)])
             type_obj2 = self.env['stock.picking.type'].search([('default_location_dest_id', '=', self.location_id.id)])
-            print type_obj1, 111, type_obj2
+            if not type_obj1 or not type_obj2:
+                raise except_orm(_(u'警告'),
+                                 _(u'源库位的为%s或者目的库位为%s的移库单类型不存在') % (self.localtion_dest_id.name, self.location_id.name))
             if type_obj1[0].warehouse_id == type_obj2[0].warehouse_id:
                 type_p_id = self.env['stock.picking.type'].search(
                     [('warehouse_id', '=', type_obj1[0].warehouse_id.id), ('code', '=', 'internal'),
