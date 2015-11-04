@@ -16,8 +16,8 @@ class account_periodly_search(models.Model):
     def _get_company_id(self):
         return self.env['res.users'].browse(self.env.uid).company_id.id
 
-    start_p = fields.Many2one('account.period', string=u'开始期间')
-    end_p = fields.Many2one('account.period', string=u'结束期间')
+    start_p = fields.Many2one('account.period', string=u'开始期间', required=True)
+    end_p = fields.Many2one('account.period', string=u'结束期间', required=True)
     company_id = fields.Many2one('res.company', string=u'公司', default=_get_company_id)
 
     @api.multi
@@ -31,14 +31,16 @@ class account_periodly_search(models.Model):
                 l.debit as debit,
                 l.credit as credit,
                 (l.debit-l.credit) as balance,
-                p.date_start as date
+                p.date_start as date,
+                l.name as line_name,
+                am.name as move_name
             from
                 account_move_line l
                 left join account_account a on (l.account_id = a.id)
                 left join account_move am on (am.id=l.move_id)
                 left join account_period p on (am.period_id=p.id)
-            where l.state != 'draft' and l.date >= '%s' and l.date <= '%s'
-            group by p.id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id ,l.debit, l.credit
+            where l.state != 'draft' and p.date_start >= '%s' and p.date_stop <= '%s'
+            group by l.name,am.name, p.id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id,p.date_stop,p.date_start ,l.debit, l.credit
         """ % (self.start_p.date_start, self.end_p.date_stop)
         self.env.cr.execute(sql)
         key_list = []
@@ -48,15 +50,15 @@ class account_periodly_search(models.Model):
         data_start_dict = {}
         for line in self.env.cr.fetchall():
             k_l = line[:4]
-            if line[:4] in key_list:
+            if k_l in key_list:
                 debit_dict[k_l] += line[4]
                 credit_dict[k_l] += line[5]
-                dict_line[k_l] += [(line[2], line[4], line[5])]
+                dict_line[k_l] += [(line[2], line[4], line[5], line[-2], line[-1])]
 
             else:
                 debit_dict[k_l] = line[4]
                 credit_dict[k_l] = line[5]
-                dict_line[k_l] = [(line[2], line[4], line[5])]
+                dict_line[k_l] = [(line[2], line[4], line[5], line[-2], line[-1])]
                 key_list.append(k_l)
             data_start_dict[k_l] = line[7]
         return_ids = []
@@ -76,8 +78,8 @@ class account_periodly_search(models.Model):
             if value_line:
                 for v in value_line:
                     sql_lines = """
-                          insert into account_periodly_line (account_id,debit,credit,account_periodly_id) VALUES (%s,%s,%s,%s)
-                        """ % (v[0], v[1], v[2], cre_obj.id)
+                          insert into account_periodly_line (move_name,line_name,account_id,debit,credit,account_periodly_id) VALUES ('%s','%s',%s,%s,%s,%s)
+                        """ % (v[-1], v[-2], v[0], v[1], v[2], cre_obj.id)
                     self.env.cr.execute(sql_lines)
             return_ids.append(cre_obj.id)
         view_model, view_id = self.env['ir.model.data'].get_object_reference('oecn_account_print',

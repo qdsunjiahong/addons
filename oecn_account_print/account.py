@@ -132,6 +132,8 @@ class account_periodly_line(osv.osv):
     _name = 'account.periodly.line'
     # _auto = False
     _columns = {
+        'move_name':fields.char(string=u'凭证号'),
+        'line_name':fields.char(string=u'说明'),
         'account_id': fields.many2one('account.account', '科目', readonly=True),
         'debit': fields.float('借方', readonly=True),
         'credit': fields.float('贷方', readonly=True),
