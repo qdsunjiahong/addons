@@ -37,9 +37,9 @@ class account_periodly_search(models.Model):
                 left join account_account a on (l.account_id = a.id)
                 left join account_move am on (am.id=l.move_id)
                 left join account_period p on (am.period_id=p.id)
-            where l.state != 'draft' and l.date >= '%s' and l.date <= '%s' and l.company_id = %s
+            where l.state != 'draft' and l.date >= '%s' and l.date <= '%s'
             group by p.id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id ,l.debit, l.credit
-        """ % (self.start_p.date_start, self.end_p.date_stop,self.company_id.id)
+        """ % (self.start_p.date_start, self.end_p.date_stop)
         self.env.cr.execute(sql)
         key_list = []
         debit_dict = {}
