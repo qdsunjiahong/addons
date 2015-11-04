@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-# __author__ = jeff@openerp.cn
+# __author__ = jeff@osbzr.com
 ##############################################################################
 #
 # WARNING: This program as such is intended to be used by professional
@@ -27,7 +27,7 @@
 
 {
     "name" : "符合中国会计习惯的财务功能",
-    "version" : "7.0",
+    "version" : "openerp",
     "description" : '''
     中国财务报表打印模块
     增加视图：
@@ -61,10 +61,12 @@
     use this concept. They care more about move number and move number must
     be organized in a period
     ''',
-    "author" : "Shine IT",
-    "website" : "http://www.openerp.cn",
+    "author" : "开阖软件",
+    "website" : "http://www.osbzr.com",
     "depends" : ["account","account_accountant"],
     "data" : [
+                "security/oecn_account_print_security.xml",
+                "security/ir.model.access.csv",
                 "wizard/oecn_account_print_wizard_view.xml",
                 "oecn_account_print_view.xml",
                 "oecn_account_print_report.xml",

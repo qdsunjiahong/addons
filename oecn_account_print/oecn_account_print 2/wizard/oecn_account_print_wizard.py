@@ -47,7 +47,8 @@ class detail_ledger(osv.osv_memory):
                 "WHERE fiscalyear_id='%s' and special = 'False' "\
                 "ORDER BY date_start asc ")% (int(fiscalyear_id)))
         res = cr.dictfetchall()
-        return res[0]['id']
+        if res:
+            return res[0]['id']
 
     _defaults = {
         'company_id':lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'account.account', context=c),
@@ -126,7 +127,8 @@ class general_ledger(osv.osv_memory):
                 #"WHERE fiscalyear_id='%s' and special = 'False' "\
                 #"ORDER BY date_start asc ")% (int(fiscalyear_id)))
         #res = cr.dictfetchall()
-        return period_ids[0]
+        if period_ids:
+            return period_ids[0]
 
     _defaults = {
         'company_id':lambda s, cr, uid, c: s.pool.get('res.company')._company_default_get(cr, uid, 'account.account', context=c),

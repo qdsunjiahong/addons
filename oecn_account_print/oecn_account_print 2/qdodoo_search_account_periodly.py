@@ -39,18 +39,19 @@ class account_periodly_search(models.Model):
         credit_dict = {}
         data_start_dict = {}
         for line in self.env.cr.fetchall():
-            k_l = line[:4]
             if line[:4] in key_list:
-                debit_dict[k_l] += line[4]
-                credit_dict[k_l] += line[5]
-                dict_line[k_l] += [(line[2], line[4], line[5])]
+                debit_dict[line[:4]] += line[4]
+                credit_dict[line[:4]] += line[5]
 
             else:
-                debit_dict[k_l] = line[4]
-                credit_dict[k_l] = line[5]
-                dict_line[k_l] = [(line[2], line[4], line[5])]
-                key_list.append(k_l)
-            data_start_dict[k_l] = line[7]
+                debit_dict[line[:4]] = line[4]
+                credit_dict[line[:4]] = line[5]
+                key_list.append(line[:4])
+            data_start_dict[line[:4]] = line[7]
+            line_data = self._return_result(line)
+            line_value = dict_line.get(line[:4], [])
+            line_value.append(line_data)
+            dict_line[line[:4]] = line_value
         return_ids = []
         for key in key_list:
             data = {
@@ -61,10 +62,13 @@ class account_periodly_search(models.Model):
                 'debit': debit_dict.get(key, 0),
                 'credit': credit_dict.get(key, 0),
                 'balance': debit_dict.get(key, 0) - credit_dict.get(key, 0),
+                # 'periodly_lines': dict_line.get(key, False),
                 'date': data_start_dict.get(key, False)
             }
             cre_obj = self.env['account.periodly'].create(data)
+            # for key_line in dict_line.keys():
             value_line = dict_line.get(key, False)
+            print value_line
             if value_line:
                 for v in value_line:
                     sql_lines = """

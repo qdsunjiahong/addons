@@ -27,3 +27,4 @@
 import account
 import wizard
 import report
+import qdodoo_search_account_periodly

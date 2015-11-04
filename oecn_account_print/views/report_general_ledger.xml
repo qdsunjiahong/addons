@@ -18,7 +18,7 @@
                                 </h2>
                             </div>
                         </div>
-                        <t t-foreach='o.account_ids	' t-as='a'>
+                        <t t-foreach='o.account_ids' t-as='a'>
                         <div class='row' >
                             <div class='col-xs-6 pull-left'>
                                 <span>科目：</span>

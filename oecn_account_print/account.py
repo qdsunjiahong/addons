@@ -10,13 +10,6 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
-class account_move_line(osv.osv):
-    _inherit = 'account.move.line'
-
-
-account_move_line()
-
-
 class account_move(osv.osv):
     _inherit = 'account.move'
     """
@@ -40,31 +33,6 @@ class account_move(osv.osv):
 
 class account_account(osv.osv):
     _inherit = 'account.account'
-    """
-    Replace metheod accoun.account.name_get(), show full name of account on many2one field
-    Sample “100902 其他货币资金/银行本票”
-    """
-
-    def name_get(self, cr, uid, ids, context={}):
-        if not ids:
-            return []
-        reads = self.read(cr, uid, ids, ['name', 'code', 'parent_id'], context)
-        res = []
-        for record in reads:
-            name = record.get('name')
-            if record['code'] and record['parent_id']:
-                account_parent_id = record['parent_id'][0]
-                while account_parent_id:
-                    parent_obj = self.read(cr, uid, account_parent_id, ['name', 'parent_id'], context)
-                    if parent_obj['parent_id']:
-                        account_parent_id = parent_obj['parent_id'][0]
-                        name = parent_obj['name'] + '/' + name
-                    else:
-                        account_parent_id = False
-
-            name = record['code'] + ' ' + name
-            res.append((record['id'], name))
-        return res
 
     def get_balance(self, cr, uid, ids, date_start=False, date_stop=False, product=False, partner=False):
         '''
@@ -114,6 +82,7 @@ class account_account(osv.osv):
             result['credit'] += line.credit or 0
 
         return result
+
 
 
 class account_periodly(osv.osv):
@@ -169,5 +138,3 @@ class account_periodly_line(osv.osv):
         'company_id': fields.many2one('res.company', '公司', readonly=True),
         'account_periodly_id': fields.many2one('account.periodly', ondelete='cascade')
     }
-
-

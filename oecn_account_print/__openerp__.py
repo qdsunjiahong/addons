@@ -27,7 +27,7 @@
 
 {
     "name" : "符合中国会计习惯的财务功能",
-    "version" : "openerp",
+    "version" : "8.0",
     "description" : '''
     中国财务报表打印模块
     增加视图：

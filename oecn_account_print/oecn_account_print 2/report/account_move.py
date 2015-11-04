@@ -24,8 +24,9 @@ import time
 from openerp.report import report_sxw
 from openerp.tools.translate import _
 from openerp.osv import osv
-
-from math import ceil
+from decimal import Decimal
+#from math import ceil
+import math
 
 class report_account_move_common(report_sxw.rml_parse):
     def __init__(self, cr, uid, name, context=None):
@@ -42,15 +43,18 @@ class report_account_move_common(report_sxw.rml_parse):
 
         self.context = context
 
-    def _paginate(self, items, max_per_page=5):
+    def _paginate(self, items, max_per_pag=4):
         """
         分页函数
         items 为要分页的条目们
         max_per_page 设定每页条数
         返回：页数
         """
-        count = len(items)
-        return int(ceil(float(count) / max_per_page))
+        count = float(len(items))
+        print count
+        print max_per_pag
+        print int(math.ceil(count/max_per_pag))
+        return int(math.ceil(count/max_per_pag))
 
     def _get_account_name(self,id):
         account_name = self.pool.get('account.account').name_get(self.cr, self.uid, [id],{})[0]
@@ -73,9 +77,14 @@ class report_account_move_common(report_sxw.rml_parse):
         exchange_rate = False
         if line.amount_currency:
             if line.debit > 0:
-                exchange_rate = line.debit/line.amount_currency
+                x = line.debit/line.amount_currency
+                # if len(exchange_rate[exchange_rate.find('.'):]) > 4:
+                exchange_rate = float('{:.4f}'.format(Decimal(x)))
+
             if line.credit > 0:
-                exchange_rate = line.credit/( -1 * line.amount_currency)
+                x = line.credit/( -1 * line.amount_currency)
+                # if len(exchange_rate[exchange_rate.find('.'):]) > 4:
+                exchange_rate = float('{:.4f}'.format(Decimal(x)))
         return exchange_rate
 
     def _get_unit_price(self, line):
@@ -85,9 +94,15 @@ class report_account_move_common(report_sxw.rml_parse):
         unit_price = False
         if line.quantity:
             if line.debit > 0:
-                unit_price = line.debit/line.quantity
+                y = line.debit/line.quantity
+                # print y
+                # if len(unit_price[unit_price.find('.'):]) > 2:
+                unit_price = float('{:.2f}'.format(Decimal(y)))
+                #print unit_price
             if line.credit > 0:
-                unit_price = line.credit/line.quantity
+                y = line.credit/line.quantity
+                # if len(unit_price[unit_price.find('.'):]) > 2:
+                unit_price = float('{:.2f}'.format(Decimal(y)))
         return unit_price
 
     def _rmb_format(self, value):

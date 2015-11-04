@@ -1,21 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 <data>
-<template id="report_cash_journal"> 
+<template id="report_threecolumns_ledger"> 
 <t t-call="report.html_container">
     <t t-set="data_report_margin_top" t-value="12"/>
     <t t-set="data_report_header_spacing" t-value="9"/>
     <t t-set="data_report_dpi" t-value="110"/>
     <t t-set="data-report_format" t-value='A5' />
-    <t t-foreach='docs' t-as='o' >
     <t t-call="report.internal_layout">
+        <t t-foreach='docs' t-as='o' >
             <div class="page">
                 <div class='row' >
                     <div class='oe_structure' />
                     <div class='row'>
                         <h2 class='text-center'>
+                            <!--type表示调用_check_type，不是朋友他好哦你的type函数-->
                             <span t-esc="type(data)['report_name']" />
                         </h2>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class='col-xs-6 pull-left'>
+                        <span>科目:</span>
+                        <span t-esc="data['account_id'][1]"/>
+                    </div>  
+                    <div class='col-xs-6 text-right'>
+                        <t t-if="type(data)['partner']">
+                            <span>业务伙伴:</span>
+                            <span t-esc="type(data)['partner']"/>
+                        </t>
                     </div>
                 </div>
                 <div class="row">
@@ -29,7 +42,10 @@
                     </div>
                 </div>
 
-                <table border='1' class='col-xs-12' bordercolor='green'>
+                <style>
+                    table.col-xs-12 td{border: 1px solid green}
+                </style>
+                <table class='col-xs-12'>
                     <thead>
                         <tr>
                             <td height='40px' class='col-xs-2 text-center' >日期</td>
@@ -61,12 +77,11 @@
                             <td>
                             </td>
                             <td class="text-center">
-                                <span t-esc="formatLang(balance(data['form']['account_id'][0], date_stop=data['all_date']['period_start_date_start'])['balance'])"/>
+                                <span t-esc="formatLang(balance(data['form']['account_id'][0],date_stop=data['all_date']['period_start_date_start'])['balance'])"/>
                             </td>
                         </tr>
-                        <t t-foreach="lines(data['form']['account_id'][0], True)" t-as="period">
-                        <t t-foreach="period['days']" t-as='days'>
-                        <t t-foreach="days['lines']" t-as="line">
+                        <t t-foreach="lines(data['form']['account_id'][0])" t-as="period">
+                        <t t-foreach="period['lines']" t-as="line">
                         <tr class="text-center">
                             <td class="text-center" height='40px'>
                                 <span t-esc="line.date"/>
@@ -87,29 +102,10 @@
                                 <span t-esc="formatLang(line.credit)"/>
                             </td>
                             <td class="text-center">
+                                <span t-esc="get_direction(line.debit-line.credit)"/>
                             </td>
                             <td class="text-center">
-                            </td>
-                        </tr>
-                        </t>
-                        <tr class="text-center">
-                            <td height='40px'></td>
-                            <td></td>
-                            <td class="text-center">
-                                <span>本日合计</span>
-                            </td>
-                            <td></td>
-                            <td class="text-center">
-                                <span t-esc="formatLang(reduce(lambda x,y:x+y.debit or 0 ,days['lines'],0))"/>
-                            </td>
-                            <td class="text-center">
-                                <span t-esc="formatLang(reduce(lambda x,y:x+y.credit or 0 ,days['lines'],0))"/>
-                            </td>
-                            <td class="text-center">
-                                <span t-esc="get_direction(reduce(lambda x,y:x+y['debit'] or 0 ,period['lines'],0)-reduce(lambda x,y:x+y['credit'] or 0 ,period['lines'],0))"/>
-                            </td>
-                            <td class="text-center">
-                                <span t-esc="formatLang(balance(data['form']['account_id'][0], date_stop=days['date'])['balance'])"/>
+                                <span t-esc="formatLang(line.debit-line.credit)"/>
                             </td>
                         </tr>
                         </t>
@@ -130,7 +126,7 @@
                                 <span t-esc="get_direction(reduce(lambda x,y:x+y['debit'] or 0 ,period['lines'],0)-reduce(lambda x,y:x+y['credit'] or 0 ,period['lines'],0))"/>
                             </td>
                             <td class="text-center">
-                                <span t-esc="formatLang(balance(data['form']['account_id'][0], date_stop=period['period'].date_stop)['balance'])"/>
+                                <span t-esc="formatLang(balance(data['form']['account_id'][0], date_start=period['period'].date_start, date_stop=period['period'].date_stop)['balance'])"/>
                             </td>
                         </tr>
                         <tr class="text-center">
