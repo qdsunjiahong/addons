@@ -20,30 +20,49 @@ class stock_picking(models.Model):
         if context is None:
             context = {}
         partner, currency_id, company_id, user_id = key
+        print key, inv_type
         if inv_type in ('out_invoice', 'out_refund'):
             account_id = partner.property_account_receivable.id
+            print account_id
             payment_term = partner.property_payment_term.id or False
         else:
             account_id = partner.property_account_payable.id
             payment_term = partner.property_supplier_payment_term.id or False
-        pterm = self.pool.get('account.payment.term').browse(cr, uid, payment_term)
-        pterm_list = pterm.compute(value=1, date_ref=context.get('date_inv', False))[0]
-        if pterm_list:
-            date_due = max(line[0] for line in pterm_list)
+        if payment_term:
+            pterm = self.pool.get('account.payment.term').browse(cr, uid, payment_term)
+            pterm_list = pterm.compute(value=1, date_ref=context.get('date_inv', []))
+            if pterm_list:
+                date_due = max(line[0] for line in pterm_list[0])
+            else:
+                date_due = False
+            return {
+                'origin': move.picking_id.name,
+                'date_invoice': context.get('date_inv', False),
+                'date_due': date_due,
+                'user_id': user_id,
+                'partner_id': partner.id,
+                'account_id': account_id,
+                'payment_term': payment_term,
+                'type': inv_type,
+                'fiscal_position': partner.property_account_position.id,
+                'company_id': company_id,
+                'currency_id': currency_id,
+                'journal_id': journal_id,
+                'group_ref': move.picking_id.group_id.name
+            }
         else:
-            date_due = False
-        return {
-            'origin': move.picking_id.name,
-            'date_invoice': context.get('date_inv', False),
-            'date_due': date_due,
-            'user_id': user_id,
-            'partner_id': partner.id,
-            'account_id': account_id,
-            'payment_term': payment_term,
-            'type': inv_type,
-            'fiscal_position': partner.property_account_position.id,
-            'company_id': company_id,
-            'currency_id': currency_id,
-            'journal_id': journal_id,
-            'group_ref': move.picking_id.group_id.name
-        }
+            return {
+                'origin': move.picking_id.name,
+                'date_invoice': context.get('date_inv', False),
+                'date_due': False,
+                'user_id': user_id,
+                'partner_id': partner.id,
+                'account_id': account_id,
+                'payment_term': payment_term,
+                'type': inv_type,
+                'fiscal_position': partner.property_account_position.id,
+                'company_id': company_id,
+                'currency_id': currency_id,
+                'journal_id': journal_id,
+                'group_ref': move.picking_id.group_id.name
+            }

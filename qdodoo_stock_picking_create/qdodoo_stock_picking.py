@@ -48,6 +48,14 @@ class qdodoo_stock_picking(models.Model):
         location_model_cus, lo_id = self.env['ir.model.data'].get_object_reference('stock', 'stock_location_suppliers')
         location_model_cus2, lo_id2 = self.env['ir.model.data'].get_object_reference('stock',
                                                                                      'stock_location_customers')
+        if self.picking_id.acc:
+            if ite_obj.sourceloc_id.id in (lo_id, lo_id2) and self.picking_id.invoice_state == '2binvoiced':
+                onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': self.picking_id.date_done})
+                onshipping_id.create_invoice()
+            elif ite_obj.destinationloc_id.id in (lo_id, lo_id2) and self.picking_id.invoice_state == '2binvoiced':
+                onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': self.picking_id.date_done})
+                onshipping_id.create_invoice()
+            return True
         if ite_obj.sourceloc_id.id in (lo_id, lo_id2) and self.picking_id.invoice_state == '2binvoiced':
             onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': fields.date.today()})
             onshipping_id.create_invoice()
