@@ -31,7 +31,8 @@ class qdodoo_compare_product_cost_report_line(models.Model):
 
     mo_name = fields.Char(string=u'生产单号')
     product_id = fields.Many2one('product.product', string=u'产品')
-    product_qty = fields.Float(string=u'数量')
+    product_qty = fields.Float(string=u'计划数量')
+    product_l_num=fields.Float(string=u'实际数量')
     actual_amount = fields.Float(digits=(16, 4), string=u'实际金额')
     actual_price = fields.Float(digits=(16, 4), string=u'实际单价')
     theoretical_amount = fields.Float(digits=(16, 4), string=u'理论金额')
@@ -212,10 +213,16 @@ class qdodoo_search_compare_product_cost(models.Model):
                         result_list.append(cre_obj.id)
                         if line_dict.get(key_l, False):
                             for p in line_dict[key_l]:
+                                product_l_s = 0
                                 mp_obj = self.env['mrp.production'].search([('name', '=', p[0])])
+                                for li in mp_obj.move_created_ids2:
+                                    if li.state != 'cancel':
+                                        product_l_s += li.product_uom_qty
+
                                 mo_name_line = p[0]
                                 product_id_line = p[1]
                                 product_qty = mp_obj.product_qty
+                                product_l_num = product_l_s
                                 actual_amount_line = p[2]
                                 actual_price_line = p[3]
                                 theoretical_amount_line = p[4]
@@ -223,9 +230,9 @@ class qdodoo_search_compare_product_cost(models.Model):
                                 save_amount_line = p[6]
                                 price_save_line = p[-1]
                                 sql_line = """
-                                insert into compare_product_cost_line (product_qty,mo_name,product_id,actual_amount,actual_price,theoretical_amount,theoretical_price,save_amount,price_save,product_cost_id) VALUES (%s,'%s',%s,%s,%s,%s,%s,%s,%s,%s)
+                                insert into compare_product_cost_line (product_qty,product_l_num,mo_name,product_id,actual_amount,actual_price,theoretical_amount,theoretical_price,save_amount,price_save,product_cost_id) VALUES (%s,%s,'%s',%s,%s,%s,%s,%s,%s,%s,%s)
                                 """ % (
-                                    product_qty, mo_name_line, product_id_line, actual_amount_line, actual_price_line,
+                                    product_qty, product_l_num,mo_name_line, product_id_line, actual_amount_line, actual_price_line,
                                     theoretical_amount_line, theoretical_price_line, save_amount_line,
                                     price_save_line, cre_obj.id)
                                 self.env.cr.execute(sql_line)

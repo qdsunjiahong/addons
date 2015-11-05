@@ -28,6 +28,7 @@
                                         <field name="mo_name"/>
                                         <field name="product_id"/>
                                         <field name="product_qty"/>
+                                        <field name="product_l_num"/>
                                         <field name="actual_amount"/>
                                         <field name="actual_price"/>
                                         <field name="theoretical_amount"/>
