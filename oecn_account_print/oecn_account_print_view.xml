@@ -181,8 +181,8 @@
                 <form string="科目余额表">
                     <sheet>
                         <group col="4" colspan="4">
-                            <field name="start_p" domain="[('company_id','=',company_id),('state','=','draft')]"/>
-                            <field name="end_p" domain="[('company_id','=',company_id),('state','=','draft')]"/>
+                            <field name="start_p" domain="[('company_id','=',company_id)]"/>
+                            <field name="end_p" domain="[('company_id','=',company_id)]"/>
                             <field name="company_id" invisible="1"/>
                         </group>
                     </sheet>
