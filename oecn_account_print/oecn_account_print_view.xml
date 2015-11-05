@@ -146,6 +146,8 @@
                                 <page string="明细">
                                     <field name="periodly_lines" widget="one2many_list">
                                         <tree>
+                                            <field name="move_name"/>
+                                            <field name="line_name"/>
                                             <field name="account_id"/>
                                             <field name="debit"/>
                                             <field name="credit"/>
