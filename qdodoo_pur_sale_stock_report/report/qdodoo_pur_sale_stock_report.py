@@ -60,7 +60,7 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
         dict_category_id = {}
         product_obj = self.pool.get('product.product')
         for product_id in product_obj.browse(self.cr,self.uid,product_lst):
-            dict_product[product_id.id] = product_id.name
+            dict_product[product_id.id] = product_id.name_template
             dict_product_name[product_id.id] = product_id.default_code
             dict_category_id[product_id.id] = product_id.categ_id.id
         # 根据id获取产品分类名称
@@ -182,12 +182,12 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
         # 循环所有查询出来的数据
         for product_l in product_lst:
             val_dict = {}
-            val_dict['start_date'] = self.start_date
-            val_dict['end_date'] = self.end_date if self.end_date else now_date
-            val_dict['location_id'] = location_id_name
-            val_dict['product_id'] = dict_product.get(product_l,'')
-            val_dict['product_name'] = dict_product_name.get(product_l,'')
-            val_dict['product_category'] = dict_category.get(dict_category_id.get(product_l,''),'')
+            val_dict['start_date'] = self.start_date #开始时间
+            val_dict['end_date'] = self.end_date if self.end_date else now_date #截止时间
+            val_dict['location_id'] = location_id_name #库位名字
+            val_dict['product_id'] = dict_product.get(product_l,'') #产品编号
+            val_dict['product_name'] = dict_product_name.get(product_l,'') #产品名称
+            val_dict['product_category'] = dict_category.get(dict_category_id.get(product_l,''),'') #产品分类
             val_dict['previous_balance_num'] = balance_num_dict.get(product_l,0.0) #前期结余数量
             val_dict['purchase_stock_num'] = num_dict.get(product_l,0.0) #采购入库数量
             val_dict['purchase_stock_old_num'] = num_old_dict.get(product_l,0.0) #采购退货数量
