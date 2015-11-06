@@ -32,6 +32,8 @@ class qdodoo_contract_expire_search(models.Model):
         if contract_ids:
             for contract_id in contract_ids:
                 data = {
+                    'date_start': contract_id.date_start,
+                    'number': contract_id.contract_no,
                     'contract_name': contract_id.name,
                     'partner_id': contract_id.partner_id.id,
                     'contract_company': contract_id.contract_company1.id,
