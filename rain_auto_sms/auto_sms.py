@@ -79,7 +79,6 @@ class rainsoft_send_sms(osv.osv):
 
             address = send_address.split(':')
             port = len(address) > 1 and address[1] or 80
-            print address, port
 
             headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
             httpclient = httplib.HTTPConnection(address[0], int(port), timeout=30)
@@ -140,12 +139,12 @@ class qdodoo_account_analytic_account(osv.osv):
             for line in self.pool.get('account.analytic.account').browse(cr, uid, message_list1, context=context):
                 phone_number = line.manager_id.mobile or line.manager_id.phone
                 type_contact = line.contract_type1.name
-                mm = content % (line.contract_company1.name, line.name, line.days)
+                mm = content % (line.partner_id.name, line.name, line.days)
                 message = (re.sub('<[^>]+>', '', mm))
                 if phone_number and type_contact != u'采购批次合同':
                     res = rs_send_service.send(cr, uid, phone_number, message, context=context)
                     if res['message'] == 'ok':
-                        line.write({'sms_one_ok': True, 'contract_state': 'c'})
+                        line.write({'sms_one_ok': True, 'contract_state': u'即将到期'})
                     else:
                         pass
                 else:
@@ -161,30 +160,16 @@ class qdodoo_account_analytic_account(osv.osv):
             for line in self.pool.get('account.analytic.account').browse(cr, uid, message_list2, context=context):
                 phone_number = line.manager_id.mobile or line.manager_id.phone
                 type_contact = line.contract_type1.name
-                mm = content % (line.contract_company1.name, line.name, line.days)
+                mm = content % (line.partner_id.name, line.name, line.days)
                 message = (re.sub('<[^>]+>', '', mm))
                 if phone_number and type_contact != u'采购批次合同':
                     res = rs_send_service.send(cr, uid, phone_number, message, context=context)
                     if res['message'] == 'ok':
-                        line.write({'sms_two_ok': True, 'contract_state': 'c'})
+                        line.write({'sms_two_ok': True, 'contract_state': u'即将到期'})
                     else:
                         pass
                 else:
                     pass
-                    # for i in line.erp_manager_ids:
-                    #     phone_number2 = i.mobile or i.phone
-                    #     content2 = self.pool.get('auto.sms.template.data').browse(cr, uid, 1, context=context).body
-                    #     mm2 = content2 % i.name
-                    #     message2 = (re.sub('<[^>]+>', '', mm2))
-                    #     print message2,333333333333333333
-                    #     if phone_number:
-                    #         # if line.erp_ok != True:
-                    #             # res2 = rs_send_service.send(cr, uid, phone_number2, message2, context=content)
-                    #             print 111111111111
-                    #             res2 = rs_send_service.send(cr, uid, '13520578277', message2, context=content)
-                    #             if res2['message'] == 'ok':
-                    #                 line.write({'erp_ok': True})
-
     def send_sms2(self, cr, uid, context=None):
         if context == None:
             context = {}
