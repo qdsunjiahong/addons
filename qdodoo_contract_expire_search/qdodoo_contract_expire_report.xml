@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_contract_expire_report_tree" model="ir.ui.view">
+            <field name="name">合同状态报表</field>
+            <field name="model">qdodoo.contract.expire.report</field>
+            <field name="arch" type="xml">
+                <tree string="合同状态报表">
+                    <field name="contract_name"/>
+                    <field name="partner_id"/>
+                    <field name="contract_company"/>
+                    <field name="contract_type"/>
+                    <field name="manager_id"/>
+                    <field name="date_end"/>
+                    <field name="contract_state"/>
+                </tree>
+            </field>
+        </record>
+    </data>
+</openerp>
