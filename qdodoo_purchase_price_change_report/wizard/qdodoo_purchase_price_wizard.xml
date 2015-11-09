@@ -17,16 +17,12 @@
                             <field name="search_choice"/>
                         </div>
                         <div>
-                            <label for="year" string="年度" attrs="{'invisible':[('search_choice','not in',(1,2,3))]}"/>
-                            <field name="year" attrs="{'invisible':[('search_choice','not in',(1,2,3))]}"/>
+                            <label for="year" string="年度" attrs="{'invisible':[('search_choice','not in',(1,2))]}"/>
+                            <field name="year" attrs="{'invisible':[('search_choice','not in',(1,2))]}"/>
                             <label for="quarter"
                                    attrs="{'invisible':[('search_choice','!=',2)]}"/>
                             <field name="quarter"
                                    attrs="{'invisible':[('search_choice','!=',2)]}"/>
-                        </div>
-                        <div>
-                            <label for="period_id" string="会计期间" attrs="{'invisible':[('search_choice','!=',3)]}"/>
-                            <field name="period_id" attrs="{'invisible':[('search_choice','!=',3)]}"/>
                         </div>
                         <div>
                             <label for="date" string="日期" attrs="{'invisible':[('search_choice','!=',4)]}"/>
