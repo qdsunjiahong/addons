@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_purchase_price_report_tree" model="ir.ui.view">
+            <field name="name">采购价格变动表</field>
+            <field name="model">qdodoo.purchase.price.report</field>
+            <field name="arch" type="xml">
+                <tree string="采购价格变动表">
+                    <field name="date"/>
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="product_qty"/>
+                    <field name="price_unit"/>
+                    <field name="company_id"/>
+                    <field name="delivery_place"/>
+                </tree>
+            </field>
+        </record>
+        <record id="action_qdodoo_purchase_price_report" model="ir.actions.act_window">
+            <field name="name">采购价格变动表</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.purchase.price.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="qdodoo_purchase_price_report_tree"/>
+        </record>
+
+    </data>
+</openerp>

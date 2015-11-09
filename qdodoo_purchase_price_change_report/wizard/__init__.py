@@ -5,6 +5,4 @@
 #    Copyright (C) 2015 qdodoo Technology CO.,LTD. (<http://www.qdodoo.com/>).
 #
 ###########################################################################################
-
-import wizard
-import report
+import qdodoo_purchase_price_wizard
