@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_view_attachment_form">
+            <field name="name">证件提醒</field>
+            <field name="model">ir.attachment</field>
+            <field name="inherit_id" ref="base.view_attachment_form"/>
+            <field name="arch" type="xml">
+                <field name="res_name" position="after">
+                    <field name="once_ok"/>
+                    <field name="twice_ok"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
