@@ -26,7 +26,7 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'hr','website_sale','hm','product'],  # 依赖模块
+    'depends': ['base', 'hr','website_sale','hm','product','qdodoo_purchase_sale_order2'],  # 依赖模块
     'data': ['views/qdodoo_website_tempview.xml',
              'views/res_partner_inherit.xml',
              'views/door_deposit.xml',],

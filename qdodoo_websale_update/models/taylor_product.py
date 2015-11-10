@@ -12,198 +12,101 @@ class taylor_template(models.Model):
 
     _inherit = 'product.template'
 
-
     # 关联字段
     ref_pricelist_prolate = fields.One2many('pricelist.prolate.relation', 'ref_product_template', string='关联的价格表')
-
-
-    def synchronous_field(self, cr, uid, ids, context):
-        """
-        同步字段
-        得到相对应的产品价格表
-        把数值写入到关联对象之中
-        """
-        pricelist_prolate_obj = self.pool.get('pricelist.prolate.relation')
-        price_lis_item = self.pool.get('product.pricelist.item')
-        pricr_list_version = self.pool.get("product.pricelist.version")
-        product_obj = self.pool.get('product.product')
-
-
-        # 遍历本地关联对象
-        pricelist_prolate_list = pricelist_prolate_obj.search(cr, uid, [('ref_product_template', '=', ids)],
-                                                              context=context)
-        product_list = product_obj.search(cr, uid, [('product_tmpl_id', '=', ids)])
-        for prolate_obj in pricelist_prolate_obj.browse(cr, uid, pricelist_prolate_list, context=context):
-            pric_var_now=prolate_obj.proce_version.id
-            # r如果存在价格版本
-            if pric_var_now:
-                # 搜索出相对应的价格表列表
-                # price_lis_item_id=price_lis_item.search(cr,uid,[('price_version_id','=',pric_var_now),('product_tmpl_id','=',prolate_obj.ref_product_template.id)],order="sequence desc",limit=1)
-
-                price_lis_item_obj = price_lis_item.browse(cr, uid, price_lis_item.search(cr, uid, [
-                    ('price_version_id', '=', pric_var_now), ('product_id', 'in', product_list)], order="sequence desc",
-                                                                                          limit=1))
-                print 'price_lis_item_obj is ==', price_lis_item_obj
-                if price_lis_item_obj:
-                    print  'price_lis_item_obj.price_discount：', price_lis_item_obj.price_discount, 'price_lis_item_obj.price_surcharge', price_lis_item_obj.price_surcharge, 'prolate_obj.ref_product_template.list_price', prolate_obj.ref_product_template.list_price
-                    result = prolate_obj.ref_product_template.list_price * (
-                        1 + price_lis_item_obj.price_discount) + price_lis_item_obj.price_surcharge
-                    pricelist_prolate_obj.write(cr, uid, prolate_obj.id, {'comparison': result, 'success': True,
-                                                                          'price_version_item_id': price_lis_item_obj.id})
-
-    def add_synchronous_field(self, cr, uid, ids, context):
-        """
-        同步开始
-        判断同步的值和当前的值是否一致 不一致 那么开始
-        1.首先查找相应价格表
-        2.搜索价格表关联的产品 通过产品搜索出相应的价格表列表
-        3.得到同样的产品根据sequce来排序 取得第一个值 然后的到相应的值
-        4.将我们目前的值进行保存
-        """
-        # 得到相关对象
-        pricelist_prolate_obj = self.pool.get('pricelist.prolate.relation')
-        price_lis_item = self.pool.get('product.pricelist.item')
-        pricr_list_version = self.pool.get("product.pricelist.version")
-        product_obj = self.pool.get('product.product')
-
-        # 遍历本地关联对象
-        pricelist_prolate_list = pricelist_prolate_obj.search(cr, uid, [('ref_product_template', '=', ids)],
-                                                              context=context)
-        for prolate_obj in pricelist_prolate_obj.browse(cr, uid, pricelist_prolate_list, context=context):
-            # 如果已经创建了
-            if prolate_obj.success:
-                # 如果两个取值不一样
-                if not prolate_obj.to_toal == prolate_obj.comparison:
-                    # 查找对应价格列 修改价格列中的数值
-                    value = {
-                        'price_discount': prolate_obj.proportion,
-                        'price_surcharge': prolate_obj.fixed,
-                        'multipl':prolate_obj.multipl,
-                    }
-                    price_lis_item.write(cr, uid, prolate_obj.price_version_item_id, value, context=context)
-        self.synchronous_field(cr, uid, ids, context)
-
-
-    def add_price_list(self, cr, uid, ids, context):
-        # print 'add_price_list args uid',uid,'ids ', ids ,'context',context
-
-        pricelist_prolate_obj = self.pool.get('pricelist.prolate.relation')
-        price_lis_item = self.pool.get('product.pricelist.item')
-        pricr_list_version = self.pool.get("product.pricelist.version")
-        product_obj = self.pool.get('product.product')
-        # 遍历所要添加的产品价格表
-        pricelist_prolate_list = pricelist_prolate_obj.search(cr, uid, [('ref_product_template', '=', ids)],
-                                                              context=context)
-        for prolate_obj in pricelist_prolate_obj.browse(cr, uid, pricelist_prolate_list, context=context):
-            pric_var_now=prolate_obj.proce_version.id
-            # 遍历相应的产品
-            for product_id in product_obj.search(cr, uid,
-                                                 [('product_tmpl_id', '=', prolate_obj.ref_product_template.id)],
-                                                 context=context):
-                if not prolate_obj.success:
-                    values = {
-                        'price_version_id': pric_var_now,
-                        'product_tmpl_id': prolate_obj.ref_product_template.id,
-                        'price_discount': prolate_obj.proportion,
-                        'price_surcharge': prolate_obj.fixed,
-                        'multipl':prolate_obj.multipl,
-                        'base': 1,
-                    }
-                    values['product_id'] = product_id
-                    # 创建相应的价格表明细
-                    price_lis_it_id = price_lis_item.create(cr, uid, values, context=context)
-                    if price_lis_it_id:
-                        pricelist_prolate_obj.write(cr, uid, prolate_obj.id,
-                                                    {'success': True, 'price_version_item_id': price_lis_it_id},
-                                                    context=context)
-                else:
-                    values = {
-                        'price_version_id': pric_var_now,
-                        'product_tmpl_id': prolate_obj.ref_product_template.id,
-                        'price_discount': prolate_obj.proportion,
-                        'price_surcharge': prolate_obj.fixed,
-                        'multipl':prolate_obj.multipl,
-                        'base': 1,
-                    }
-                    values['product_id'] = product_id
-                    price_lis_item.write(cr, uid, prolate_obj.price_version_item_id, values, context=context)
-
 
 class pricelist_prolate_relation(models.Model):
     _name = "pricelist.prolate.relation"
 
-    # 计算字段
+    proce_version=fields.Many2one('product.pricelist.version','价格表版本',required=True)
     proportion = fields.Float('折扣')
-    # public_price = fields.Float(compute="compute_public_price", string='公共价格')
     fixed = fields.Float('额外')
     to_toal = fields.Float(string='单价', required=True, compute="compute_toal")
     success = fields.Boolean(string='是否创建', readonly=True)
     comparison = fields.Float(string="对比值", readonly=True)
-
     multipl=fields.Float(string='倍数')
-    proce_version=fields.Many2one('product.pricelist.version','价格表版本',required=True)
     company = fields.Many2one('res.company', string='公司')
-    price_version_item_id = fields.Integer(string='对应的价格表版本行')
-
+    price_version_item_id = fields.Many2one('product.pricelist.item',string='对应的价格表版本行')
 
     # 关联字段
     ref_product_pricelist = fields.Many2one('product.pricelist', '价格表',
                                             domain=['&', ('type', '=', 'sale'), ('company_id', '=', False)])
     ref_product_template = fields.Many2one('product.template', string='产品模版')
 
+    # 获取当前登录人的公司
     def _get_company(self, cr, uid, ids, context=None):
         user = self.pool.get('res.users')
-        # print 'user is ',user
         return user.browse(cr, uid, uid).company_id.id
 
     _defaults = {
         'company': _get_company,
         'multipl':1,
-
     }
 
+    # 根据价格表版本，产品模板，查询是否有对应的明细,返回明细lst
+    def _get_version_price(self, cr, uid, version_id, product_tmpl_id, context=None):
+        version_obj = self.pool.get('product.pricelist.version')
+        lst = []
+        for line in version_obj.browse(cr, uid, version_id).items_id:
+            if line.product_tmpl_id.id == product_tmpl_id:
+                lst.append(line.id)
+        return lst
+
+    # 倍数必须大于0
     @api.constrains('multipl')
     def _check_quantity_price(self):
         if self.multipl<0:
             raise except_orm(_('Warning!'),_('警告,倍数必须大于0！'))
 
+    # 计算单价
     def compute_toal(self):
         for self_obj in self:
             self_obj.to_toal = (1 + self_obj.proportion) * self_obj.ref_product_template.list_price + self_obj.fixed
 
+    # 根据产品模板获取产品id
+    def get_product_tmpl(self, cr, uid, product_tmpl_id, context=None):
+        product_obj = self.pool.get('product.product')
+        template_ids = product_obj.search(cr, uid, [('product_tmpl_id','=',product_tmpl_id)])
+        return template_ids
 
-    def unlink(self, cr, uid, ids, context=None):
-        """
-        1.查找匹配的价格表
-        2.得到价格表版本
-        3.遍历此价格表版本中的列
-        4.查找匹配的选项
-        5.删除
-        :param cr:
-        :param uid:
-        :param ids:
-        :param context:
-        :return:
-        """
-        pricelist_prolate_obj = self.pool.get('pricelist.prolate.relation')
-        price_lst_item = self.pool.get('product.pricelist.item')
-        pricr_list_version = self.pool.get("product.pricelist.version")
-        product_pro = self.pool.get('product.product')
-        pric_var_now = ""
+    # 创建时同步更新对应明细数据
+    def create(self, cr, uid, value, context=None):
+        re_id = super(pricelist_prolate_relation, self).create(cr, uid, value, context=context)
+        version_obj = self.pool.get('product.pricelist.item')
+        proce_version = value.get('proce_version')
+        ref_product_template = value.get('ref_product_template')
+        res_id = self._get_version_price(cr, uid, proce_version, ref_product_template, context=context)
+        if res_id:
+            version_obj.write(cr, uid, res_id, {'price_discount':value.get('proportion'),'price_surcharge':value.get('fixed'),'multipl':value.get('multipl')})
+        else:
+            for line in self.get_product_tmpl(cr, uid, ref_product_template, context=context):
+                version_obj.create(cr, uid, {'price_discount':value.get('proportion'),'price_surcharge':value.get('fixed'),'multipl':value.get('multipl'),
+                                         'price_version_item_id':re_id,'price_version_id':proce_version,'product_id':line,'product_tmpl_id':ref_product_template}, context=context)
+        return re_id
 
-        print '9999999999999999999999999999999999999999'
-        # 查找匹配的价格表
-        print 'ref_product_template is ', ids
-        pricelist_prolate_list = pricelist_prolate_obj.search(cr, uid, [('id', '=', ids)], context=context)
-        for prolate_obj in pricelist_prolate_obj.browse(cr, uid, pricelist_prolate_list, context=context):
-            pric_var_now=prolate_obj.proce_version.id
-            # 查询出产品模版对应的产品
-            product_list = product_pro.search(cr, uid, [('product_tmpl_id', '=', prolate_obj.ref_product_template.id)])
+    # 修改数据时同步更新对应明细数据
+    def write(self, cr, uid, ids, valus, context=None):
+        super(pricelist_prolate_relation, self).write(cr, uid, ids, valus, context=context)
+        item_obj = self.pool.get('product.pricelist.item')
+        for obj in self.browse(cr, uid, ids):
+            item_ids = item_obj.search(cr, uid, [('price_version_item_id','=',obj.id)])
+            if valus.get('proce_version'):
+                # 查询关联的价格表版本信息,删除掉
+                item_obj.unlink(cr, uid, item_ids, context={'version':True})
+                # 创建新的信息
+                for line in self.get_product_tmpl(cr, uid, obj.ref_product_template.id, context=context):
+                    item_obj.create(cr, uid, {'price_discount':obj.proportion,'price_surcharge':obj.fixed,'multipl':obj.multipl,
+                                         'price_version_item_id':obj.id,'price_version_id':valus.get('proce_version'),'product_id':line,'product_tmpl_id':obj.ref_product_template.id}, context=context)
+            else:
+                item_obj.write(cr, uid, item_ids, {'price_discount':obj.proportion,'price_surcharge':obj.fixed,'multipl':obj.multipl,'price_version_item_id':obj.id})
+        return True
 
-            # 查找对应的产品
-            pro_lst_item_lst = price_lst_item.search(cr, uid, ['|', ('product_id', 'in', product_list), (
-                'product_tmpl_id', '=', prolate_obj.ref_product_template.id)])
-            print 'unlink pro_lst_item_lst', pro_lst_item_lst
-            price_lst_item.unlink(cr, uid, pro_lst_item_lst, context=context)
-
+    # 删除同步更新数据
+    def unlink(self, cr, uid, ids, context={}):
+        item_obj = self.pool.get('product.pricelist.item')
+        if not context.get('item'):
+        # 查询关联的明细
+            for obj in self.browse(cr, uid, ids):
+                item_ids = item_obj.search(cr, uid, [('price_version_item_id','=',obj.id)])
+                item_obj.unlink(cr, uid, item_ids)
         return super(pricelist_prolate_relation, self).unlink(cr, uid, ids, context=context)

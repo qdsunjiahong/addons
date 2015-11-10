@@ -6,10 +6,10 @@
                 <field name="model">res.partner</field>
                 <field name="inherit_id" ref="purchase.view_partner_property_form"/>
                 <field name="arch" type="xml">
-                        <field name="property_product_pricelist_purchase" position="after">
-                            <field name="out_stock" domain="[('company_id','=',company_id)]" on_change="change_out_stock_id(out_stock)"/>
-                            <field name="location_id" />
-                        </field>
+                    <field name="property_product_pricelist_purchase" position="after">
+                        <field name="out_stock" domain="[('company_id','=',company_id)]" on_change="change_out_stock_id(out_stock)"/>
+                        <field name="location_id"/>
+                    </field>
                 </field>
             </record>
 
@@ -23,7 +23,7 @@
                             <page string="价格表">
                              <field name="ref_pricelist_prolate">
                                  <tree editable="bottom">
-                                  <field name="proce_version"/>
+                                  <field name="proce_version" options="{'no_create': True}"/>
                                   <field name="proportion"/>
                                   <field name="fixed"/>
                                   <field name="to_toal"/>
