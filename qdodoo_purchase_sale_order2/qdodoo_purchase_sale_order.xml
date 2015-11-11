@@ -1,18 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <openerp>
     <data>
-        <record model="ir.ui.view" id="qdodoo_res_company_add_project_id">
-            <field name="name">辅助核算项</field>
-            <field name="model">res.company</field>
-            <field name="inherit_id" ref="base.view_company_form"/>
-            <field name="arch" type="xml">
-
-                <field name="parent_id" position="before">
-                    <field name="analytic_account_id"/>
+        <record model="ir.ui.view" id="res_partner_inherit_analytic_form">
+                <field name="name">res_partner_inherit_analytic</field>
+                <field name="model">res.partner</field>
+                <field name="inherit_id" ref="purchase.view_partner_property_form"/>
+                <field name="arch" type="xml">
+                    <field name="property_product_pricelist_purchase" position="after">
+                        <field name="analytic_account_id"/>
+                    </field>
                 </field>
-
-            </field>
-        </record>
+            </record>
 
     </data>
 </openerp>

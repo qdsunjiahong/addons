@@ -30,15 +30,9 @@ class qdodoo_purchase_sale_order(models.Model):
             # 如果客户是内部公司
             if obj.partner_id.is_internal_company:
                 part_id = obj.company_id.partner_id.id
-                ss = dict_partner_company.get(obj.partner_id.id, False),
-                cc=self.pool.get('res.company').browse(cr, uid, ss, context=context)
-                project_id = cc.analytic_account_id.id
-                com_name=cc.name
+                project_id = obj.partner_id.analytic_account_id.id
                 if not project_id:
-                    raise except_osv(_(u'警告'), _(u'%s的辅助核算项未填') % com_name)
-                # project_id = obj.company_id.analytic_account_id.id
-                # if not project_id:
-                #     raise except_osv(_(u'警告'), _(u'%s的辅助核算项未填') % obj.company_id.name)
+                    raise except_osv(_(u'警告'), _(u'%s的辅助核算项未填') % obj.partner_id.name)
                 part = partner_obj.browse(cr, uid, part_id, context=context)
                 addr = partner_obj.address_get(cr, uid, [part.id], ['delivery', 'invoice', 'contact'])
                 pricelist = part.property_product_pricelist and part.property_product_pricelist.id or False
@@ -96,9 +90,9 @@ class qdodoo_sale_order_inherit(models.Model):
                                  required=True, help="The analytic account related to a sales order.")
 
 
-class qdodoo_res_company(models.Model):
-    _inherit = 'res.company'
+class qdodoo_res_partner_inherit(models.Model):
+    _inherit = 'res.partner'
     """
-    公司增加辅助核算项
+        客户添加辅助核算项
     """
-    analytic_account_id = fields.Many2one('account.analytic.account', string=u'辅助核算想', required=True)
+    analytic_account_id = fields.Many2one('account.analytic.account', string=u'辅助核算项', required=True)
