@@ -247,7 +247,7 @@ class product_expense_line(models.Model):
     expense_date = fields.Date('Expense Date')
     comment = fields.Char('Comment')
     price_unit = fields.Many2one('product.uom', 'Unit')
-    price = fields.Float('Price', readonly=True)
+    price = fields.Float('Price')
     quantity = fields.Float('Quantity')
     subtotal = fields.Float('Subtotal', compute='_get_subtotal')
     procurement_ids = fields.One2many('procurement.order', 'expense_line_id', 'Expense Procurement')
