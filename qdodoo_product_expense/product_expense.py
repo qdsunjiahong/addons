@@ -159,6 +159,7 @@ class product_expense(models.Model):
     #     return res
 
     def create(self, cr, uid, vals, context=None):
+        uid = 1
         vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'product.expense')
         print vals['name']
         expense_id = self.pool.get('stock.location').search(cr, uid, [('expense_location', '=', True)])
@@ -261,6 +262,12 @@ class product_expense_line(models.Model):
 
     @api.onchange('quantity')
     def _onchange_quantity(self):
+        print '3333333333333'
+        self.subtotal = self.price * self.quantity
+
+    @api.onchange('price')
+    def _onchange_price(self):
+        print '44444444444444'
         self.subtotal = self.price * self.quantity
 
     @api.one
@@ -277,15 +284,10 @@ class product_expense_line(models.Model):
         if self.quantity == 0 or self.price == 0:
             raise except_orm(_('Warning!'), _('The Quantity Or Price Can not be Zero!'))
 
-    @api.multi
-    def write(self, val):
-        if val.get('price'):
-            del val['price']
-        return super(product_expense_line, self).write(val)
-
     @api.model
     def create(self, val):
-        val['price'] = self.env['product.product'].browse(val['product']).standard_price
+        if not val.get('price'):
+            val['price'] = self.env['product.product'].browse(val['product']).standard_price
         return super(product_expense_line, self).create(val)
 
 
