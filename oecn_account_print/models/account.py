@@ -1,5 +1,26 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2004-2009 Tiny SPRL (<http://tiny.be>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
 # __author__ = jeff@openerp.cn
+# __author__ = cysnake4713@gmail.com
+
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
 from openerp import tools
@@ -8,27 +29,6 @@ import openerp.addons.decimal_precision as dp
 import logging
 
 _logger = logging.getLogger(__name__)
-
-
-class account_move(osv.osv):
-    _inherit = 'account.move'
-    """
-    添加制单、审核、附件数三个字段
-    """
-    _columns = {
-        'write_uid': fields.many2one('res.users', u'审核', readonly=True),
-        'create_uid': fields.many2one('res.users', u'制单', readonly=True, select=True),
-        'proof': fields.integer(u'附件数', required=False, help='该记账凭证对应的原始凭证数量'),
-    }
-    """
-    附件数默认为1张
-    凭证业务类型默认为总帐
-    """
-    _defaults = {
-        'proof': lambda *args: 1,
-        'journal_id': lambda self, cr, uid, context:
-        self.pool.get('account.journal').search(cr, uid, [('type', '=', 'general')], limit=1)[0],
-    }
 
 
 class account_account(osv.osv):
@@ -55,8 +55,7 @@ class account_account(osv.osv):
 
         journal_ids = journal_obj.search(cr, uid, [('type', '!=', 'situation')])
         account_ids = account_obj.search(cr, uid, [('parent_id', 'child_of', ids)])
-        search_condition = [('account_id', 'in', account_ids), ('state', '=', 'valid'),
-                            ('journal_id', 'in', journal_ids)]
+        search_condition = [('account_id', 'in', account_ids), ('state', '=', 'valid'), ('journal_id', 'in', journal_ids)]
         if date_start:
             search_condition.append(('date', '>=', date_start))
         if date_stop:
@@ -84,58 +83,60 @@ class account_account(osv.osv):
         return result
 
 
-
 class account_periodly(osv.osv):
     _name = "account.periodly"
     _description = "科目余额表"
-    # _auto = False
+    _auto = False
 
     def _compute_balances(self, cr, uid, ids, field_names, arg=None, context=None,
                           query='', query_params=()):
-        obj = self.pool.get('res.users').browse(cr, uid, uid)
-        lst_id = []
-        for line in obj.company_ids:
-            lst_id.append(line.id)
-        # all_periodly_lines = self.search(cr, uid, [('company_id','=',obj.company_id.id)], context=context)
         all_periodly_lines = self.search(cr, uid, [], context=context)
         all_companies = self.pool.get('res.company').search(cr, uid, [], context=context)
         all_accounts = self.pool.get('account.account').search(cr, uid, [], context=context)
         current_sum = dict((company, dict((account, 0.0) for account in all_accounts)) for company in all_companies)
         res = dict((id, dict((fn, 0.0) for fn in field_names)) for id in all_periodly_lines)
         for record in self.browse(cr, uid, all_periodly_lines, context=context):
-            if record.company_id.id in lst_id:
-                res[record.id]['starting_balance'] = current_sum[record.company_id.id][record.account_id.id]
-                current_sum[record.company_id.id][record.account_id.id] += record.balance
-                res[record.id]['ending_balance'] = current_sum[record.company_id.id][record.account_id.id]
+            res[record.id]['starting_balance'] = current_sum[record.company_id.id][record.account_id.id]
+            current_sum[record.company_id.id][record.account_id.id] += record.balance
+            res[record.id]['ending_balance'] = current_sum[record.company_id.id][record.account_id.id]
         return res
 
     _columns = {
         'fiscalyear_id': fields.many2one('account.fiscalyear', 'Fiscalyear', readonly=True),
-        'period_id': fields.many2one('account.period', '期间', readonly=True),
-        'account_id': fields.many2one('account.account', '科目', readonly=True),
-        'debit': fields.float('借方', readonly=True),
-        'credit': fields.float('贷方', readonly=True),
+        'period_id': fields.many2one('account.period', 'Period', readonly=True),
+        'account_id': fields.many2one('account.account', 'Account', readonly=True),
+        'debit': fields.float('Debit', readonly=True),
+        'credit': fields.float('Credit', readonly=True),
         'balance': fields.float('Balance', readonly=True),
         'date': fields.date('Beginning of Period Date', readonly=True),
-        'starting_balance': fields.float(digits_compute=dp.get_precision('Account'),
-                                            string='期初余额'),
-        'ending_balance': fields.float(digits_compute=dp.get_precision('Account'), string='期末余额'),
+        'starting_balance': fields.function(_compute_balances, digits_compute=dp.get_precision('Account'), string='Starting Balance',
+                                            multi='balance'),
+        'ending_balance': fields.function(_compute_balances, digits_compute=dp.get_precision('Account'), string='Ending Balance', multi='balance'),
         'company_id': fields.many2one('res.company', 'Company', readonly=True),
-        'periodly_lines': fields.one2many('account.periodly.line', 'account_periodly_id', string=u'明细')
     }
 
     _order = 'date asc,account_id,company_id'
 
-
-class account_periodly_line(osv.osv):
-    _name = 'account.periodly.line'
-    # _auto = False
-    _columns = {
-        'move_name':fields.char(string=u'凭证号'),
-        'line_name':fields.char(string=u'说明'),
-        'account_id': fields.many2one('account.account', '科目', readonly=True),
-        'debit': fields.float('借方', readonly=True),
-        'credit': fields.float('贷方', readonly=True),
-        'company_id': fields.many2one('res.company', '公司', readonly=True),
-        'account_periodly_id': fields.many2one('account.periodly', ondelete='cascade')
-    }
+    def init(self, cr):
+        tools.drop_view_if_exists(cr, 'account_periodly')
+        cr.execute("""
+            create or replace view account_periodly as (
+            select
+                min(l.id) as id,
+                p.fiscalyear_id as fiscalyear_id,
+                p.id as period_id,
+                l.account_id as account_id,
+                sum(l.debit) as debit,
+                sum(l.credit) as credit,
+                sum(l.debit-l.credit) as balance,
+                p.date_start as date,
+                am.company_id as company_id
+            from
+                account_move_line l
+                left join account_account a on (l.account_id = a.id)
+                left join account_move am on (am.id=l.move_id)
+                left join account_period p on (am.period_id=p.id)
+            where l.state != 'draft'
+            group by p.id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id
+            )
+        """)

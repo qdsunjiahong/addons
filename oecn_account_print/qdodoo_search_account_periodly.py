@@ -22,10 +22,12 @@ class account_periodly_search(models.Model):
 
     @api.multi
     def btn_search(self):
+        periodly_obj = self.env['account.periodly']
+        periodly_obj.search([]).unlink()
         sql = """
             select
                 p.fiscalyear_id as fiscalyear_id,
-                p.id as period_id,
+                l.period_id as period_id,
                 l.account_id as account_id,
                 am.company_id as company_id,
                 l.debit as debit,
@@ -40,7 +42,7 @@ class account_periodly_search(models.Model):
                 left join account_move am on (am.id=l.move_id)
                 left join account_period p on (am.period_id=p.id)
             where l.state != 'draft' and p.date_start >= '%s' and p.date_stop <= '%s'
-            group by l.name,am.name, p.id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id,p.date_stop,p.date_start ,l.debit, l.credit
+            group by l.name,am.name, l.period_id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id,p.date_stop,p.date_start ,l.debit, l.credit
         """ % (self.start_p.date_start, self.end_p.date_stop)
         self.env.cr.execute(sql)
         key_list = []
@@ -63,9 +65,28 @@ class account_periodly_search(models.Model):
             data_start_dict[k_l] = line[7]
         return_ids = []
         for key in key_list:
+            # 获取账期开始时间
+
+            # 获取期初
+            sql3 = """
+            select
+                sum(l.debit-l.credit) as balance
+            from
+                account_move_line l
+                left join account_period p on (l.period_id=p.id)
+            where
+                p.date_start < '%s' and l.account_id = %s and l.company_id = %s
+            """%(self.start_p.date_start,key[2],key[3])
+            self.env.cr.execute(sql3)
+            res = self.env.cr.fetchall()
+            starting_balance = 0.0
+            if res[0][0]:
+                starting_balance = res[0][0]
             data = {
                 'fiscalyear_id': key[0],
                 'period_id': key[1],
+                'starting_balance': starting_balance,
+                'ending_balance': starting_balance + debit_dict.get(key, 0) - credit_dict.get(key, 0),
                 'account_id': key[2],
                 'company_id': key[3],
                 'debit': debit_dict.get(key, 0),
@@ -73,7 +94,7 @@ class account_periodly_search(models.Model):
                 'balance': debit_dict.get(key, 0) - credit_dict.get(key, 0),
                 'date': data_start_dict.get(key, False)
             }
-            cre_obj = self.env['account.periodly'].create(data)
+            cre_obj = periodly_obj.create(data)
             value_line = dict_line.get(key, False)
             if value_line:
                 for v in value_line:
