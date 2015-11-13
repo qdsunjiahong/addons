@@ -40,3 +40,10 @@ class qdodoo_purchase_order(models.Model):
     _inherit = 'purchase.order.line'
     required_assistant = fields.Boolean(
         related='product_id.categ_id.property_stock_account_input_categ.required_assistant', string=u'辅助核算想必填')
+
+# 分录明细辅助核算项必填
+class qdodoo_account_move_line(models.Model):
+    _inherit = 'account.move.line'
+
+    required_assistant = fields.Boolean(
+        related='account_id.required_assistant', string=u'辅助核算项必填')
