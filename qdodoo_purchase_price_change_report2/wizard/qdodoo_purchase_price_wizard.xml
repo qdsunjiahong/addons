@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_pruchase_price_wizard_form" model="ir.ui.view">
+            <field name="name">采购价格变动表</field>
+            <field name="model">qdodoo.purchase.price.wizard</field>
+            <field name="arch" type="xml">
+                <form string="采购价格变动表">
+                    <sheet>
+                        <div>
+                            <label for="search_choice" string="查询方式"/>
+                            <field name="search_choice"/>
+                        </div>
+                        <group colspan="4" col="4">
+                            <field name="year"
+                                   attrs="{'invisible':[('search_choice','not in',(1,2,5))]}"/>
+                            <field name="month" attrs="{'invisible':[('search_choice','!=',5)]}"/>
+                            <field name="quarter" attrs="{'invisible':[('search_choice','!=',2)]}"/>
+                        </group>
+                        <div>
+                            <label for="partner_id" string="供应商" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <field name="partner_id" domain="[('supplier','=',True)]"
+                                   attrs="{'invisible':[('search_choice','=',False)]}"/>
+                        </div>
+                        <div>
+                            <label for="company_id" string="公司" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <field name="company_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                        </div>
+                        <div>
+                            <label for="date" string="日期" attrs="{'invisible':[('search_choice','!=',3)]}"/>
+                            <field name="date"
+                                   attrs="{'invisible':[('search_choice','!=',3)],'required':[('search_choice','in',(3,))]}"/>
+                        </div>
+                        <group colspan="4" col="4">
+                            <field name="start_date"
+                                   attrs="{'invisible':[('search_choice','!=',4)],'required':[('search_choice','in',(4,))]}"/>
+                            <field name="end_date"
+                                   attrs="{'invisible':[('search_choice','!=',4)],'required':[('search_choice','in',(4,))]}"/>
+                        </group>
+                        <div>
+                            <label for="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <field name="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                        </div>
+                    </sheet>
+                    <footer>
+                        <button string="确定" name="action_done" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_purchase_price_wizard" model="ir.actions.act_window">
+            <field name="name">采购价格变动表</field>
+            <field name="res_model">qdodoo.purchase.price.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_pruchase_price_wizard_form"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" name="采购价格变动表" action="action_qdodoo_purchase_price_wizard"
+                  id="menu_qdodoo_purchase_price"
+                  parent="base.next_id_73"/>
+
+    </data>
+</openerp>
