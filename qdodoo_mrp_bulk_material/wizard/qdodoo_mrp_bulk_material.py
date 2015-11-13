@@ -57,9 +57,11 @@ class qdodoo_mrp_bulk_material(models.Model):
                 raise except_orm(_(u'警告'), _(u'生产单%s已经领过料') % mrp_production.name)
             company_ids.append(mrp_production.company_id.id)
             if mrp_production.state == 'confirmed':
+                mrp_production.action_assign()
                 if mrp_production.move_lines:
                     for move_line in mrp_production.move_lines:
                         if move_line.state in ('confirmed', 'waiting'):
+
                             if move_line.product_id.id in product_list:
                                 product_dict[move_line.product_id.id] += move_line.product_uom_qty
                             else:
@@ -95,105 +97,95 @@ class qdodoo_mrp_bulk_material(models.Model):
                             product_quant.append(quant_id.product_id.id)
         for q in list(set(product_move + product_quant)):
             product_dict_quant[q] = quant_dict.get(q, 0) - move_dict.get(q, 0)
-        type_obj1 = self.env['stock.picking.type'].search(
-            [('default_location_src_id', '=', self.localtion_dest_id.id)])
-        type_obj2 = self.env['stock.picking.type'].search([('default_location_dest_id', '=', self.location_id.id)])
-        if not type_obj1:
-            raise except_orm(_(u'警告'), _(u'源库位为%s的移库单类型不存在') % self.localtion_dest_id.id)
-        if not type_obj2:
-            raise except_orm(_(u'警告'),
-                             _(u'目的库位为%s移库单类型不存在') % self.location_id.name)
-        if type_obj1[0].warehouse_id == type_obj2[0].warehouse_id:
-            type_p_id = self.env['stock.picking.type'].search(
-                [('warehouse_id', '=', type_obj1[0].warehouse_id.id), ('code', '=', 'internal'),
-                 ('default_location_src_id', '=', self.localtion_dest_id.id)])
-            if not type_p_id:
-                raise except_orm(_('警告'), _(u'仓库%s源库位为%s，操作类型为%s的移库单类型未创建') % (
-                    type_obj1[0].warehouse_id.name, self.localtion_dest_id.name, u'内部移动'))
-            if len(type_p_id) > 1:
-                raise except_orm(_('警告'), _(u'仓库%s源库位为%s，操作类型为%s的移库单类型不能有多个') % (
-                    type_obj1[0].warehouse_id.name, self.localtion_dest_id.name, u'内部移动'))
-            else:
-                for key in product_list:
-                    lines = {
-                        'product_id': key,
-                        'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
-                        'name': self.env['product.product'].browse(key).name or '',
-                        'product_uom': self.env['product.product'].browse(key).uom_id.id,
-                        'location_id': self.localtion_dest_id.id,
-                        'location_dest_id': self.location_id.id,
-                    }
-                    product_line.append((0, 0, lines))
+        view_location1 = self.localtion_dest_id.location_id
+        if view_location1.active == False:
+            raise except_orm(_(u'警告'), _(u'库位-%s已废弃') % view_location1.name)
+        view_location2 = self.location_id.location_id
+        if view_location2.active == False:
+            raise except_orm(_(u'警告'), _(u'库位-%s已废弃') % view_location2.name)
+        warehouse_id1 = self.env['stock.warehouse'].search([('view_location_id', '=', view_location1.id)])
+        warehouse_id2 = self.env['stock.warehouse'].search([('view_location_id', '=', view_location2.id)])
+        lo_obj, lo_id = self.env['ir.model.data'].get_object_reference('stock', 'stock_location_inter_wh')
+        if warehouse_id1 == warehouse_id2:
+            picking_type_id = warehouse_id1.int_type_id.id
 
-                picking_dict = {
-                    'picking_type_id': type_p_id.id,
-                    'origin': u'批量领料',
-                    'move_lines': product_line,
+            for key in product_list:
+                lines = {
+                    'product_id': key,
+                    'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
+                    'name': self.env['product.product'].browse(key).name or '',
+                    'product_uom': self.env['product.product'].browse(key).uom_id.id,
+                    'location_id': self.localtion_dest_id.id,
+                    'location_dest_id': self.location_id.id,
                 }
-                crea_obj = self.env['stock.picking'].create(picking_dict)
-                result_list.append(crea_obj.id)
-                for mrp_id in mrp_ids:
-                    mrp_production2 = mrp_production_obj.browse(int(mrp_id))
-                    mrp_production2.write({'mrp_bulk_ok': True})
-                vpicktree_mod, vpicktree_id = self.env['ir.model.data'].get_object_reference('stock', 'vpicktree')
-                from_mode, form_id = self.env['ir.model.data'].get_object_reference('stock', 'view_picking_form')
-                return {
-                    'name': _('移库单'),
-                    'view_type': 'form',
-                    "view_mode": 'tree',
-                    'res_model': 'stock.picking',
-                    'type': 'ir.actions.act_window',
-                    'domain': [('id', 'in', result_list)],
-                    'views': [(vpicktree_id, 'tree'), (form_id, 'form')],
-                    'view_id': [vpicktree_id],
-                }
+                product_line.append((0, 0, lines))
+
+            picking_dict = {
+                'picking_type_id': picking_type_id,
+                'origin': u'批量领料',
+                'move_lines': product_line,
+            }
+            crea_obj = self.env['stock.picking'].create(picking_dict)
+            result_list.append(crea_obj.id)
+            for mrp_id in mrp_ids:
+                mrp_production2 = mrp_production_obj.browse(int(mrp_id))
+                mrp_production2.write({'mrp_bulk_ok': True})
+            vpicktree_mod, vpicktree_id = self.env['ir.model.data'].get_object_reference('stock', 'vpicktree')
+            from_mode, form_id = self.env['ir.model.data'].get_object_reference('stock', 'view_picking_form')
+            return {
+                'name': _('移库单'),
+                'view_type': 'form',
+                "view_mode": 'tree',
+                'res_model': 'stock.picking',
+                'type': 'ir.actions.act_window',
+                'domain': [('id', 'in', result_list)],
+                'views': [(vpicktree_id, 'tree'), (form_id, 'form')],
+                'view_id': [vpicktree_id],
+            }
 
         else:
-            type_p_id1 = self.env['stock.picking.type'].search(
-                [('warehouse_id', '=', type_obj1[0].warehouse_id.id), ('code', '=', 'outgoing'),
-                 ('default_location_src_id', '=', self.localtion_dest_id.id)])
-            type_p_id2 = self.env['stock.picking.type'].search(
-                [('warehouse_id', '=', type_obj2[0].warehouse_id.id), ('code', '=', 'incoming'),
-                 ('default_location_dest_id', '=', self.location_id.id)])
-            if len(type_p_id1) > 1 or len(type_p_id2) > 1:
-                raise except_orm(_('警告'), _(u'仓库%s源库位为%s操作类型为%s或者仓库%s目的库位为%s操作类型为%s移库单类型不能有多个') % (
-                    type_obj1[0].warehouse_id.name, self.localtion_dest_id.name, u'客户',
-                    type_obj2[0].warehouse_id.name, self.location_id.name, u'供应商'))
-            if not type_p_id1 or not type_p_id2:
-                raise except_orm(_('警告'), _(u'仓库%s源库位为%s操作类型为%s或者仓库%s目的库位为%s操作类型为%s移库单类型未创建') % (
-                    type_obj1[0].warehouse_id.name, self.localtion_dest_id.name, u'客户',
-                    type_obj2[0].warehouse_id.name, self.location_id.name, u"供应商"))
-            else:
-                for key in product_list:
-                    lines = {
-                        'product_id': key,
-                        'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
-                        'name': self.env['product.product'].browse(key).name or '',
-                        'product_uom': self.env['product.product'].browse(key).uom_id.id,
-                        'location_id': self.localtion_dest_id.id,
-                        'location_dest_id': self.location_id.id,
-                    }
-                    product_line.append((0, 0, lines))
-                    product_list2.append((0, 0, lines))
-            picking_dict = {
-                'picking_type_id': type_p_id1.id,
+            picking_type_id_out = warehouse_id1.out_type_id.id
+            picking_type_id_in = warehouse_id2.in_type_id.id
+            for key in product_list:
+                lines1 = {
+                    'product_id': key,
+                    'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
+                    'name': self.env['product.product'].browse(key).name or '',
+                    'product_uom': self.env['product.product'].browse(key).uom_id.id,
+                    'location_id': self.localtion_dest_id.id,
+                    'location_dest_id': lo_id,
+                }
+                lines2 = {
+                    'product_id': key,
+                    'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
+                    'name': self.env['product.product'].browse(key).name or '',
+                    'product_uom': self.env['product.product'].browse(key).uom_id.id,
+                    'location_id': lo_id,
+                    'location_dest_id': self.location_id.id,
+                }
+                product_line.append((0, 0, lines1))
+                product_list2.append((0, 0, lines2))
+            picking_dict1 = {
+                'picking_type_id': picking_type_id_out,
                 'origin': u'批量领料',
                 'move_lines': product_line,
             }
             picking_dict2 = {
-                'picking_type_id': type_p_id2.id,
+                'picking_type_id': picking_type_id_in,
                 'origin': u'批量领料',
                 'move_lines': product_list2,
             }
-            crea_obj1 = self.env['stock.picking'].create(picking_dict)
+            crea_obj1 = self.env['stock.picking'].create(picking_dict1)
             result_list.append(crea_obj1.id)
             crea_obj2 = self.env['stock.picking'].create(picking_dict2)
             result_list.append(crea_obj2.id)
+
         for mrp_id in mrp_ids:
             mrp_production2 = mrp_production_obj.browse(int(mrp_id))
             mrp_production2.write({'mrp_bulk_ok': True})
         vpicktree_mod, vpicktree_id = self.env['ir.model.data'].get_object_reference('stock', 'vpicktree')
         from_mode, form_id = self.env['ir.model.data'].get_object_reference('stock', 'view_picking_form')
+
         return {
             'name': _('移库单'),
             'view_type': 'form',
