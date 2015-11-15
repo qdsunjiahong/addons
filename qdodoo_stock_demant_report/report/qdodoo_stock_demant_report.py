@@ -16,8 +16,7 @@ class qdodoo_stock_demant_report(models.Model):
     _name = 'qdodoo.stock.demant.report'
     _description = 'qdodoo.stock.demant.report'
 
-    sd_id=fields.Integer(string=u'需求单ID')
-    demand_number = fields.Char(string=u'需求单号')
+    sd_id=fields.Many2one('qdodoo.stock.demand',string=u'需求转换单')
     location_id = fields.Many2one('stock.location', string=u'源库位')
     qty_out = fields.Float(string=u'出库数量')
     location_dest_id = fields.Many2one('stock.location', string=u'目的库位')

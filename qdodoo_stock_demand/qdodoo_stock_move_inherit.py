@@ -9,27 +9,24 @@
 
 from openerp.osv import osv, fields
 
-
 class qdodoo_stock_move_inerit(osv.osv):
     _inherit = 'stock.move'
 
     def _create_procurement(self, cr, uid, move, context=None):
         """ This will create a procurement order """
+        procurement_obj = self.pool.get('procurement.order')
         if move.procurement_id.stock_demand_number:
-            print 'move.procurement_id'
             new_id = self.pool.get("procurement.order").create(cr, uid,
                                                                self._prepare_procurement_from_move(cr, uid, move,
                                                                                                    context=context),
                                                                context=context)
-
-            self.pool.get('procurement.order').run(cr, uid, [new_id], context=context)
+            procurement_obj.run(cr, uid, [new_id], context=context)
             return new_id
         else:
             return super(qdodoo_stock_move_inerit, self)._create_procurement(cr, uid, move, context=context)
 
     def _prepare_procurement_from_move(self, cr, uid, move, context=None):
         if move.procurement_id.stock_demand_number:
-            print
             origin = (move.group_id and (move.group_id.name + ":") or "") + (
                 move.rule_id and move.rule_id.name or move.origin or "/")
             group_id = move.group_id and move.group_id.id or False
@@ -47,6 +44,7 @@ class qdodoo_stock_move_inerit(osv.osv):
                 'product_qty': move.product_uom_qty,
                 'product_uom': move.product_uom.id,
                 'stock_demand_number': move.procurement_id.stock_demand_number,
+                'order_id_new': move.procurement_id.order_id_new.id,
                 'product_uos_qty': (move.product_uos and move.product_uos_qty) or move.product_uom_qty,
                 'product_uos': (move.product_uos and move.product_uos.id) or move.product_uom.id,
                 'location_id': move.location_id.id,

@@ -30,6 +30,10 @@ class qdodoo_stock_demant_wizard(models.Model):
 
     @api.multi
     def action_search(self):
+        report_obj = self.env['qdodoo.stock.demant.report']
+        report_ids = report_obj.search([])
+        report_ids.unlink()
+        # 查询当前登录人允许查看的公司company_ids
         sql_company = """
             select rcul.cid as com_id
             from res_company_users_rel rcul
@@ -43,9 +47,11 @@ class qdodoo_stock_demant_wizard(models.Model):
                 company_ids.append(com[0])
         company_ids.append(self.company_id.id)
         company_ids_new = list(set(company_ids))
+        # 过滤时间
         if self.end_date:
             if self.start_date > self.end_date:
                 raise except_orm(_(u'警告'), _(u'开始时间不能大于结束时间'))
+            # 查询时间段内完成的需求转换单
             sd_ids = self.env['qdodoo.stock.demand'].search(
                 [('date_planed', '<=', self.end_date), ('company_id', 'in', company_ids_new),
                  ('date_planed', '>=', self.start_date), ('state', '=', 'done')])
@@ -53,16 +59,16 @@ class qdodoo_stock_demant_wizard(models.Model):
             sd_ids = self.env['qdodoo.stock.demand'].search(
                 [('company_id', 'in', company_ids_new),
                  ('date_planed', '>=', self.start_date), ('state', '=', 'done')])
+        # 查询出来的需求转换单
         if sd_ids:
             sd_list = []  # 需求单列表
-            group_list = []
-            sd_name = {}
             out_num_dict = {}  # 出库数量
             in_num_dict = {}
             location_s_id_dict = {}  # 源库位
             location_d_id_dict = {}  # 目的库位
             for si_id in sd_ids:
-                location_d_id = si_id.location_id2.id  # 目的库位对象
+                location_d_id = si_id.location_id2.id  # 目的库位id
+                # 根据需求转换单id查询对应的录像
                 sql = """
                     select route_id
                     from stock_location_route_demand
@@ -71,46 +77,42 @@ class qdodoo_stock_demant_wizard(models.Model):
                 """ % si_id.id
                 self.env.cr.execute(sql)
                 sql_result = self.env.cr.fetchall()
+                # 获取路线模型
                 ruoute_obj = self.env['stock.location.route'].browse(sql_result[0][0])
                 location_s_id = False
+                # 获取路线的源库位对象
                 for i in ruoute_obj.pull_ids:
                     if i.picking_type_id.code == 'outgoing':
                         location_s_id = i.location_src_id.id  # 源库位对象
-
-                stock_picking_out_ids = self.env['stock.picking'].search(
-                    [('group_id', '=', si_id.group_id.id), ('state', '=', 'done')])
+                # 获取需求转换单对应的需求单
+                procurement_ids = self.env['procurement.order'].search([('order_id_new','=',si_id.id)])
+                for line_id in procurement_ids:
+                    sd_list.append(line_id.id)
+                # 查询调拨单
+                stock_picking_out_ids = self.env['stock.move'].search(
+                    [('procurement_id', 'in', sd_list), ('state', '=', 'done')])
                 for pick_id in stock_picking_out_ids:
-                    if pick_id.group_id.id in group_list:
-                        break
-                    if pick_id.move_lines[0].location_id.id == location_s_id:
-                        for out_move in pick_id.move_lines:
-                            out_num_dict[si_id.id] = out_num_dict.get(si_id.id, 0) + out_move.product_uom_qty
-                    elif pick_id.move_lines[0].location_dest_id.id == location_d_id:
-                        for in_move in pick_id.move_lines:
-                            in_num_dict[si_id.id] = in_num_dict.get(si_id.id, 0) + in_move.product_uom_qty
-                if si_id.group_id.id not in group_list:
-                    sd_list.append(si_id.id)
-                    group_list.append(si_id.group_id.id)
-                    sd_name[si_id.id] = si_id.name
-                    location_s_id_dict[si_id.id] = location_s_id
-                    location_d_id_dict[si_id.id] = location_d_id
-            if sd_list:
+                    if pick_id.location_id.id == location_s_id:
+                        out_num_dict[si_id.id] = out_num_dict.get(si_id.id, 0) + pick_id.product_uom_qty
+                    elif pick_id.location_dest_id.id == location_d_id:
+                        in_num_dict[si_id.id] = in_num_dict.get(si_id.id, 0) + pick_id.product_uom_qty
+                location_s_id_dict[si_id.id] = location_s_id
+                location_d_id_dict[si_id.id] = location_d_id
                 result_list = []
-                for sd_l in sd_list:
-                    data = {
-                        'sd_id':sd_l,
-                        'demand_number': sd_name.get(sd_l, ''),
-                        'location_id': location_s_id_dict.get(sd_l, False),
-                        'qty_out': out_num_dict.get(sd_l, 0),
-                        'location_dest_id': location_d_id_dict.get(sd_l, False),
-                        'qty_in': in_num_dict.get(sd_l, 0),
-                        'dif': out_num_dict.get(sd_l, 0) - in_num_dict.get(sd_l, 0),
-                        'company_id': self.company_id.id
-                    }
-                    cre_obj = self.env['qdodoo.stock.demant.report'].create(data)
+                data = {
+                    'sd_id':si_id.id,
+                    'location_id':location_s_id,
+                    'qty_out': out_num_dict.get(si_id.id, 0),
+                    'location_dest_id': location_d_id,
+                    'qty_in': in_num_dict.get(si_id.id, 0),
+                    'dif': out_num_dict.get(si_id.id, 0) - in_num_dict.get(si_id.id, 0),
+                    'company_id': self.company_id.id
+                }
+                if out_num_dict.get(si_id.id, 0) - in_num_dict.get(si_id.id, 0) != 0:
+                    cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
                 view_mod, view_id = self.env['ir.model.data'].get_object_reference('qdodoo_stock_demant_report',
-                                                                                   'qdodoo_stock_demand_report_tree')
+                                                                                       'qdodoo_stock_demand_report_tree')
                 return {
                     'name': _('内部调拨转移差'),
                     'view_type': 'form',

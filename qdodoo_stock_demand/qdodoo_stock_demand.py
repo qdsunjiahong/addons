@@ -147,8 +147,8 @@ class qdodoo_stock_demand(models.Model):
                 'product_uom': line.uom_id.id,
                 'qdodoo_stock_demand_id': ids[0],
                 'company_id': line_new.company_id.id,
+                'order_id_new': line_new.id,
             }
-
             res = praper_obj.create(cr, uid, values, context=context)
             list_ids = [res]
             if inv_obj.route_ids:
@@ -158,7 +158,7 @@ class qdodoo_stock_demand(models.Model):
                     cr.execute(sql)
             a = self.pool.get('procurement.order').run(cr, uid, list_ids, context=context)
         inv_obj.write({'state': 'done'})
-
+        return True
 
 class qdodoo_stock_product(models.Model):
     _name = 'qdodoo.stock.product'
