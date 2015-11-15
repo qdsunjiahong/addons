@@ -35,18 +35,14 @@ class qdodoo_mrp_bulk_material(models.Model):
         批量领料方法
         """
         product_line = []
-        product_dict_quant = {}
         company_ids = []
         product_list = []
         product_list2 = []
         product_quant = []
         quant_dict = {}
-        product_move = []
-        move_dict = {}
         result_list = []
         product_dict = {}  # key=产品id,value=产品数量
         mrp_production_obj = self.env['mrp.production']
-        move__obj = self.env['stock.move']
         quant_obj = self.env['stock.quant']
         mrp_ids = self.mrp_ids.split(';')  # 分割mrp_ids得到生产订单ID列表
         if self.localtion_dest_id.usage == 'view' or self.location_id.usage == 'view':
@@ -60,8 +56,7 @@ class qdodoo_mrp_bulk_material(models.Model):
                 mrp_production.action_assign()
                 if mrp_production.move_lines:
                     for move_line in mrp_production.move_lines:
-                        if move_line.state in ('confirmed', 'waiting'):
-
+                        if move_line.state == 'confirmed':
                             if move_line.product_id.id in product_list:
                                 product_dict[move_line.product_id.id] += move_line.product_uom_qty
                             else:
@@ -76,18 +71,9 @@ class qdodoo_mrp_bulk_material(models.Model):
             raise except_orm(_(u'警告'), _(u'只能选择同一个公司的生产单'))
         if product_dict:
             for product_l in product_list:
-                move_ids = move__obj.search([('state', '=', 'assigned'), ('product_id', '=', product_l),
-                                             ('location_id', '=', self.localtion_dest_id.id)])
-                if move_ids:
-                    for move_id in move_ids:
-                        for i in move_id.reserved_quant_ids:
-                            if i.product_id.id in product_move:
-                                move_dict[i.product_id.id] += i.qty
-                            else:
-                                move_dict[i.product_id.id] = i.qty
-                                product_move.append(i.product_id.id)
                 quant_ids = quant_obj.search(
-                    [('location_id', '=', self.localtion_dest_id.id), ('product_id', '=', product_l)])
+                    [('location_id', '=', self.location_id.id), ('product_id', '=', product_l),
+                     ('reservation_id', '=', False)])
                 if quant_ids:
                     for quant_id in quant_ids:
                         if quant_id.product_id.id in product_quant:
@@ -95,8 +81,6 @@ class qdodoo_mrp_bulk_material(models.Model):
                         else:
                             quant_dict[quant_id.product_id.id] = quant_id.qty
                             product_quant.append(quant_id.product_id.id)
-        for q in list(set(product_move + product_quant)):
-            product_dict_quant[q] = quant_dict.get(q, 0) - move_dict.get(q, 0)
         view_location1 = self.localtion_dest_id.location_id
         if view_location1.active == False:
             raise except_orm(_(u'警告'), _(u'库位-%s已废弃') % view_location1.name)
@@ -108,11 +92,15 @@ class qdodoo_mrp_bulk_material(models.Model):
         lo_obj, lo_id = self.env['ir.model.data'].get_object_reference('stock', 'stock_location_inter_wh')
         if warehouse_id1 == warehouse_id2:
             picking_type_id = warehouse_id1.int_type_id.id
-
             for key in product_list:
+                qyl = quant_dict.get(key, 0)
+                if qyl <= 0:
+                    quant_qty = 0
+                else:
+                    quant_qty = qyl
                 lines = {
                     'product_id': key,
-                    'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
+                    'product_uom_qty': product_dict.get(key, 0) - quant_qty,
                     'name': self.env['product.product'].browse(key).name or '',
                     'product_uom': self.env['product.product'].browse(key).uom_id.id,
                     'location_id': self.localtion_dest_id.id,
@@ -144,12 +132,17 @@ class qdodoo_mrp_bulk_material(models.Model):
             }
 
         else:
-            picking_type_id_out = warehouse_id1.out_type_id.id
-            picking_type_id_in = warehouse_id2.in_type_id.id
+            picking_type_id_out = warehouse_id1.int_type_id.id
+            picking_type_id_in = warehouse_id2.int_type_id.id
             for key in product_list:
+                qyl = quant_dict.get(key, 0)
+                if qyl <= 0:
+                    quant_qty = 0
+                else:
+                    quant_qty = qyl
                 lines1 = {
                     'product_id': key,
-                    'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
+                    'product_uom_qty': product_dict.get(key, 0) - quant_qty,
                     'name': self.env['product.product'].browse(key).name or '',
                     'product_uom': self.env['product.product'].browse(key).uom_id.id,
                     'location_id': self.localtion_dest_id.id,
@@ -157,7 +150,7 @@ class qdodoo_mrp_bulk_material(models.Model):
                 }
                 lines2 = {
                     'product_id': key,
-                    'product_uom_qty': product_dict.get(key, 0) - product_dict_quant.get(key, 0),
+                    'product_uom_qty': product_dict.get(key, 0) - quant_qty,
                     'name': self.env['product.product'].browse(key).name or '',
                     'product_uom': self.env['product.product'].browse(key).uom_id.id,
                     'location_id': lo_id,
@@ -201,4 +194,4 @@ class qdodoo_mrp_bulk_material(models.Model):
 class mrp_prouction(models.Model):
     _inherit = 'mrp.production'
 
-    mrp_bulk_ok = fields.Boolean(string=u'是否批量领料')
+    mrp_bulk_ok = fields.Boolean(string=u'是否批量领料', copy=False)
