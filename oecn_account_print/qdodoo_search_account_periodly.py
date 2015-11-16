@@ -24,26 +24,30 @@ class account_periodly_search(models.Model):
     def btn_search(self):
         periodly_obj = self.env['account.periodly']
         periodly_obj.search([]).unlink()
+        per_list = []
+        per_ids = self.env['account.period'].search(
+            [('date_start', '>=', self.start_p.date_start), ('date_stop', '<=', self.end_p.date_stop)])
+        for per_id in per_ids:
+            per_list.append(per_id.id)
         sql = """
             select
-                p.fiscalyear_id as fiscalyear_id,
+                l.id as l_id,
                 l.period_id as period_id,
                 l.account_id as account_id,
                 am.company_id as company_id,
                 l.debit as debit,
                 l.credit as credit,
                 (l.debit-l.credit) as balance,
-                p.date_start as date,
+                l.date as date,
                 l.name as line_name,
                 am.name as move_name
             from
                 account_move_line l
-                left join account_account a on (l.account_id = a.id)
+                left join account_account a on (a.id=l.account_id)
                 left join account_move am on (am.id=l.move_id)
-                left join account_period p on (am.period_id=p.id)
-            where l.state != 'draft' and p.date_start >= '%s' and p.date_stop <= '%s'
-            group by l.name,am.name, l.period_id, l.account_id, p.fiscalyear_id, p.date_start, am.company_id,p.date_stop,p.date_start ,l.debit, l.credit
-        """ % (self.start_p.date_start, self.end_p.date_stop)
+            where l.state != 'draft' and l.period_id in %s
+            group by l.name,am.name, l.period_id, l.account_id, am.company_id ,l.debit, l.credit,l.id
+        """ % (tuple(per_list),)
         self.env.cr.execute(sql)
         key_list = []
         debit_dict = {}
@@ -51,7 +55,7 @@ class account_periodly_search(models.Model):
         credit_dict = {}
         data_start_dict = {}
         for line in self.env.cr.fetchall():
-            k_l = line[:4]
+            k_l = line[1:4]
             if k_l in key_list:
                 debit_dict[k_l] += line[4]
                 credit_dict[k_l] += line[5]
@@ -76,19 +80,18 @@ class account_periodly_search(models.Model):
                 left join account_period p on (l.period_id=p.id)
             where
                 p.date_start < '%s' and l.account_id = %s and l.company_id = %s
-            """%(self.start_p.date_start,key[2],key[3])
+            """ % (self.start_p.date_start, key[1], key[2])
             self.env.cr.execute(sql3)
             res = self.env.cr.fetchall()
             starting_balance = 0.0
             if res[0][0]:
                 starting_balance = res[0][0]
             data = {
-                'fiscalyear_id': key[0],
-                'period_id': key[1],
+                'period_id': key[0],
                 'starting_balance': starting_balance,
                 'ending_balance': starting_balance + debit_dict.get(key, 0) - credit_dict.get(key, 0),
-                'account_id': key[2],
-                'company_id': key[3],
+                'account_id': key[1],
+                'company_id': key[2],
                 'debit': debit_dict.get(key, 0),
                 'credit': credit_dict.get(key, 0),
                 'balance': debit_dict.get(key, 0) - credit_dict.get(key, 0),
