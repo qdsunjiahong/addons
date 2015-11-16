@@ -20,7 +20,7 @@
 ##############################################################################
 
 {
-    'name': 'Qdodoo MRP Actual Theory Report ',
+    'name': '生产领料预计和实际的对比表',
     'version': '1.1',
     'author': 'OpenERP SA',
     'category': 'Account',

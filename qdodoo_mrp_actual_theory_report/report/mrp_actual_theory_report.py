@@ -100,26 +100,36 @@ class qdodoo_mrp_actual_theory_report(report_sxw.rml_parse):
         production_num_dict = {}
         num = {}
         for production_id in result:
-            if production_id[2] not in actual_consumption_num:
-                actual_consumption_num[production_id[2]] = production_id[4]
-                production_num_dict[production_id[2]] = production_id[6] if production_id[6] else 0.000
-                num[production_id[2]] = 1
+            if production_id[0] not in actual_consumption_num:
+                actual_consumption_num[production_id[0]] = {}
+                production_num_dict[production_id[0]] = {}
+                num[production_id[0]] = {}
+                # if production_id[2] not in actual_consumption_num[production_id[0]]:
+                actual_consumption_num[production_id[0]][production_id[2]] = production_id[4]
+                production_num_dict[production_id[0]][production_id[2]] = production_id[6] if production_id[6] else 0.000
+                num[production_id[0]][production_id[2]] = 1
             else:
-                actual_consumption_num[production_id[2]] += production_id[4]
-                production_num_dict[production_id[2]] += production_id[6] if production_id[6] else 0.000
-                num[production_id[2]] += 1
+                if production_id[2] not in actual_consumption_num[production_id[0]]:
+                    actual_consumption_num[production_id[0]][production_id[2]] = production_id[4]
+                    production_num_dict[production_id[0]][production_id[2]] = production_id[6] if production_id[6] else 0.000
+                    num[production_id[0]][production_id[2]] = 1
+                else:
+                    actual_consumption_num[production_id[0]][production_id[2]] += production_id[4]
+                    production_num_dict[production_id[0]][production_id[2]] += production_id[6] if production_id[6] else 0.000
+                    num[production_id[0]][production_id[2]] += 1
         for key,value in num.items():
-            if value > 1:
-                actual_consumption_num[key] = actual_consumption_num[key]/2
-                production_num_dict[key] = production_num_dict[key]/2
-        lst_product_id = []
+            for line_kye,line_value in value.items():
+                if line_value > 1:
+                    actual_consumption_num[key][line_kye] = actual_consumption_num[key][line_kye]/2
+                    production_num_dict[key][line_kye] = production_num_dict[key][line_kye]/2
+        lst_product_id = {}
         # 循环所有查询出来的数据
         for production_id in result:
-            production_num = production_num_dict.get(production_id[2],0.0)
-            if production_id[2] not in lst_product_id:
-                lst_product_id.append(production_id[2])
+            production_num = production_num_dict[production_id[0]].get(production_id[2],0.0)
+            if production_id[0] not in lst_product_id:
+                lst_product_id[production_id[0]] = [production_id[2]]
                 val_dict = {}
-                val_dict['actual_consumption_num'] = '%.4f'%(actual_consumption_num.get(production_id[2],0.0)) #实际数量
+                val_dict['actual_consumption_num'] = '%.4f'%(actual_consumption_num[production_id[0]].get(production_id[2],0.0)) #实际数量
                 val_dict['save_money'] = '%.4f'%(production_id[3] * float(val_dict['actual_consumption_num']) - production_num * (production_id[3] * float(val_dict['actual_consumption_num']) / float(val_dict['actual_consumption_num']))) #节约金额
                 val_dict['average_money'] = '%.4f'%(float(val_dict['save_money']) / production_id[5]) #平均每份金额
                 val_dict['save_number'] = '%.4f'%(float(val_dict['actual_consumption_num']) - production_num)#节约数量
@@ -146,6 +156,37 @@ class qdodoo_mrp_actual_theory_report(report_sxw.rml_parse):
                 val_dict['start_date'] = self.start_date
                 val_dict['end_date'] = self.end_date if self.end_date else now_date
                 data.append(val_dict)
+            else:
+                if (production_id[2] not in lst_product_id.get(production_id[0])):
+                    lst_product_id[production_id[0]].append(production_id[2])
+                    val_dict = {}
+                    val_dict['actual_consumption_num'] = '%.4f'%(actual_consumption_num[production_id[0]].get(production_id[2],0.0)) #实际数量
+                    val_dict['save_money'] = '%.4f'%(production_id[3] * float(val_dict['actual_consumption_num']) - production_num * (production_id[3] * float(val_dict['actual_consumption_num']) / float(val_dict['actual_consumption_num']))) #节约金额
+                    val_dict['average_money'] = '%.4f'%(float(val_dict['save_money']) / production_id[5]) #平均每份金额
+                    val_dict['save_number'] = '%.4f'%(float(val_dict['actual_consumption_num']) - production_num)#节约数量
+                    val_dict['average_number'] = '%.4f'%(float(val_dict['save_number']) / production_id[5]) #平均每份数量
+                    val_dict['theory_price'] = '%.4f'%(production_num * (production_id[3] * float(val_dict['actual_consumption_num']) / float(val_dict['actual_consumption_num']))/production_id[5])#理论单价
+                    val_dict['theory_money'] = '%.4f'%(production_num * (production_id[3] * float(val_dict['actual_consumption_num']) / float(val_dict['actual_consumption_num']))) # 理论金额
+                    val_dict['theory_num'] = '%.4f'%(production_num) #理论数量
+                    val_dict['actual_price'] = '%.4f'%(production_id[3] * float(val_dict['actual_consumption_num']) / production_id[5]) #实际单价
+                    val_dict['actual_money'] = '%.4f'%(production_id[3] * float(val_dict['actual_consumption_num'])) #实际金额
+                    val_dict['product_id'] = dict_product.get(production_id[2],'') #行标签
+                    val_dict['production_name'] = dict_product.get(production_id[1],'') #产品名称
+                    val_dict['production_id'] = dict_production.get(production_id[0],'') #生产单号
+                    val_dict['location_id'] = dict_location.get(production_id[7],'') #库位
+                    val_dict['analytic_plan'] = dict_analytic.get(production_id[8],'') #辅助核算项
+                    val_dict['product_number'] = production_id[5] #产品数量
+                    if production_num:
+                        val_dict['number_diff'] = '%.4f'%((float(val_dict['actual_consumption_num']) - production_num)/production_num*100) + '%'
+                    else:
+                        val_dict['number_diff'] = '0.000%'
+                    if float(val_dict['theory_money']):
+                        val_dict['money_diff'] = '%.4f'%(float(val_dict['save_money'])/float(val_dict['theory_money'])*100) + '%'
+                    else:
+                        val_dict['money_diff'] = '0.000%'
+                    val_dict['start_date'] = self.start_date
+                    val_dict['end_date'] = self.end_date if self.end_date else now_date
+                    data.append(val_dict)
         return data
 
     def __init__(self, cr, uid, name, context):
