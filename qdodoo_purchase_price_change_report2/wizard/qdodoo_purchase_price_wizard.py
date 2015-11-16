@@ -27,6 +27,7 @@ class qdodoo_purchase_price_wizard(models.Model):
     start_date = fields.Date(string=u'开始时间')
     end_date = fields.Date(string=u'结束时间')
     product_id = fields.Many2one('product.product', string=u'产品')
+    # product_id2 = fields.Many2one('product.product', string=u'产品')
 
     @api.multi
     def action_done(self):
@@ -43,10 +44,12 @@ class qdodoo_purchase_price_wizard(models.Model):
             sql_l = """
                 select
                     af.name as af_name,
-                    ail.product_id as product_id,
+                    pp.name_template as product_name,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount
+                    (ail.price_unit * ail.quantity) as product_amount,
+                    pp.default_code as default_code
                 from account_invoice_line ail
+                    LEFT JOIN product_product pp ON pp.id = ail.product_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -69,6 +72,9 @@ class qdodoo_purchase_price_wizard(models.Model):
             if self.product_id:
                 sql_l = sql_l + ' and ail.product_id = %s'
                 sql_domain.append(self.product_id.id)
+            # if self.product_id2:
+            #     sql_l = sql_l + ' and ail.product_id = %s'
+            #     sql_domain.append(self.product_id2.id)
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
                 sql_domain.append(self.partner_id.id)
@@ -80,7 +86,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = (i[0], i[1])
+                    k = (i[0], i[1], i[-1])
                     if k in product_list:
                         product_num_dict[k] += i[2]
                         product_amount_dict[k] += i[3]
@@ -97,6 +103,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         data = {
                             'year': j[0],
                             'product_id': j[1],
+                            'default_code': j[-1],
                             'product_qty': product_num_dict.get(j, 0),
                             'price_unit': price_unit,
                         }
@@ -123,10 +130,12 @@ class qdodoo_purchase_price_wizard(models.Model):
             sql_l = """
                 select
                     ap.name as ap_name,
-                    ail.product_id as product_id,
+                    pp.name_template as product_id,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount
+                    (ail.price_unit * ail.quantity) as product_amount,
+                    pp.default_code as default_code
                 from account_invoice_line ail
+                    LEFT JOIN product_product pp ON pp.id = ail.product_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -186,7 +195,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
-                    k = (r[0], r[1])
+                    k = (r[0], r[1], r[-1])
                     if k in product_list:
                         product_num_dict[k] += r[2]
                         product_amount_dict[k] += r[3]
@@ -202,6 +211,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                     data = {
                         'period_id': product_l[0],
                         'product_id': product_l[1],
+                        'default_code': product_l[-1],
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit
                     }
@@ -321,10 +331,12 @@ class qdodoo_purchase_price_wizard(models.Model):
                     if name_dict.get(d, []):
                         sql_l = """
                         select
-                            ail.product_id as product_id,
+                            pp.name_template as product_name,
                             ail.quantity as product_qty,
-                            (ail.price_unit * ail.quantity) as product_amount
+                            (ail.price_unit * ail.quantity) as product_amount,
+                            pp.default_code as default_code
                         from account_invoice_line ail
+                            LEFT JOIN product_product pp ON pp.id = ail.product_id
                             LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                             LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                             LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -349,7 +361,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         res = self.env.cr.fetchall()
                         if res:
                             for r in res:
-                                k = (d, r[0])
+                                k = (d, r[0], r[-1])
                                 if k in product_list:
                                     product_num_dict[k] += r[1]
                                     product_amount_dict[k] += r[2]
@@ -366,6 +378,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                     data = {
                         'quarter': product_l[0][0],
                         'product_id': product_l[1],
+                        'default_code': product_l[-1],
                         'price_unit': price_unit,
                         'product_qty': product_num_dict.get(product_l, 0)
                     }
@@ -391,10 +404,12 @@ class qdodoo_purchase_price_wizard(models.Model):
         elif int(self.search_choice) == 3:
             sql_l = """
                 select
-                    ail.product_id as product_id,
+                    pp.name_template as product_name,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount
+                    (ail.price_unit * ail.quantity) as product_amount,
+                    pp.default_code as default_code
                 from account_invoice_line ail
+                    LEFT JOIN product_product pp ON pp.id = ail.product_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -418,7 +433,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = i[0]
+                    k = (i[0], i[-1])
                     if k in product_list:
                         product_num_dict[k] += i[1]
                         product_amount_dict[k] += i[2]
@@ -433,7 +448,8 @@ class qdodoo_purchase_price_wizard(models.Model):
                         price_unit = product_amount_dict.get(product_l, 0) / product_num_dict.get(product_l, 0)
                     data = {
                         'date': self.date,
-                        'product_id': product_l,
+                        'product_id': product_l[0],
+                        'default_code': product_l[1],
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit,
                     }
@@ -459,10 +475,12 @@ class qdodoo_purchase_price_wizard(models.Model):
         elif int(self.search_choice) == 4:
             sql_l = """
                 select
-                    ail.product_id as product_id,
+                    pp.name_template as product_name,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount
+                    (ail.price_unit * ail.quantity) as product_amount,
+                    pp.default_code as default_code
                 from account_invoice_line ail
+                    LEFT JOIN product_product pp ON pp.id = ail.product_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -487,7 +505,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = i[0]
+                    k = (i[0], i[-1])
                     if k in product_list:
                         product_num_dict[k] += i[1]
                         product_amount_dict[k] += i[2]
@@ -503,7 +521,8 @@ class qdodoo_purchase_price_wizard(models.Model):
                     data = {
                         'start_date': self.start_date,
                         'end_date': self.end_date,
-                        'product_id': product_l,
+                        'product_id': product_l[0],
+                        'default_code': product_l[-1],
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit,
                     }
