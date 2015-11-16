@@ -29,25 +29,47 @@ class account_periodly_search(models.Model):
             [('date_start', '>=', self.start_p.date_start), ('date_stop', '<=', self.end_p.date_stop)])
         for per_id in per_ids:
             per_list.append(per_id.id)
-        sql = """
-            select
-                l.id as l_id,
-                l.period_id as period_id,
-                l.account_id as account_id,
-                am.company_id as company_id,
-                l.debit as debit,
-                l.credit as credit,
-                (l.debit-l.credit) as balance,
-                l.date as date,
-                l.name as line_name,
-                am.name as move_name
-            from
-                account_move_line l
-                left join account_account a on (a.id=l.account_id)
-                left join account_move am on (am.id=l.move_id)
-            where l.state != 'draft' and l.period_id in %s
-            group by l.name,am.name, l.period_id, l.account_id, am.company_id ,l.debit, l.credit,l.id
-        """ % (tuple(per_list),)
+        sql = ''
+        if per_list and len(per_list) == 1:
+            sql = """
+                select
+                    l.id as l_id,
+                    l.period_id as period_id,
+                    l.account_id as account_id,
+                    am.company_id as company_id,
+                    l.debit as debit,
+                    l.credit as credit,
+                    (l.debit-l.credit) as balance,
+                    l.date as date,
+                    l.name as line_name,
+                    am.name as move_name
+                from
+                    account_move_line l
+                    left join account_account a on (a.id=l.account_id)
+                    left join account_move am on (am.id=l.move_id)
+                where l.state != 'draft' and l.period_id = %s
+                group by l.name,am.name, l.period_id, l.account_id, am.company_id ,l.debit, l.credit,l.id
+            """ % per_list[0]
+        elif per_list and len(per_list) > 1:
+            sql = """
+                select
+                    l.id as l_id,
+                    l.period_id as period_id,
+                    l.account_id as account_id,
+                    am.company_id as company_id,
+                    l.debit as debit,
+                    l.credit as credit,
+                    (l.debit-l.credit) as balance,
+                    l.date as date,
+                    l.name as line_name,
+                    am.name as move_name
+                from
+                    account_move_line l
+                    left join account_account a on (a.id=l.account_id)
+                    left join account_move am on (am.id=l.move_id)
+                where l.state != 'draft' and l.period_id in %s
+                group by l.name,am.name, l.period_id, l.account_id, am.company_id ,l.debit, l.credit,l.id
+            """ % (tuple(per_list),)
         self.env.cr.execute(sql)
         key_list = []
         debit_dict = {}
