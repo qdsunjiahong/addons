@@ -38,8 +38,8 @@
                                    attrs="{'invisible':[('search_choice','!=',4)],'required':[('search_choice','in',(4,))]}"/>
                         </group>
                         <div>
-                            <label for="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
-                            <field name="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <label for="product_id" attrs="{'invisible':[('company_id','=',False)]}"/>
+                            <field name="product_id" attrs="{'invisible':[('company_id','=',False)]}"/>
                         </div>
                     </sheet>
                     <footer>

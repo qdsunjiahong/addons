@@ -7,12 +7,9 @@
             <field name="arch" type="xml">
                 <tree string="采购价格变动表">
                     <field name="year"/>
-                    <field name="partner_id"/>
                     <field name="product_id"/>
                     <field name="product_qty"/>
                     <field name="price_unit"/>
-                    <field name="company_id"/>
-                    <field name="location_id"/>
                 </tree>
             </field>
         </record>
@@ -21,14 +18,10 @@
             <field name="model">qdodoo.purchase.price.report</field>
             <field name="arch" type="xml">
                 <search string="采购价格变动表">
-                    <field name="partner_id"/>
-                    <field name="product_id"/>
-                    <field name="company_id"/>
                     <field name="year"/>
+                    <field name="product_id"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
-                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
-                        <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
                         <filter string="年份" domain="[]" context="{'group_by':'year'}"/>
                     </group>
                 </search>
@@ -40,12 +33,9 @@
             <field name="arch" type="xml">
                 <tree string="采购价格变动表">
                     <field name="period_id"/>
-                    <field name="partner_id"/>
                     <field name="product_id"/>
                     <field name="product_qty"/>
                     <field name="price_unit"/>
-                    <field name="company_id"/>
-                    <field name="location_id"/>
                 </tree>
             </field>
         </record>
@@ -54,14 +44,10 @@
             <field name="model">qdodoo.purchase.price.report</field>
             <field name="arch" type="xml">
                 <search string="采购价格变动表">
-                    <field name="partner_id"/>
-                    <field name="product_id"/>
-                    <field name="company_id"/>
                     <field name="period_id"/>
+                    <field name="product_id"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
-                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
-                        <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
                         <filter string="月份" domain="[]" context="{'group_by':'period_id'}"/>
                     </group>
                 </search>
@@ -74,12 +60,9 @@
             <field name="arch" type="xml">
                 <tree string="采购价格变动表">
                     <field name="quarter"/>
-                    <field name="partner_id"/>
                     <field name="product_id"/>
                     <field name="product_qty"/>
                     <field name="price_unit"/>
-                    <field name="company_id"/>
-                    <field name="location_id"/>
                 </tree>
             </field>
         </record>
@@ -88,14 +71,10 @@
             <field name="model">qdodoo.purchase.price.report</field>
             <field name="arch" type="xml">
                 <search string="采购价格变动表">
-                    <field name="partner_id"/>
-                    <field name="product_id"/>
-                    <field name="company_id"/>
                     <field name="quarter"/>
+                    <field name="product_id"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
-                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
-                        <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
                         <filter string="季度" domain="[]" context="{'group_by':'quarter'}"/>
                     </group>
                 </search>
@@ -107,30 +86,41 @@
             <field name="arch" type="xml">
                 <tree string="采购价格变动表">
                     <field name="date"/>
-                    <field name="partner_id"/>
                     <field name="product_id"/>
                     <field name="product_qty"/>
                     <field name="price_unit"/>
-                    <field name="company_id"/>
-                    <field name="location_id"/>
                 </tree>
             </field>
         </record>
-                <record id="qdodoo_purchase_price_report_search4" model="ir.ui.view">
+        <record id="qdodoo_purchase_price_report_search4" model="ir.ui.view">
             <field name="name">采购价格变动表</field>
             <field name="model">qdodoo.purchase.price.report</field>
             <field name="arch" type="xml">
                 <search string="采购价格变动表">
-                    <field name="partner_id"/>
                     <field name="product_id"/>
-                    <field name="company_id"/>
+                </search>
+            </field>
+        </record>
+        <record id="qdodoo_purchase_price_report_tree5" model="ir.ui.view">
+            <field name="name">采购价格变动表</field>
+            <field name="model">qdodoo.purchase.price.report</field>
+            <field name="arch" type="xml">
+                <tree string="采购价格变动表">
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="product_id"/>
+                    <field name="product_qty"/>
+                    <field name="price_unit"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_purchase_price_report_search5" model="ir.ui.view">
+            <field name="name">采购价格变动表</field>
+            <field name="model">qdodoo.purchase.price.report</field>
+            <field name="arch" type="xml">
+                <search string="采购价格变动表">
                     <field name="date"/>
-                    <group string="分组按">
-                        <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
-                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
-                        <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
-                        <filter string="日期" domain="[]" context="{'group_by':'date'}"/>
-                    </group>
+                    <field name="product_id"/>
                 </search>
             </field>
         </record>

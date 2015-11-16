@@ -30,7 +30,9 @@ class qdodoo_purchase_price_wizard(models.Model):
 
     @api.multi
     def action_done(self):
-        report_obj = self.env['qdodoo.stock.in.analytic.report']
+        report_obj = self.env['qdodoo.purchase.price.report']
+        un_ids = report_obj.search([])
+        un_ids.unlink()
         model_obj = self.env['ir.model.data']
         result_list = []
         product_list = []
@@ -40,18 +42,16 @@ class qdodoo_purchase_price_wizard(models.Model):
         if int(self.search_choice) == 1:
             sql_l = """
                 select
-                    ap.fiscalyear_id as fiscalyear_id,
+                    af.name as af_name,
                     ail.product_id as product_id,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount,
-                    po.location_id as location_id,
-                    po.partner_id as partner_id,
-                    po.company_id as company_id
+                    (ail.price_unit * ail.quantity) as product_amount
                 from account_invoice_line ail
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
                     LEFT JOIN account_period ap ON ap.id = ai.period_id
+                    LEFT JOIN account_fiscalyear af ON af.id= ap.fiscalyear_id
                 where po.state = 'done' and ai.state != 'cancel'
             """
             sql_domain = []
@@ -80,7 +80,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = (i[0], i[1], i[4], i[5], i[6])
+                    k = (i[0], i[1])
                     if k in product_list:
                         product_num_dict[k] += i[2]
                         product_amount_dict[k] += i[3]
@@ -99,9 +99,6 @@ class qdodoo_purchase_price_wizard(models.Model):
                             'product_id': j[1],
                             'product_qty': product_num_dict.get(j, 0),
                             'price_unit': price_unit,
-                            'location_id': j[2],
-                            'company_id': j[4],
-                            'partner_id': j[3]
                         }
                         cre_obj = report_obj.create(data)
                         result_list.append(cre_obj.id)
@@ -114,7 +111,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'name': _('采购价格变动表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.purchase.price.report',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
@@ -125,17 +122,15 @@ class qdodoo_purchase_price_wizard(models.Model):
         elif int(self.search_choice) == 5:
             sql_l = """
                 select
-                    ai.period_id as period_id,
+                    ap.name as ap_name,
                     ail.product_id as product_id,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount,
-                    po.location_id as location_id,
-                    po.partner_id as partner_id,
-                    po.company_id as company_id
+                    (ail.price_unit * ail.quantity) as product_amount
                 from account_invoice_line ail
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
+                    LEFT JOIN account_period ap ON ap.id = ai.period_id
                 where po.state = 'done' and ai.state != 'cancel'
             """
             sql_domain = []
@@ -191,7 +186,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
-                    k = (r[0], r[1], r[4], r[5], r[6])
+                    k = (r[0], r[1])
                     if k in product_list:
                         product_num_dict[k] += r[2]
                         product_amount_dict[k] += r[3]
@@ -207,9 +202,6 @@ class qdodoo_purchase_price_wizard(models.Model):
                     data = {
                         'period_id': product_l[0],
                         'product_id': product_l[1],
-                        'location_id': product_l[2],
-                        'partner_id': product_l[3],
-                        'company_id': product_l[4],
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit
                     }
@@ -224,7 +216,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'name': _('采购价格变动表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.purchase.price.report',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
@@ -331,10 +323,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         select
                             ail.product_id as product_id,
                             ail.quantity as product_qty,
-                            (ail.price_unit * ail.quantity) as product_amount,
-                            po.location_id as location_id,
-                            po.partner_id as partner_id,
-                            po.company_id as company_id
+                            (ail.price_unit * ail.quantity) as product_amount
                         from account_invoice_line ail
                             LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                             LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
@@ -360,7 +349,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         res = self.env.cr.fetchall()
                         if res:
                             for r in res:
-                                k = (d, r[0], r[3], r[4], r[5])
+                                k = (d, r[0])
                                 if k in product_list:
                                     product_num_dict[k] += r[1]
                                     product_amount_dict[k] += r[2]
@@ -377,9 +366,6 @@ class qdodoo_purchase_price_wizard(models.Model):
                     data = {
                         'quarter': product_l[0][0],
                         'product_id': product_l[1],
-                        'location_id': product_l[2],
-                        'partner_id': product_l[3],
-                        'company_id': product_l[4],
                         'price_unit': price_unit,
                         'product_qty': product_num_dict.get(product_l, 0)
                     }
@@ -394,7 +380,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'name': _('采购价格变动表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.purchase.price.report',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
@@ -405,13 +391,9 @@ class qdodoo_purchase_price_wizard(models.Model):
         elif int(self.search_choice) == 3:
             sql_l = """
                 select
-                    ai.date_invoice,
                     ail.product_id as product_id,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount,
-                    po.location_id as location_id,
-                    po.partner_id as partner_id,
-                    po.company_id as company_id
+                    (ail.price_unit * ail.quantity) as product_amount
                 from account_invoice_line ail
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
@@ -436,13 +418,13 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = (i[0], i[1], i[4], i[5], i[6])
+                    k = i[0]
                     if k in product_list:
-                        product_num_dict[k] += i[2]
-                        product_amount_dict[k] += i[3]
+                        product_num_dict[k] += i[1]
+                        product_amount_dict[k] += i[2]
                     else:
-                        product_num_dict[k] = i[2]
-                        product_amount_dict[k] = i[3]
+                        product_num_dict[k] = i[1]
+                        product_amount_dict[k] = i[2]
                         product_list.append(k)
                 for product_l in product_list:
                     if product_num_dict.get(product_l, 0) == 0:
@@ -450,13 +432,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                     else:
                         price_unit = product_amount_dict.get(product_l, 0) / product_num_dict.get(product_l, 0)
                     data = {
-                        'date': product_l[0],
-                        'product_id': product_l[1],
+                        'date': self.date,
+                        'product_id': product_l,
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit,
-                        'location_id': product_l[2],
-                        'company_id': product_l[4],
-                        'partner_id': product_l[3]
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
@@ -469,7 +448,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'name': _('采购价格变动表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.purchase.price.report',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
@@ -480,13 +459,9 @@ class qdodoo_purchase_price_wizard(models.Model):
         elif int(self.search_choice) == 4:
             sql_l = """
                 select
-                    ai.date_invoice,
                     ail.product_id as product_id,
                     ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount,
-                    po.location_id as location_id,
-                    po.partner_id as partner_id,
-                    po.company_id as company_id
+                    (ail.price_unit * ail.quantity) as product_amount
                 from account_invoice_line ail
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
@@ -512,13 +487,13 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = (i[0], i[1], i[4], i[5], i[6])
+                    k = i[0]
                     if k in product_list:
-                        product_num_dict[k] += i[2]
-                        product_amount_dict[k] += i[3]
+                        product_num_dict[k] += i[1]
+                        product_amount_dict[k] += i[2]
                     else:
-                        product_num_dict[k] = i[2]
-                        product_amount_dict[k] = i[3]
+                        product_num_dict[k] = i[1]
+                        product_amount_dict[k] = i[2]
                         product_list.append(k)
                 for product_l in product_list:
                     if product_num_dict.get(product_l, 0) == 0:
@@ -526,26 +501,24 @@ class qdodoo_purchase_price_wizard(models.Model):
                     else:
                         price_unit = product_amount_dict.get(product_l, 0) / product_num_dict.get(product_l, 0)
                     data = {
-                        'date': product_l[0],
-                        'product_id': product_l[1],
+                        'start_date': self.start_date,
+                        'end_date': self.end_date,
+                        'product_id': product_l,
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit,
-                        'location_id': product_l[2],
-                        'company_id': product_l[4],
-                        'partner_id': product_l[3]
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                        'qdodoo_purchase_price_report_tree4')
+                                                                        'qdodoo_purchase_price_report_tree5')
                     view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                           'qdodoo_purchase_price_report_search4')
+                                                                           'qdodoo_purchase_price_report_search5')
                     return {
                         'name': _('采购价格变动表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.purchase.price.report',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
