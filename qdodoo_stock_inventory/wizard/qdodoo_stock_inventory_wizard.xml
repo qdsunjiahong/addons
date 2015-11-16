@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_stock_inventory_wizard">
+            <field name="name">生产库存盘点</field>
+            <field name="model">qdodoo.stock.inventory.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="date"/>
+                            <field name="inventory_id"
+                                   domain="[('company_id','=',company_id),('state','=','done'),('inventory_b','=',False)]"/>
+                        </group>
+                        <div>
+                            <label for="company_id" string="公司"/>
+                            <field name="company_id"/>
+                        </div>
+                        <footer>
+                            <button string="确定盘点" name="action_inventory" type="object" class="oe_highlight"/>
+                            or
+                            <button string="取消" class="oe_link" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_qdodoo_stock_inventory_wizard">
+            <field name="name">生产库存盘点</field>
+            <field name="res_model">qdodoo.stock.inventory.wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_stock_inventory_wizard"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem name="生产库存盘点" action="action_qdodoo_stock_inventory_wizard" id="menu_qdodoo_stock_inventory_wizard"
+                  parent="stock.menu_stock_inventory_control"/>
+    </data>
+</openerp>
