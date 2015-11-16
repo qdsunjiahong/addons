@@ -38,9 +38,18 @@
                                    attrs="{'invisible':[('search_choice','!=',4)],'required':[('search_choice','in',(4,))]}"/>
                         </group>
                         <div>
-                            <label for="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
-                            <field name="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <label for="product_id"
+                                   attrs="{'invisible':[('company_id','=',False)]}"/>
+                            <field name="product_id" domain="[('company_id','=',company_id)]"
+                                   attrs="{'invisible':[('company_id','=',False)]}"/>
                         </div>
+                        <!--<div>-->
+                            <!--<label for="product_id2"-->
+                                   <!--attrs="{'invisible':[('company_id','not in',(7,))]}"/>-->
+                            <!--<field name="product_id2"-->
+                                   <!--attrs="{'invisible':[('company_id','not in',(7,))]}"/>-->
+                        <!--</div>-->
+
                     </sheet>
                     <footer>
                         <button string="确定" name="action_done" type="object" class="oe_highlight"/>
