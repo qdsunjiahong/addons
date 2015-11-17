@@ -13,6 +13,9 @@ class taylor_price_version_list(models.Model):
     pricelist = fields.Many2one('product.pricelist', '价格表', required=True)
     perice_version = fields.Many2one('product.pricelist.version', '价格表版本')
 
+    def _check_date(self, cursor, user, ids, context=None):
+        return True
+
 class taylor_pricce_version(models.Model):
     """
         添加一个价格表版本与价格表关联字段
@@ -23,7 +26,6 @@ class taylor_pricce_version(models.Model):
     price_list_ref = fields.One2many('price.list.version', 'perice_version', '相关价格表')
 
     def _check_date(self, cursor, user, ids, context=None):
-        print '11111111111111'
         return True
 
 class taylor_pricce_list(models.Model):
@@ -105,6 +107,7 @@ class qdodoo_product_pricelist_inherit(models.Model):
         for v in pricelist.version_id:
             if (v.date_start is False) or (v.date_start <= date):
                 lst[v] = v.date_end
+        # 获取价格表版本
         a = ''
         for line_key,line_value in lst.items():
             if line_key.date_end >= date:
@@ -127,14 +130,18 @@ class qdodoo_product_pricelist_inherit(models.Model):
                 categ = categ.parent_id
         categ_ids = categ_ids.keys()
 
+        # 获取对应产品id
         is_product_template = products[0]._name == "product.template"
+        prod_ids = []
         if is_product_template:
             prod_tmpl_ids = [tmpl.id for tmpl in products]
-            prod_ids = [product.id for product in tmpl.product_variant_ids for tmpl in products]
+            for tmpl in products:
+                for product in tmpl.product_variant_ids:
+                    prod_ids.append(product.id)
         else:
             prod_ids = [product.id for product in products]
             prod_tmpl_ids = [product.product_tmpl_id.id for product in products]
-
+        # 查询对应的价格表明细id
         # Load all rules
         cr.execute(
             'SELECT i.id '
@@ -145,7 +152,6 @@ class qdodoo_product_pricelist_inherit(models.Model):
                 'AND (price_version_id = %s) '
             'ORDER BY sequence, min_quantity desc',
             (prod_tmpl_ids, prod_ids, categ_ids, version.id))
-
         item_ids = [x[0] for x in cr.fetchall()]
         items = self.pool.get('product.pricelist.item').browse(cr, uid, item_ids, context=context)
 
@@ -171,21 +177,23 @@ class qdodoo_product_pricelist_inherit(models.Model):
                 except except_orm:
                     # Ignored - incompatible UoM in context, use default product UoM
                     pass
-
             for rule in items:
+                # 根据最小数量判断是否匹配
                 if rule.min_quantity and qty_in_product_uom < rule.min_quantity:
                     continue
+                # 如果是产品模板
                 if is_product_template:
                     if rule.product_tmpl_id and product.id != rule.product_tmpl_id.id:
                         continue
-                    if rule.product_id:
-                        continue
+                    # 如果明细中存在产品
+                    # if rule.product_id:
+                    #     continue
                 else:
                     if rule.product_tmpl_id and product.product_tmpl_id.id != rule.product_tmpl_id.id:
                         continue
                     if rule.product_id and product.id != rule.product_id.id:
                         continue
-
+                # 如果产品中有分类
                 if rule.categ_id:
                     cat = product.categ_id
                     while cat:
@@ -194,7 +202,6 @@ class qdodoo_product_pricelist_inherit(models.Model):
                         cat = cat.parent_id
                     if not cat:
                         continue
-
                 if rule.base == -1:
                     if rule.base_pricelist_id:
                         price_tmp = self._price_get_multi(cr, uid,
@@ -236,7 +243,6 @@ class qdodoo_product_pricelist_inherit(models.Model):
                             price_type.currency_id.id, pricelist.currency_id.id,
                             product_obj._price_get(cr, uid, [product], price_type.field, context=context)[product.id],
                             round=False, context=context)
-
                 if price is not False:
                     price_limit = price
                     price = price * (1.0+(rule.price_discount or 0.0))
@@ -260,9 +266,7 @@ class qdodoo_product_pricelist_inherit(models.Model):
 
                     rule_id = rule.id
                 break
-
             # Final price conversion to target UoM
             price = product_uom_obj._compute_price(cr, uid, price_uom_id, price, qty_uom_id)
-
             results[product.id] = (price, rule_id)
         return results
