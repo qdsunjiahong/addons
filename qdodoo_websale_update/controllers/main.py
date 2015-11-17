@@ -228,18 +228,21 @@ class qdodooo_website_update(website_sale):
         #搜索出相应的价格表明细
         i=0
         product_list_item=pool.get('product.pricelist.item').browse(cr, uid, pricelist_procuct_item_ids, context=context)
+        # 循环获取的价格表版本明细
         for product_item in product_list_item:
             #查询出相应的行
             i=i+1
-            if not  product_item.multipl:
+            if not product_item.multipl:
                 product_item_dict[product_item.id]=1
 
             #如果存在产品模板
             if product_item.product_tmpl_id:
+                # 产品模板如果不存在于pricelist_procuct_ids中，将模板id加入到其中
                 if product_item.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_tmpl_id.id)
+                    # key{产品模板id：倍数}
                     key[product_item.product_tmpl_id.id]=product_item.multipl
-            if  product_item.categ_id:
+            if product_item.categ_id:
                 product_ids = product_obj.search(cr, uid,[('categ_id', 'child_of', product_item.categ_id.id)])
                 temp_ids = product_obj.browse(cr, uid, product_ids)
                 for temp_id in temp_ids:
@@ -263,9 +266,8 @@ class qdodooo_website_update(website_sale):
                 for i in pricelist_procuct_ids:
                     key[i]=product_item.multipl
                 break
-
         request.session['taylor_session']=key
-        domain += [('id', 'in', pricelist_procuct_ids)]
+        # domain += [('id', 'in', pricelist_procuct_ids)]
 
 
         # 更改查询数据
@@ -296,7 +298,7 @@ class qdodooo_website_update(website_sale):
                 product_num[key_line] = '紧张'
             else:
                 product_num[key_line] = str(value_line)
-        products = product_obj.browse(cr, SUPERUSER_ID, product_ids, context=context)
+        products = product_obj.browse(cr, uid, product_ids, context=context)
         style_obj = pool['product.style']
         style_ids = style_obj.search(cr, uid, [], context=context)
         styles = style_obj.browse(cr, uid, style_ids, context=context)
@@ -372,20 +374,33 @@ class qdodooo_website_update(website_sale):
         local_id=partner.location_id.id
         product_obj=pool.get('product.product')
         quant_obj=pool.get('stock.quant')
+        move_obj=pool.get('stock.move')
         if not  local_id:
             raise except_orm(_('Warning!'),_('当前没有有效的库位信息，请检查客户资料是否正确！'))
         res = []
         re_dict={}
         re_dict_new={}
-        for temp_id in  template_ids:
+        for temp_id in template_ids:
             #先查询出产品模版对应的产品
             product_id=product_obj.search(cr ,SUPERUSER_ID ,[('product_tmpl_id','=',int(temp_id))],limit=1)
             #根据产品ID查询出产quant中的数量
             re_dict[int(temp_id)]=0
             if product_id:
                 product_id=product_id[0]
-                for quant in   quant_obj.browse(cr ,SUPERUSER_ID ,quant_obj.search(cr ,SUPERUSER_ID ,[('location_id','=',local_id),('product_id','=',product_id)])):
+                for quant in quant_obj.browse(cr ,SUPERUSER_ID ,quant_obj.search(cr ,SUPERUSER_ID ,[('location_id','=',local_id),('product_id','=',product_id)])):
                     re_dict[int(temp_id)]+=quant.qty
+        # 获取被占用的库存
+        quant_dict = {}
+        move_ids = move_obj.search(cr, SUPERUSER_ID, [('state','in',('confirmed','assigned')),('location_id','=',local_id)])
+        for move_id in move_obj.browse(cr, SUPERUSER_ID, move_ids):
+            if move_id.reserved_quant_ids:
+                for quant_id in move_id.reserved_quant_ids:
+                    if quant_id.product_id.product_tmpl_id.id in quant_dict:
+                        quant_dict[quant_id.product_id.product_tmpl_id.id] += quant_id.qty
+                    else:
+                        quant_dict[quant_id.product_id.product_tmpl_id.id] = quant_id.qty
+        for key_line, values_line in re_dict.items():
+            re_dict[key_line] = values_line - quant_dict.get(key_line,0.0)
         return re_dict
 
     def checkout_values(self, data=None):
