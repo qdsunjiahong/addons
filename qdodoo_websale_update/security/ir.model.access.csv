@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_qdodoo_product_template,公开 产品模板,product.model_product_template,share.group_share_user,1,0,0,0
+access_qdodoo_product_uom,公开 产品单位,product.model_product_uom,share.group_share_user,1,0,0,0
