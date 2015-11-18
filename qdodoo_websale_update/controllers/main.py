@@ -585,7 +585,7 @@ class qdodooo_website_update(website_sale):
             return request.redirect('/shop')
         if not order.partner_id.analytic_account_id:
             raise except_orm(_('Warning!'),_('客户没有设置对应的辅助核算项，请检查客户资料是否正确！'))
-        user_id = order.partner_id.user_id.id or SUPERUSER_ID
+        user_id = order.partner_id.user_id.id or uid
         sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
         order.action_button_confirm()
         # send by email

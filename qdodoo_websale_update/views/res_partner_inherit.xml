@@ -28,14 +28,26 @@
                                   <field name="fixed"/>
                                   <field name="to_toal"/>
                                   <field name="multipl"/>
-                                  <field name="success"/>
-                                  <field name="comparison"/>
                                  </tree>
                              </field>
-                                <button string="添加到价格表"  type="object" name="add_price_list"/>
-                                <button string="字段同步"  type="object" name="synchronous_field"/>
-                                <button string="同步数据" type="object" name="add_synchronous_field"/>
                             </page>
+                     </xpath>
+                </field>
+            </record>
+
+            <record model="ir.ui.view" id="product_pricelist_view_form_inherit">
+                <field name="name">product.pricelist.form.inherit</field>
+                <field name="model">product.pricelist</field>
+                <field name="inherit_id" ref="product.product_pricelist_view"/>
+                <field name="arch" type="xml">
+                     <xpath expr="//field[@name='version_id']" position="after">
+                         <group attrs="{'invisible':[('type','!=','sale')]}">
+                             <field name="partner_all" nolabel="1">
+                                 <tree editable="bottom">
+                                      <field name="name"/>
+                                 </tree>
+                             </field>
+                         </group>
                      </xpath>
                 </field>
             </record>

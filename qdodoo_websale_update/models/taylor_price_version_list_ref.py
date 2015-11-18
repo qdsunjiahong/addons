@@ -89,6 +89,8 @@ class taylor_pricce_list(models.Model):
 class qdodoo_product_pricelist_inherit(models.Model):
     _inherit = 'product.pricelist'
 
+    partner_all = fields.One2many('product.pricelist.partner','qdodoo_partner_id','业务伙伴')
+
     def _price_rule_get_multi(self, cr, uid, pricelist, products_by_qty_by_partner, context=None):
         context = context or {}
         date = context.get('date') or time.strftime('%Y-%m-%d')
@@ -270,3 +272,44 @@ class qdodoo_product_pricelist_inherit(models.Model):
             price = product_uom_obj._compute_price(cr, uid, price_uom_id, price, qty_uom_id)
             results[product.id] = (price, rule_id)
         return results
+
+class qdodoo_pricelist_partner_inherit(models.Model):
+    _name = 'product.pricelist.partner'
+
+    qdodoo_partner_id = fields.Many2one('product.pricelist',u'价格表')
+    name = fields.Many2one('res.partner',u'业务伙伴',domain=[('customer','=',True)])
+
+    # 创建数据，修改原有的合作伙伴的销售价格表
+    def create(self, cr, uid, vals, context=None):
+        partner_obj = self.pool.get('res.partner')
+        if vals.get('name'):
+            # 先修改业务伙伴的销售价格表
+            partner_obj.write(cr, uid, vals.get('name'),{'property_product_pricelist':vals.get('qdodoo_partner_id')})
+            # 查询其他的关联此业务伙伴的价格表
+            obj_ids = self.search(cr, uid, [('name','=',vals.get('name'))])
+            if obj_ids:
+                super(qdodoo_pricelist_partner_inherit, self).unlink(cr, uid, obj_ids)
+        return super(qdodoo_pricelist_partner_inherit, self).create(cr, uid, vals, context=context)
+
+    # 编辑数据，修改原有的合作伙伴的销售价格表
+    def write(self, cr, uid, ids, vals, context=None):
+        partner_obj = self.pool.get('res.partner')
+        obj = self.browse(cr, uid, ids [0])
+        if vals.get('name'):
+            # 先修改业务伙伴的销售价格表
+            partner_obj.write(cr, uid, vals.get('name'),{'property_product_pricelist':obj.qdodoo_partner_id.id})
+            # 查询其他的关联此业务伙伴的价格表
+            obj_ids = self.search(cr, uid, [('name','=',vals.get('name')),('id','!=',ids[0])])
+            if obj_ids:
+                super(qdodoo_pricelist_partner_inherit, self).unlink(cr, uid, obj_ids)
+            # 修改原有的客户的销售价格表
+            partner_obj.write(cr, uid, obj.name.id,{'property_product_pricelist':1})
+        return super(qdodoo_pricelist_partner_inherit, self).write(cr, uid, ids, vals, context=context)
+
+    # 删除数据，修改原有的合作伙伴的销售价格表
+    def unlink(self, cr, uid, ids, context=None):
+        obj = self.browse(cr, uid, ids[0])
+        partner_obj = self.pool.get('res.partner')
+        if obj.name:
+            partner_obj.write(cr, uid, obj.name.id,{'property_product_pricelist':1})
+        return super(qdodoo_pricelist_partner_inherit, self).unlink(cr, uid, ids, context=context)
