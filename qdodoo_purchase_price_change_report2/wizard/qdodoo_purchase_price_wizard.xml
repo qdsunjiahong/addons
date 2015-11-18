@@ -24,7 +24,7 @@
                         </div>
                         <div>
                             <label for="company_id" string="公司" attrs="{'invisible':[('search_choice','=',False)]}"/>
-                            <field name="company_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <field name="company_id" domain="[('parent_id','!=',False)]" attrs="{'invisible':[('search_choice','=',False)]}"/>
                         </div>
                         <div>
                             <label for="date" string="日期" attrs="{'invisible':[('search_choice','!=',3)]}"/>
@@ -43,12 +43,12 @@
                             <field name="product_id" domain="[('company_id','=',company_id)]"
                                    attrs="{'invisible':[('company_id','=',False)]}"/>
                         </div>
-                        <!--<div>-->
-                            <!--<label for="product_id2"-->
-                                   <!--attrs="{'invisible':[('company_id','not in',(7,))]}"/>-->
-                            <!--<field name="product_id2"-->
-                                   <!--attrs="{'invisible':[('company_id','not in',(7,))]}"/>-->
-                        <!--</div>-->
+                        <div>
+                            <label for="product_id2"
+                                   attrs="{'invisible':[('company_id','!=',False)]}"/>
+                            <field name="product_id2"
+                                   attrs="{'invisible':[('company_id','!=',False)]}"/>
+                        </div>
 
                     </sheet>
                     <footer>

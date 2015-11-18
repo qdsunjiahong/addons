@@ -27,11 +27,12 @@ class qdodoo_purchase_price_wizard(models.Model):
     start_date = fields.Date(string=u'开始时间')
     end_date = fields.Date(string=u'结束时间')
     product_id = fields.Many2one('product.product', string=u'产品')
-    # product_id2 = fields.Many2one('product.product', string=u'产品')
+    product_id2 = fields.Many2one('product.product', string=u'产品')
 
     @api.multi
     def action_done(self):
         report_obj = self.env['qdodoo.purchase.price.report']
+        supplier_id = self.env['res.partner'].search([('name', '=', u'前期库存'), ('active', '=', True)])[0].id
         un_ids = report_obj.search([])
         un_ids.unlink()
         model_obj = self.env['ir.model.data']
@@ -55,9 +56,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
                     LEFT JOIN account_period ap ON ap.id = ai.period_id
                     LEFT JOIN account_fiscalyear af ON af.id= ap.fiscalyear_id
-                where po.state = 'done' and ai.state != 'cancel'
+                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
             """
             sql_domain = []
+            sql_domain.append(supplier_id)
             if self.year:
                 year_list = []
                 year_ids = self.env['account.fiscalyear'].search([('name', '=', self.year.name)])
@@ -72,9 +74,17 @@ class qdodoo_purchase_price_wizard(models.Model):
             if self.product_id:
                 sql_l = sql_l + ' and ail.product_id = %s'
                 sql_domain.append(self.product_id.id)
-            # if self.product_id2:
-            #     sql_l = sql_l + ' and ail.product_id = %s'
-            #     sql_domain.append(self.product_id2.id)
+            pro_l = []
+            if self.product_id2:
+                product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
+                for pr in product_ids:
+                    pro_l.append(pr.id)
+                if len(pro_l)>1:
+                    sql_l = sql_l + ' and ail.product_id in %s'
+                    sql_domain.append(tuple(pro_l))
+                elif len(pro_l)==1:
+                    sql_l=sql_l+' and ail.product_id = %s'
+                    sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
                 sql_domain.append(self.partner_id.id)
@@ -140,9 +150,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
                     LEFT JOIN account_period ap ON ap.id = ai.period_id
-                where po.state = 'done' and ai.state != 'cancel'
+                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
             """
             sql_domain = []
+            sql_domain.append(supplier_id)
             per_list = []
             year_obj = self.env['account.fiscalyear']
             per_obj = self.env['account.period']
@@ -184,6 +195,17 @@ class qdodoo_purchase_price_wizard(models.Model):
             if self.product_id:
                 sql_l = sql_l + ' and ail.product_id = %s'
                 sql_domain.append(self.product_id.id)
+            pro_l = []
+            if self.product_id2:
+                product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
+                for pr in product_ids:
+                    pro_l.append(pr.id)
+                if len(pro_l)>1:
+                    sql_l = sql_l + ' and ail.product_id in %s'
+                    sql_domain.append(tuple(pro_l))
+                elif len(pro_l)==1:
+                    sql_l=sql_l+' and ail.product_id = %s'
+                    sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
                 sql_domain.append(self.partner_id.id)
@@ -233,142 +255,164 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
-        # 季度查询
+        # # 季度查询
         elif int(self.search_choice) == 2:
-            per_obj = self.env['account.period']
             if not self.year:
                 year_list = self.env['account.fiscalyear'].search([])
             else:
                 year_list = self.env['account.fiscalyear'].search([('name', '=', self.year.name)])
-            name_dict = {}
-            for i in year_list:
+            per_obj = self.env['account.period']
+            name_year_list = []  # 年度名称
+            quarter_start = {}
+            quarter_stop = {}
+            quarter_key = []
+            if year_list:
+                for ye in year_list:
+                    if ye.name not in name_year_list and len(str(ye.name)) == 4:
+                        name_year_list.append(ye.name)
+            for n_year in list(set(name_year_list)):
                 if int(self.quarter) == 1:
-                    p_list = []
-                    name_list = []
-                    name_list.append('01' + '/' + str(i.name))
-                    name_list.append('02' + '/' + str(i.name))
-                    name_list.append('03' + '/' + str(i.name))
-                    per_ids = per_obj.search([('name', 'in', name_list), ('fiscalyear_id', '=', i.id)])
-                    if per_ids:
-                        for p in per_ids:
-                            p_list.append(p.id)
-                    name_dict[(str(i.name) + "第一季度", i.id)] = p_list
+                    key = (str(n_year) + "第一季度", self.company_id.id)
+                    start_p = '01' + '/' + str(n_year)
+                    end_p = '03' + '/' + str(n_year)
+                    per_starts = per_obj.search([('name', '=', start_p)])
+                    if per_starts:
+                        quarter_start[key] = per_starts.date_start + " 00:00:01"
+                    per_stops = per_obj.search([('name', '=', end_p)])
+                    if per_stops:
+                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key)
                 elif int(self.quarter) == 2:
-                    p_list = []
-                    name_list = []
-                    name_list.append('04' + '/' + str(i.name))
-                    name_list.append('05' + '/' + str(i.name))
-                    name_list.append('06' + '/' + str(i.name))
-                    per_ids = per_obj.search([('name', 'in', name_list), ('fiscalyear_id', '=', i.id)])
-                    if per_ids:
-                        for p in per_ids:
-                            p_list.append(p.id)
-                    name_dict[(str(i.name) + "第二季度", i.id)] = p_list
+                    key = str(n_year) + "第二季度"
+                    start_p = '04' + '/' + str(n_year)
+                    end_p = '06' + '/' + str(n_year)
+                    per_starts = per_obj.search([('name', '=', start_p)])
+                    if per_starts:
+                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
+                    per_stops = per_obj.search([('name', '=', end_p)])
+                    if per_stops:
+                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key)
+
                 elif int(self.quarter) == 3:
-                    p_list = []
-                    name_list = []
-                    name_list.append('07' + '/' + str(i.name))
-                    name_list.append('08' + '/' + str(i.name))
-                    name_list.append('09' + '/' + str(i.name))
-                    per_ids = per_obj.search([('name', 'in', name_list), ('fiscalyear_id', '=', i.id)])
-                    if per_ids:
-                        for p in per_ids:
-                            p_list.append(p.id)
-                    name_dict[(str(i.name) + "第三季度", i.id)] = p_list
+                    key = str(n_year) + "第三季度"
+                    start_p = '07' + '/' + str(n_year)
+                    end_p = '09' + '/' + str(n_year)
+                    per_starts = per_obj.search([('name', '=', start_p)])
+                    if per_starts:
+                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
+                    per_stops = per_obj.search([('name', '=', end_p)])
+                    if per_stops:
+                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key)
+
                 elif int(self.quarter) == 4:
-                    p_list = []
-                    name_list = []
-                    name_list.append('10' + '/' + str(i.name))
-                    name_list.append('11' + '/' + str(i.name))
-                    name_list.append('12' + '/' + str(i.name))
-                    per_ids = per_obj.search([('name', 'in', name_list), ('fiscalyear_id', '=', i.id)])
-                    if per_ids:
-                        for p in per_ids:
-                            p_list.append(p.id)
-                    name_dict[(str(i.name) + "第四季度", i.id)] = p_list
+                    key = str(n_year) + "第四季度"
+                    start_p = '10' + '/' + str(n_year)
+                    end_p = '12' + '/' + str(n_year)
+                    per_starts = per_obj.search([('name', '=', start_p)])
+                    if per_starts:
+                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
+                    per_stops = per_obj.search([('name', '=', end_p)])
+                    if per_stops:
+                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key)
                 else:
-                    p_list1 = []
-                    name_list1 = []
-                    p_list2 = []
-                    name_list2 = []
-                    p_list3 = []
-                    name_list3 = []
-                    p_list4 = []
-                    name_list4 = []
-                    name_list1.append('01' + '/' + str(i.name))
-                    name_list1.append('02' + '/' + str(i.name))
-                    name_list1.append('03' + '/' + str(i.name))
-                    per_ids1 = per_obj.search([('name', 'in', name_list1), ('fiscalyear_id', '=', i.id)])
-                    if per_ids1:
-                        for p1 in per_ids1:
-                            p_list1.append(p1.id)
-                    name_dict[(str(i.name) + "第一季度", i.id)] = p_list1
-                    name_list2.append('04' + '/' + str(i.name))
-                    name_list2.append('05' + '/' + str(i.name))
-                    name_list2.append('06' + '/' + str(i.name))
-                    per_ids2 = per_obj.search([('name', 'in', name_list2), ('fiscalyear_id', '=', i.id)])
-                    if per_ids2:
-                        for p2 in per_ids2:
-                            p_list2.append(p2.id)
-                    name_dict[(str(i.name) + "第二季度", i.id)] = p_list2
-                    name_list3.append('07' + '/' + str(i.name))
-                    name_list3.append('08' + '/' + str(i.name))
-                    name_list3.append('09' + '/' + str(i.name))
-                    per_ids3 = per_obj.search([('name', 'in', name_list3), ('fiscalyear_id', '=', i.id)])
-                    if per_ids3:
-                        for p3 in per_ids3:
-                            p_list3.append(p3.id)
-                    name_dict[(str(i.name) + "第三季度", i.id)] = p_list3
-                    name_list4.append('10' + '/' + str(i.name))
-                    name_list4.append('11' + '/' + str(i.name))
-                    name_list4.append('12' + '/' + str(i.name))
-                    per_ids4 = per_obj.search([('name', 'in', name_list4), ('fiscalyear_id', '=', i.id)])
-                    if per_ids4:
-                        for p4 in per_ids4:
-                            p_list4.append(p4.id)
-                    name_dict[(str(i.name) + "第四季度", i.id)] = p_list4
-                for d in name_dict.keys():
-                    if name_dict.get(d, []):
-                        sql_l = """
-                        select
-                            pp.name_template as product_name,
-                            ail.quantity as product_qty,
-                            (ail.price_unit * ail.quantity) as product_amount,
-                            pp.default_code as default_code
-                        from account_invoice_line ail
-                            LEFT JOIN product_product pp ON pp.id = ail.product_id
-                            LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
-                            LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
-                            LEFT JOIN purchase_order po ON po.id = pir.purchase_id
-                        where po.state = 'done' and ai.state != 'cancel'
-                    """
-                        sql_domain = []
-                        if self.product_id:
-                            sql_l = sql_l + ' and ail.product_id = %s'
-                            sql_domain.append(self.product_id.id)
-                        if self.partner_id:
-                            sql_l = sql_l + ' and ai.partner_id = %s'
-                            sql_domain.append(self.partner_id.id)
-                        p_list = name_dict.get(d)
-                        if p_list and len(p_list) > 1:
-                            sql_l = sql_l + ' and ai.period_id in %s'
-                            sql_domain.append(tuple(p_list))
-                        elif p_list and len(p_list) == 1:
-                            sql_l = sql_l + ' and ai.period_id = %s'
-                            sql_domain.append(p_list[0])
-                        sql = sql_l % tuple(sql_domain)
-                        self.env.cr.execute(sql)
-                        res = self.env.cr.fetchall()
-                        if res:
-                            for r in res:
-                                k = (d, r[0], r[-1])
-                                if k in product_list:
-                                    product_num_dict[k] += r[1]
-                                    product_amount_dict[k] += r[2]
-                                else:
-                                    product_num_dict[k] = r[1]
-                                    product_amount_dict[k] = r[2]
-                                    product_list.append(k)
+                    start_p1 = '01' + '/' + str(n_year)
+                    end_p1 = '03' + '/' + str(n_year)
+                    per_starts1 = per_obj.search([('name', '=', start_p1)])
+                    key1 = str(n_year) + "第一季度"
+                    if per_starts1:
+                        quarter_start[key1] = per_starts1[0].date_start + " 00:00:01"
+                    per_stops1 = per_obj.search([('name', '=', end_p1)])
+                    if per_stops1:
+                        quarter_stop[key1] = per_stops1[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key1)
+                    start_p2 = '04' + '/' + str(n_year)
+                    end_p2 = '06' + '/' + str(n_year)
+                    key2 = str(n_year) + "第二季度"
+                    per_starts2 = per_obj.search([('name', '=', start_p2)])
+                    if per_starts2:
+                        quarter_start[key2] = per_starts2[0].date_start + " 00:00:01"
+                    per_stops2 = per_obj.search([('name', '=', end_p2)])
+                    if per_stops2:
+                        quarter_stop[key2] = per_stops2[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key2)
+                    start_p3 = '07' + '/' + str(n_year)
+                    end_p3 = '09' + '/' + str(n_year)
+                    key3 = str(n_year) + "第三季度"
+                    per_starts3 = per_obj.search([('name', '=', start_p3)])
+                    if per_starts3:
+                        quarter_start[key3] = per_starts3[0].date_start + " 00:00:01"
+                    per_stops3 = per_obj.search([('name', '=', end_p3)])
+                    if per_stops3:
+                        quarter_stop[key3] = per_stops3[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key3)
+                    start_p4 = '10' + '/' + str(n_year)
+                    end_p4 = '12' + '/' + str(n_year)
+                    key4 = str(n_year) + "第四季度"
+                    per_starts4 = per_obj.search([('name', '=', start_p4)])
+                    if per_starts4:
+                        quarter_start[key4] = per_starts4[0].date_start + ' 23:59:59'
+                    per_stops4 = per_obj.search([('name', '=', end_p4)])
+                    if per_stops4:
+                        quarter_stop[key4] = per_stops4[0].date_stop + ' 23:59:59'
+                    quarter_key.append(key4)
+            for d in quarter_key:
+                sql_l = """
+                select
+                    pp.name_template as product_name,
+                    ail.quantity as product_qty,
+                    (ail.price_unit * ail.quantity) as product_amount,
+                    pp.default_code as default_code
+                from account_invoice_line ail
+                    LEFT JOIN product_product pp ON pp.id = ail.product_id
+                    LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
+                    LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
+                    LEFT JOIN purchase_order po ON po.id = pir.purchase_id
+                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
+                """
+                sql_domain = []
+                sql_domain.append(supplier_id)
+                if self.product_id:
+                    sql_l = sql_l + ' and ail.product_id = %s'
+                    sql_domain.append(self.product_id.id)
+                pro_l = []
+                if self.product_id2:
+                    product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
+                    for pr in product_ids:
+                        pro_l.append(pr.id)
+                    if len(pro_l)>1:
+                        sql_l = sql_l + ' and ail.product_id in %s'
+                        sql_domain.append(tuple(pro_l))
+                    elif len(pro_l)==1:
+                        sql_l=sql_l+' and ail.product_id = %s'
+                        sql_domain.append(pro_l[0])
+                if self.partner_id:
+                    sql_l = sql_l + ' and ai.partner_id = %s'
+                    sql_domain.append(self.partner_id.id)
+                if quarter_start.get(d, None) != None:
+                    sql_l = sql_l + " and ai.date_invoice >= '%s'"
+                    sql_domain.append(quarter_start.get(d))
+                if quarter_stop.get(d, None) != None:
+                    sql_domain.append(quarter_stop.get(d))
+                    sql_l = sql_l + " and ai.date_invoice <= '%s'"
+                if self.company_id:
+                    sql_l = sql_l + " and ai.company_id = %s"
+                    sql_domain.append(self.company_id.id)
+                sql = sql_l % tuple(sql_domain)
+                self.env.cr.execute(sql)
+                res = self.env.cr.fetchall()
+                if res:
+                    for r in res:
+                        k = (d, r[0], r[-1])
+                        if k in product_list:
+                            product_num_dict[k] += r[1]
+                            product_amount_dict[k] += r[2]
+                        else:
+                            product_num_dict[k] = r[1]
+                            product_amount_dict[k] = r[2]
+                            product_list.append(k)
             if product_list:
                 for product_l in product_list:
                     if product_num_dict.get(product_l, 0) == 0:
@@ -376,7 +420,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                     else:
                         price_unit = product_amount_dict.get(product_l, 0) / product_num_dict.get(product_l, 0)
                     data = {
-                        'quarter': product_l[0][0],
+                        'quarter': product_l[0],
                         'product_id': product_l[1],
                         'default_code': product_l[-1],
                         'price_unit': price_unit,
@@ -400,6 +444,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
+
         #####日期查询
         elif int(self.search_choice) == 3:
             sql_l = """
@@ -413,15 +458,27 @@ class qdodoo_purchase_price_wizard(models.Model):
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
-                where po.state = 'done' and ai.state != 'cancel'
+                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
             """
             sql_domain = []
+            sql_domain.append(supplier_id)
             if self.date:
                 sql_l = sql_l + " and ai.date_invoice = '%s'"
                 sql_domain.append(self.date)
             if self.product_id:
                 sql_l = sql_l + ' and ail.product_id = %s'
                 sql_domain.append(self.product_id.id)
+            pro_l = []
+            if self.product_id2:
+                product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
+                for pr in product_ids:
+                    pro_l.append(pr.id)
+                if len(pro_l)>1:
+                    sql_l = sql_l + ' and ail.product_id in %s'
+                    sql_domain.append(tuple(pro_l))
+                elif len(pro_l)==1:
+                    sql_l=sql_l+' and ail.product_id = %s'
+                    sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
                 sql_domain.append(self.partner_id.id)
@@ -484,9 +541,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
-                where po.state = 'done' and ai.state != 'cancel'
+                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
             """
             sql_domain = []
+            sql_domain.append(supplier_id)
             sql_l = sql_l + " and ai.date_invoice >= '%s'"
             sql_domain.append(self.start_date)
             sql_l = sql_l + " and ai.date_invoice <= '%s'"
@@ -497,6 +555,17 @@ class qdodoo_purchase_price_wizard(models.Model):
             if self.product_id:
                 sql_l = sql_l + 'and ail.product_id = %s'
                 sql_domain.append(self.product_id.id)
+            pro_l = []
+            if self.product_id2:
+                product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
+                for pr in product_ids:
+                    pro_l.append(pr.id)
+                if len(pro_l)>1:
+                    sql_l = sql_l + ' and ail.product_id in %s'
+                    sql_domain.append(tuple(pro_l))
+                elif len(pro_l)==1:
+                    sql_l=sql_l+' and ail.product_id = %s'
+                    sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
                 sql_domain.append(self.partner_id.id)
