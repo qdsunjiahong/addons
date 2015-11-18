@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="view_picking_wave_form_inherit">
+            <field name="name">stock.picking.wave.inherit</field>
+            <field name="model">stock.picking.wave</field>
+            <field name="inherit_id" ref="stock_picking_wave.view_picking_wave_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//button[@name='print_picking']" position="after">
+                    <button name="print_picking_all" string="整合打印拣货单" type="object"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_partner_form_inherit">
+            <field name="name">res.partner.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='website']" position="after">
+                    <field name="delivery_id"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_picking_form_new_inherit">
+            <field name="name">stock.picking.form.new.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="warning.view_picking_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field name="partner_id" on_change="onchange_get_delivery_id(partner_id)"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

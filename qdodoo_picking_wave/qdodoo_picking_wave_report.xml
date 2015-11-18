@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report
+                string="Picking_all"
+                id="action_report_picking_all"
+                model="qdodoo.report.info"
+                report_type="qweb-html"
+                name="qdodoo_picking_wave.qdodoo_report_picking"
+                file="qdodoo_picking_wave.qdodoo_report_picking"
+                menu="False"
+                />
+
+        <template id="qdodoo_report_picking">
+            <t t-call="report.html_container">
+                <t t-call="report.external_layout">
+                    <div class="page">
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <strong>产品</strong>
+                                    </th>
+                                    <th class="text-right">
+                                        <strong>数量</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="docs" t-as="o">
+                                    <t>
+                                        <td>
+                                            <span t-field="o.product_id"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t>
+                                                <span t-field="o.qty"/>
+                                                <span t-field="o.product_uom_id"/>
+                                            </t>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</openerp>
