@@ -76,6 +76,7 @@
                 "views/report_threecolumns_ledger.xml",
                 "views/report_stock_ledger.xml",
                 "views/report_currency_cash_journal.xml",
+                "qdodoo_search_account_periodly.xml",
     ],
     "installable" : True,
     "certificate" : "",

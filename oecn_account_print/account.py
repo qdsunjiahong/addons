@@ -84,7 +84,6 @@ class account_account(osv.osv):
         return result
 
 
-
 class account_periodly(osv.osv):
     _name = "account.periodly"
     _description = "科目余额表"
@@ -118,24 +117,12 @@ class account_periodly(osv.osv):
         'balance': fields.float('Balance', readonly=True),
         'date': fields.date('Beginning of Period Date', readonly=True),
         'starting_balance': fields.float(digits_compute=dp.get_precision('Account'),
-                                            string='期初余额'),
+                                         string='期初余额'),
         'ending_balance': fields.float(digits_compute=dp.get_precision('Account'), string='期末余额'),
         'company_id': fields.many2one('res.company', 'Company', readonly=True),
-        'periodly_lines': fields.one2many('account.periodly.line', 'account_periodly_id', string=u'明细')
+        'partner_ids': fields.one2many('qdodoo.account.partner.report', 'account_periodly_id', string=u'明细')
     }
 
     _order = 'date asc,account_id,company_id'
 
 
-class account_periodly_line(osv.osv):
-    _name = 'account.periodly.line'
-    # _auto = False
-    _columns = {
-        'move_name':fields.char(string=u'凭证号'),
-        'line_name':fields.char(string=u'说明'),
-        'account_id': fields.many2one('account.account', '科目', readonly=True),
-        'debit': fields.float('借方', readonly=True),
-        'credit': fields.float('贷方', readonly=True),
-        'company_id': fields.many2one('res.company', '公司', readonly=True),
-        'account_periodly_id': fields.many2one('account.periodly', ondelete='cascade')
-    }

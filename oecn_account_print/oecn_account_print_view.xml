@@ -144,10 +144,10 @@
                         <group>
                             <notebook colspan="4">
                                 <page string="明细">
-                                    <field name="periodly_lines" widget="one2many_list">
+                                    <field name="partner_ids" nolabel="1">
                                         <tree>
-                                            <field name="move_name"/>
-                                            <field name="line_name"/>
+                                            <field name="partner_id"/>
+                                            <field name="period_id"/>
                                             <field name="account_id"/>
                                             <field name="debit"/>
                                             <field name="credit"/>
