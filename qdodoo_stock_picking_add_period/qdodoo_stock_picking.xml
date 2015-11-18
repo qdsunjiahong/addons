@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_stock_picking_view_inherit1">
+            <field name="name">强制会计期间</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="picking_type_id" position="after">
+                    <field name="acc" attrs="{'readonly':[('state','=','done')]}"/>
+                </field>
+                <field name="date_done" position="replace">
+                    <field name="date_done" readonly="1"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
