@@ -566,6 +566,7 @@ class qdodooo_website_update(website_sale):
         email_act = None
         # 得到销售对象
         sale_order_obj = request.registry['sale.order']
+        users_obj = request.registry['res.users']
         # 发票对象
         invoice_obj = request.registry['account.invoice']
         # 出库单
@@ -586,7 +587,12 @@ class qdodooo_website_update(website_sale):
         if not order.partner_id.analytic_account_id:
             raise except_orm(_('Warning!'),_('客户没有设置对应的辅助核算项，请检查客户资料是否正确！'))
         user_id = order.partner_id.user_id.id or uid
-        sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+        section_obj = users_obj.browse(cr, SUPERUSER_ID, user_id)
+        section_id = section_obj.default_section_id.id if section_obj.default_section_id else False
+        if section_id:
+            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'section_id':section_id,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+        else:
+            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
         order.action_button_confirm()
         # send by email
         # 邮件act为销售订单 生成报价单
