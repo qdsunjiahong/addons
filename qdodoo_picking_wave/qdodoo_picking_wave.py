@@ -66,7 +66,6 @@ class qdodoo_report_info(models.Model):
     qty = fields.Float(u'数量')
     product_uom_id = fields.Many2one('product.uom',u'单位')
 
-
 class qdodoo_res_partner_inherit(models.Model):
     _inherit = 'res.partner'
 
@@ -103,4 +102,11 @@ class qdodoo_stock_picking_inherit(models.Model):
             result['warning'] = warning
         return result
 
+    # 创建时如果业务伙伴有承运方即可关联上
+    def create(self, cr, uid, valus, context=None):
+        if valus.get('partner_id'):
+            partner = self.pool.get('res.partner').browse(cr, uid, valus.get('partner_id'), context=context)
+            if partner.delivery_id:
+                valus['shipper'] = partner.delivery_id.id
+        return super(qdodoo_stock_picking_inherit, self).create(cr, uid, valus, context=context)
 
