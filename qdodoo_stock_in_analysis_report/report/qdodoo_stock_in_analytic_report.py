@@ -29,4 +29,4 @@ class qdodoo_stock_in_analytic_report(models.Model):
     product_amount = fields.Float(string=u'金额')
     location_id = fields.Many2one('stock.location', string=u'交货地点')
     company_id = fields.Many2one('res.company', string=u'公司')
-    property_supplier_payment_term=fields.Many2one('account.payment.term',string=u'付款条款')
+    property_supplier_payment_term = fields.Char(string=u'付款条款')
