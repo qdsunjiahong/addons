@@ -7,6 +7,7 @@
 ###########################################################################################
 
 from openerp import models, fields, api
+from openerp.osv import osv
 from datetime import datetime
 
 
@@ -63,3 +64,36 @@ class qdodoo_stock_picking(models.Model):
             onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': fields.date.today()})
             onshipping_id.create_invoice()
         return True
+
+class qdodoo_stock_move_inherit_tfs(models.Model):
+    _inherit = 'stock.move'
+
+    tfs_price_unit = fields.Float(u'成本价')
+
+    def create(self, cr, uid, valus, context=None):
+        product_obj = self.pool.get('product.product')
+        users_obj = self.pool.get('res.users')
+        if valus.get('product_id'):
+            # 获取产品公司id
+            company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
+            # 查询该公司的人
+            company_uid = users_obj.search(cr, uid, [('company_id','=',company_id)])
+            if not company_uid:
+                 raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+            else:
+                valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
+        return super(qdodoo_stock_move_inherit_tfs, self).create(cr, uid, valus, context=context)
+
+    def write(self, cr, uid, ids, valus, context=None):
+        product_obj = self.pool.get('product.product')
+        users_obj = self.pool.get('res.users')
+        if valus.get('product_id'):
+            # 获取产品公司id
+            company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
+            # 查询该公司的人
+            company_uid = users_obj.search(cr, uid, [('company_id','=',company_id)])
+            if not company_uid:
+                 raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+            else:
+                valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
+        return super(qdodoo_stock_move_inherit_tfs, self).write(cr, uid, ids, valus, context=context)
