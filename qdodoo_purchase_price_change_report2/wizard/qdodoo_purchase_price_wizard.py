@@ -272,7 +272,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         name_year_list.append(ye.name)
             for n_year in list(set(name_year_list)):
                 if int(self.quarter) == 1:
-                    key = (str(n_year) + "第一季度", self.company_id.id)
+                    key = str(n_year) + "第一季度"
                     start_p = '01' + '/' + str(n_year)
                     end_p = '03' + '/' + str(n_year)
                     per_starts = per_obj.search([('name', '=', start_p)])
