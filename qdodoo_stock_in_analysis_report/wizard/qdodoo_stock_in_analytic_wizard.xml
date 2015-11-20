@@ -14,8 +14,8 @@
                         </div>
                         <group colspan="4" col="4">
                             <field name="year"
-                                   attrs="{'invisible':[('search_choice','not in',(1,2))],'required':['|',('quarter','!=',False),('month','!=',False)]}"/>
-                            <field name="month" attrs="{'invisible':[('search_choice','!=',1)]}"/>
+                                   attrs="{'invisible':[('search_choice','not in',(1,2,5))]}"/>
+                            <field name="month" attrs="{'invisible':[('search_choice','!=',5)]}"/>
                             <field name="quarter" attrs="{'invisible':[('search_choice','!=',2)]}"/>
                         </group>
                         <div>
@@ -39,9 +39,16 @@
                                    attrs="{'invisible':[('search_choice','!=',4)],'required':[('search_choice','in',(4,))]}"/>
                         </group>
                         <div>
-                            <label for="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
-                            <field name="product_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <label for="product_id" attrs="{'invisible':[('company_id','=',False)]}"/>
+                            <field name="product_id" domain="[('company_id','=',company_id)]" attrs="{'invisible':[('company_id','=',False)]}"/>
                         </div>
+                        <div>
+                            <label for="product_id2"
+                                   attrs="{'invisible':[('company_id','!=',False)]}"/>
+                            <field name="product_id2"
+                                   attrs="{'invisible':[('company_id','!=',False)]}"/>
+                        </div>
+
                     </sheet>
                     <footer>
                         <button string="确定" name="action_done" type="object" class="oe_highlight"/>
