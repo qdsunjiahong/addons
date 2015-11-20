@@ -6,8 +6,6 @@
 #
 ###########################################################################################
 
-import qdodoo_logistics_freight    #引入模型
-# import report    #引入模型
-# import wizard    #引入模型
+import qdodoo_logistics_freight_report_wizard    #引入模型
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

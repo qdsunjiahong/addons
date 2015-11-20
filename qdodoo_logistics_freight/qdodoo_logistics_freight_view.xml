@@ -72,6 +72,7 @@
                             <field name="journal_id" invisible='1'/>
                             <!--<field name="picking_out_id"/>-->
                             <field name="picking_out_origin"/>
+                            <field name="shipper_tfs"/>
                         </group>
                         <group>
                             <field name="date_order"/>
@@ -152,8 +153,6 @@
             </field>
         </record>
 
-
-
         <record id="purchase.purchase_form_action" model="ir.actions.act_window">
             <field name="name">Purchase Orders</field>
             <field name="type">ir.actions.act_window</field>
@@ -219,6 +218,43 @@
             </field>
         </record>
 
+        <!--在运输方式上增加满载方数-->
+        <record model="ir.ui.view" id="view_delivery_carrier_form_inherit">
+            <field name="name">delivery.carrier.form.view.inherit</field>
+            <field name="model">delivery.carrier</field>
+            <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='active']" position="after">
+                    <field name="all_volume"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="qdodoo_purchase_order_tree" model="ir.ui.view">
+            <field name="name">qdodoo.purchase.order.tree</field>
+            <field name="model">purchase.order</field>
+            <field name="arch" type="xml">
+                <tree fonts="bold:message_unread==True" colors="grey:state=='cancel';blue:state in ('wait','confirmed');red:state in ('except_invoice','except_picking')" string="Purchase Order">
+                    <field name="message_unread" invisible="1"/>
+                    <field name="name" string="Reference"/>
+                    <field name="date_order" />
+                    <field name="partner_id"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                    <field name="minimum_planned_date" invisible="context.get('quotation_only', False)"/>
+                    <field name="origin"/>
+                    <field name="volume_order"/>
+                    <field name="all_volume_rate"/>
+                    <field name="location_id_tfs"/>
+                    <field name="location_dest_id_tfs"/>
+                    <field name="amount_untaxed" sum="Total Untaxed amount" string="Untaxed"/>
+                    <field name="amount_total" sum="Total amount"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+
         <record id="action_qdodoo_purchase_order_inherit" model="ir.actions.act_window">
               <field name="name">运费单</field>
               <field name="type">ir.actions.act_window</field>
@@ -235,7 +271,7 @@
         <record id="action_tree_purchase_order" model="ir.actions.act_window.view">
             <field eval="1" name="sequence"/>
             <field name="view_mode">tree</field>
-            <field name="view_id" ref="purchase.purchase_order_tree"/>
+            <field name="view_id" ref="qdodoo_purchase_order_tree"/>
             <field name="act_window_id" ref="action_qdodoo_purchase_order_inherit"/>
         </record>
         <record id="action_form_purchase_order" model="ir.actions.act_window.view">

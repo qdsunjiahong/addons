@@ -37,6 +37,7 @@ class qdodoo_merge_yf_order(models.Model):
             raise osv.except_osv(_('警告!'),_('请至少选择两条数据.'))
         return res
 
+    # 合并运费单
     def btn_merge(self, cr, uid, ids, context=None):
         purchase_obj = self.pool.get('purchase.order')
         partner_lst = []
@@ -73,10 +74,25 @@ class qdodoo_purchase_order_inherit(models.Model):
     picking_out_origin = fields.Char(string='出库单',readonly=True)
     volume_order = fields.Float(u'体积方数')
     weight_order = fields.Float(u'重量')
+    all_volume = fields.Float(u'满载方数')
+    all_volume_rate = fields.Float(u'满载率',compute='_get_all_volume_rate')
+    location_id_tfs = fields.Many2one('stock.location',u'源库位')
+    location_dest_id_tfs = fields.Many2one('stock.location',u'目标库位')
+    shipper_tfs = fields.Many2one('delivery.carrier',u'车型')
 
     _defaults={
             "is_logistics":False,
             }
+
+    # 获取满载率
+    def _get_all_volume_rate(self):
+        for line in self:
+            if line.all_volume:
+                line.all_volume_rate = line.volume_order / line.all_volume
+            else:
+                line.all_volume_rate = 0
+
+    # 查看出库单
     def read_picking_out(self, cr, uid, ids, context=None):
         obj = self.browse(cr, uid, ids[0])
         stock_obj = self.pool.get('stock.picking')
@@ -129,13 +145,19 @@ class qdodoo_stock_picking_inherit(models.Model):
                     supplier = partner.browse(cr, uid, obj.shipper.partner_id.id, context=context)
                     vals = {}
                     location_id = ''
+                    location_dest_id = ''
                     vals['partner_id'] = obj.shipper.partner_id.id
                     vals['pricelist_id'] = supplier.property_product_pricelist_purchase.id
                     vals['fiscal_position'] = supplier.property_account_position and supplier.property_account_position.id or False
                     for location in obj.move_lines:
-                        if not location_id:
-                            location_id = location.location_id.id
-                    vals['location_id'] = location_id
+                        location_id = location.location_id.id
+                        location_dest_id = location.location_dest_id.id
+                    vals['all_volume'] = obj.shipper.all_volume
+                    vals['location_id'] = location_dest_id
+                    vals['origin'] = obj.origin
+                    vals['shipper_tfs'] = obj.shipper.id
+                    vals['location_id_tfs'] = location_id
+                    vals['location_dest_id_tfs'] = location_dest_id
                     vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'qdodoo.logistics.freight')
                     vals['is_logistics'] = True
                     # vals['picking_out_id'] = obj.id
@@ -172,5 +194,9 @@ class qdodoo_stock_picking_inherit(models.Model):
                     purchase_line_obj.create(cr, uid, val, context=context)
                     return True
 
+class qdodoo_delivery_carrier_tfs(models.Model):
+    _inherit = 'delivery.carrier'
 
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+    all_volume = fields.Float(u'满载方数(m³)')
+
+

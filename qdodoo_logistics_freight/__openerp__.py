@@ -7,7 +7,7 @@
 ###########################################################################################
 
 {
-    'name' : 'Qdodoo Logistics Freight',    #模块名称
+    'name' : '运费单',    #模块名称
     'version' : '1.0',    #版本
     'category' : 'Technology',    #分类
     'author' : 'qdodoo Technology',    #作者
@@ -18,6 +18,8 @@
     'data': [
         'qdodoo_logistics_freight_view.xml',
         'qdodoo_logistics_freight_sequence.xml',
+        # 'report/qdodoo_logistics_freight_report.xml',
+        # 'wizard/qdodoo_logistics_freight_report_wizard.xml',
         # ...
     ],    #更新XML,CSV
     'js': [
