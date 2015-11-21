@@ -7,7 +7,7 @@
                 <field name="inherit_id" ref="purchase.view_partner_property_form"/>
                 <field name="arch" type="xml">
                     <field name="property_product_pricelist_purchase" position="after">
-                        <field name="analytic_account_id"/>
+                        <field name="analytic_account_id" domain="[('company_id','=',company_id)]"/>
                     </field>
                 </field>
             </record>

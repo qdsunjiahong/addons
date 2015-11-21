@@ -97,22 +97,27 @@ class qdodoo_purchase_sale_order(models.Model):
             # 如果客户是内部公司
             if obj.partner_id.is_internal_company:
                 part_id = obj.company_id.partner_id.id
+                project_id = obj.partner_id.analytic_account_id.id
+                if not project_id:
+                    raise except_osv(_(u'警告'), _(u'%s的辅助核算项未填') % obj.partner_id.name)
                 part = partner_obj.browse(cr, uid, part_id, context=context)
                 addr = partner_obj.address_get(cr, uid, [part.id], ['delivery', 'invoice', 'contact'])
                 pricelist = part.property_product_pricelist and part.property_product_pricelist.id or False
                 invoice_part = partner_obj.browse(cr, uid, addr['invoice'], context=context)
                 payment_term = invoice_part.property_payment_term and invoice_part.property_payment_term.id or False
                 dedicated_salesman = part.user_id and part.user_id.id or uid
-                delivery_onchange = sale_obj.onchange_delivery_id(cr, uid, ids, False, part.id, addr['delivery'], False,  context=context)
+                delivery_onchange = sale_obj.onchange_delivery_id(cr, uid, ids, False, part.id, addr['delivery'], False,
+                                                                  context=context)
                 val = {
-                    'partner_id':part_id,
-                    'company_id':dict_partner_company.get(obj.partner_id.id,''),
+                    'partner_id': part_id,
+                    'company_id': dict_partner_company.get(obj.partner_id.id, ''),
                     'partner_invoice_id': addr['invoice'],
                     'partner_shipping_id': addr['delivery'],
                     'payment_term': payment_term,
                     'user_id': dedicated_salesman,
                     'location_id_note': obj.name + ':' + obj.picking_type_id.warehouse_id.name + ':' + obj.picking_type_id.name,
                     'warehouse_id': obj.location_name.id,
+                    'project_id': project_id,
                 }
                 val.update(delivery_onchange['value'])
                 if pricelist:
@@ -124,15 +129,17 @@ class qdodoo_purchase_sale_order(models.Model):
                     val.update({'note': sale_note})
                 res_id = sale_obj.create(cr, uid, val)
                 for line in obj.order_line:
-                    product_ids = product_obj.search(cr, uid, [('default_code','=',line.product_id.default_code),('company_id','=',dict_partner_company.get(obj.partner_id.id,''))])
+                    product_ids = product_obj.search(cr, uid, [('default_code', '=', line.product_id.default_code), (
+                        'company_id', '=', dict_partner_company.get(obj.partner_id.id, ''))])
                     if not product_ids:
-                        raise except_osv(_('警告!'),_('%s没有设置%s数据!')%(dict_partner_company_name.get(obj.partner_id.id,''),line.product_id.name))
+                        raise except_osv(_('警告!'), _('%s没有设置%s数据!') % (
+                            dict_partner_company_name.get(obj.partner_id.id, ''), line.product_id.name))
                     product_obj_obj = product_obj.browse(cr, uid, product_ids[0])
                     sale_line_obj.create(cr, uid, {
-                        'order_id':res_id,
-                        'product_id':product_obj_obj.id,
-                        'product_uom_qty':line.product_qty,
-                        'price_unit':line.price_unit,
+                        'order_id': res_id,
+                        'product_id': product_obj_obj.id,
+                        'product_uom_qty': line.product_qty,
+                        'price_unit': line.price_unit,
                     })
                 sale_obj.action_button_confirm(cr, uid, [res_id])
         return True
