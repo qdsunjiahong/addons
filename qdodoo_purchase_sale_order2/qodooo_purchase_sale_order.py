@@ -25,4 +25,4 @@ class qdodoo_res_partner_inherit(models.Model):
     """
         客户添加辅助核算项
     """
-    analytic_account_id = fields.Many2one('account.analytic.account', string=u'辅助核算项', required=True)
+    analytic_account_id = fields.Many2one('account.analytic.account', string=u'辅助核算项')
