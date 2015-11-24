@@ -124,5 +124,3 @@ class account_periodly(osv.osv):
     }
 
     _order = 'date asc,account_id,company_id'
-
-

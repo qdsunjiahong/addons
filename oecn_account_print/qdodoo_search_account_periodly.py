@@ -187,7 +187,7 @@ class qdodoo_account_partner_report(models.Model):
     partner_id = fields.Many2one('res.partner', string=u'业务伙伴', readonly=True)
     period_id = fields.Many2one('account.period', string=u'期间', readonly=True)
     company_id = fields.Many2one('res.company', string=u'公司', readonly=True)
-    start_balance = fields.Float(string=u'起初余额', readonly=True)
+    start_balance = fields.Float(string=u'期初', readonly=True)
     debit = fields.Float(string=u'借方', readonly=True)
     credit = fields.Float(string=u'贷方', readonly=True)
     end_balance = fields.Float(string=u'期末', readonly=True)
