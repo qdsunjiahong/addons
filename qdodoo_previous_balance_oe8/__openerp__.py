@@ -7,14 +7,14 @@
 ###########################################################################################
 
 {
-    'name': '每天自动保存每个库位的库存',  # 模块名称
+    'name': '库存查询',  # 模块名称
     'version': '1.0',  # 版本
     'category': 'Technology',  # 分类
     'author': 'qdodoo Technology',  # 作者
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'stock','qdodoo_previous_balance'],  # 依赖模块
+    'depends': ['base', 'stock','qdodoo_previous_balance','qdodoo_stock_picking_create'],  # 依赖模块
     'data': [
         'wizard/qdodoo_search_balance_statement.xml',
         # ...
