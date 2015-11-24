@@ -13,7 +13,10 @@
                             ---
                             <field name="end_date" class="oe_inline"/>
                         </div>
-                        <field name="location_id"/>
+                        <field name="location_id"
+                               attrs="{'invisible':[('company_id','!=',False)],'required':[('company_id','=',False)]}"/>
+                        <field name="company_id"
+                               attrs="{'invisible':[('location_id','!=',False)],'required':[('location_id','=',False)]}"/>
                     </group>
                     <footer>
                         <button string="查询" name="balance_statement_open_window" type="object" class="oe_highlight"/>
@@ -49,9 +52,30 @@
                     <field name="storage_quantity_period"/>
                     <field name="number_of_library"/>
                     <field name="current_balance"/>
+                    <field name="company_id"/>
                 </tree>
             </field>
         </record>
+        <record id="view_result_balance_statement_tree2" model="ir.ui.view">
+            <field name="name">库存结余报表</field>
+            <field name="model">qdodoo.result.balance.statement</field>
+            <field name="arch" type="xml">
+                <tree string="库存结余报表">
+                    <field name="product_name" invisible="1"/>
+                    <field name="product_id"/>
+                    <field name="name"/>
+                    <field name="pre_balance"/>
+                    <field name="pre_balance_amount"/>
+                    <field name="storage_quantity_period"/>
+                    <field name="storage_quantity_amount"/>
+                    <field name="number_of_library"/>
+                    <field name="number_of_library_amount"/>
+                    <field name="current_balance"/>
+                    <field name="current_balance_amount"/>
+                </tree>
+            </field>
+        </record>
+
         <record id="result_balance_statement_search_view" model="ir.ui.view">
             <field name="name">qdodoo.result.balance.statement.search</field>
             <field name="model">qdodoo.result.balance.statement</field>
