@@ -75,6 +75,7 @@ class qdodoo_plan_purchase_order(models.Model):
                     raise osv.except_osv(_(u'提示'), _(u'%s公司没有编号为%s的产品') % (wiz.company_id.name,default_code))
                 product = product_obj.browse(cr, uid, product_id[0])
                 val['product_id'] = product.id
+                val['price_unit'] = product.standard_price
                 val['name'] = product.name
                 val['plan_date'] = plan_date
                 val['qty'] = product_qty
@@ -120,24 +121,27 @@ class qdodoo_plan_purchase_order(models.Model):
                 # 判断是否是同一到货日期和供应商
                 if (line.plan_date,line.partner_id.id) in purchase_id:
                     # 如果存在重复的产品
-                    for key in purchase_id[(line.plan_date,line.partner_id.id)]:
+                    all = purchase_id[(line.plan_date,line.partner_id.id)][:]
+                    for key in all:
                         if line.product_id.id == key[0]:
-                            purchase_id[(line.plan_date,line.partner_id.id)].append((key[0], key[1]+line.qty,key[2],key[3]))
+                            purchase_id[(line.plan_date,line.partner_id.id)].append((key[0], key[1]+line.qty,key[2],key[3],key[4]))
                             purchase_id[(line.plan_date,line.partner_id.id)].remove(key)
                         else:
-                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name))
+                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
                 else:
-                    purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name)]
+                    purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
             # 创建采购单
             for key_line,value_line in purchase_id.items():
+                picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('warehouse_id','=',obj.location_name.id),('default_location_dest_id','=',obj.location_id.id)])
+                picking_type_id = picking_type_ids[0] if picking_type_ids else ''
                 res_id = purchase_obj.create(cr, uid, {'pricelist_id':partner_obj.browse(cr, uid, key_line[1]).property_product_pricelist_purchase.id,'plan_id':obj.id,'partner_id':key_line[1],'location_name':obj.location_name.id,
-                                              'date_order':obj.create_date_new,'company_id':obj.company_id.id,
+                                              'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id,
                                               'location_id':obj.location_id.id,'minimum_planned_date':obj.minimum_planned_date,
                                               })
                 # 创建采购订单明细
                 for line_va in value_line:
                     purchase_line_obj.create(cr, uid, {'name':line_va[3],'order_id':res_id,'product_id':line_va[0],'date_planned':key_line[0],
-                                                       'company_id':obj.company_id.id,'product_qty':line_va[1],
+                                                       'company_id':obj.company_id.id,'product_qty':line_va[1],'product_uom':line_va[4],
                                                        'price_unit':line_va[2]})
         return self.write(cr, uid, ids, {'state':'done'})
 
@@ -173,6 +177,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
                 date_order_str = date_order.strftime(DEFAULT_SERVER_DATE_FORMAT)
                 price = product_pricelist.price_get(cr, uid, [pricelist_id],
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
+                res['value']['price_unit'] = price
             else:
                 res['value']['price_unit'] = product_obj.standard_price
             res['value']['name'] = product_obj.product_tmpl_id.name
