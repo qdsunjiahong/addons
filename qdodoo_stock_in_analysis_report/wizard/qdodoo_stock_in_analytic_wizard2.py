@@ -63,7 +63,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                 LEFT JOIN purchase_order po on po.id = pol.order_id
                 LEFT JOIN product_product pp on pp.id = sm.product_id
-            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
+            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
             """
         if int(self.search_choice) == 1:
             sql_domain = []
@@ -111,7 +111,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'location_id': r[7],
                         'company_id': r[8],
                         'partner_id': r[6],
-                        'property_supplier_payment_term': partner_dict.get(r[6], '')
+                        'property_supplier_payment_term': partner_dict.get(r[6],'')
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
@@ -185,7 +185,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                                 LEFT JOIN purchase_order po on po.id = pol.order_id
                                 LEFT JOIN product_product pp on pp.id = sm.product_id
-                            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
+                            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
                             """
                         sql_domain2 = []
                         sql_domain2.append(supplier_id)
@@ -228,7 +228,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'location_id': r[7],
                                     'company_id': r[8],
                                     'partner_id': r[6],
-                                    'property_supplier_payment_term': partner_dict.get(r[6], '')
+                                    'property_supplier_payment_term': partner_dict.get(r[6],'')
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
@@ -324,7 +324,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 'location_id': r[7],
                                 'company_id': r[8],
                                 'partner_id': r[6],
-                                'property_supplier_payment_term': partner_dict.get(r[6], '')
+                                'property_supplier_payment_term': partner_dict.get(r[6],'')
                             }
                             cre_obj2 = report_obj.create(data)
                             result_list.append(cre_obj2.id)
@@ -402,7 +402,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                                 LEFT JOIN purchase_order po on po.id = pol.order_id
                                 LEFT JOIN product_product pp on pp.id = sm.product_id
-                            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
+                            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
                             """
                         sql_domain2 = []
                         sql_domain2.append(supplier_id)
@@ -448,7 +448,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'location_id': r[7],
                                     'company_id': r[8],
                                     'partner_id': r[6],
-                                    'property_supplier_payment_term': partner_dict.get(r[6], '')
+                                    'property_supplier_payment_term': partner_dict.get(r[6],'')
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
@@ -535,7 +535,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                                 LEFT JOIN purchase_order po on po.id = pol.order_id
                                 LEFT JOIN product_product pp on pp.id = sm.product_id
-                            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
+                            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
                             """
                         sql_domain2 = []
                         sql_domain2.append(supplier_id)
@@ -579,7 +579,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'location_id': r[7],
                                     'company_id': r[8],
                                     'partner_id': r[6],
-                                    'property_supplier_payment_term': partner_dict.get(r[6], '')
+                                    'property_supplier_payment_term': partner_dict.get(r[6],'')
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
@@ -734,24 +734,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     quarter_key.append(key4)
             for q in quarter_key:
                 sql_domain = []
-                sql_l = """
-                    select
-                        sp.min_date as date,
-                        pp.name_template as product_name,
-                        pp.default_code as default_code,
-                        sm.product_uom_qty as product_qty,
-                        sm.price_unit as price_unit,
-                        (sm.product_uom_qty * sm.price_unit) as product_amount,
-                        po.partner_id as partner_id,
-                        po.location_id as location_id,
-                        po.company_id as company_id
-                    FROM stock_move sm
-                        LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                        LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                        LEFT JOIN purchase_order po on po.id = pol.order_id
-                        LEFT JOIN product_product pp on pp.id = sm.product_id
-                    where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
-                    """
                 sql_domain.append(supplier_id)
                 if quarter_start.get(q, None) != None:
                     sql_l = sql_l + " and sp.min_date >= '%s'"
@@ -795,7 +777,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             'location_id': r[7],
                             'company_id': r[8],
                             'partner_id': r[6],
-                            'property_supplier_payment_term': partner_dict.get(r[6], '')
+                            'property_supplier_payment_term': partner_dict.get(r[6],'')
                         }
                         cre_obj2 = report_obj.create(data)
                         result_list.append(cre_obj2.id)
@@ -883,7 +865,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'location_id': r[7],
                         'company_id': r[8],
                         'partner_id': r[6],
-                        'property_supplier_payment_term': partner_dict.get(r[6], '')
+                        'property_supplier_payment_term': partner_dict.get(r[6],'')
                     }
 
                     cre_obj2 = report_obj.create(data)
@@ -970,7 +952,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'location_id': r[7],
                         'company_id': r[8],
                         'partner_id': r[6],
-                        'property_supplier_payment_term': partner_dict.get(r[6], '')
+                        'property_supplier_payment_term': partner_dict.get(r[6],'')
                     }
                     cre_obj2 = report_obj.create(data)
                     result_list.append(cre_obj2.id)

@@ -16,6 +16,7 @@
                     <field name="product_amount"/>
                     <field name="company_id"/>
                     <field name="location_id"/>
+                    <field name="property_supplier_payment_term"/>
                 </tree>
             </field>
         </record>
@@ -28,8 +29,10 @@
                     <field name="product_id"/>
                     <field name="company_id"/>
                     <field name="year"/>
+                    <field name="property_supplier_payment_term"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
                         <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
                         <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
                         <filter string="年份" domain="[]" context="{'group_by':'year'}"/>
@@ -67,13 +70,14 @@
                     <field name="product_id"/>
                     <field name="company_id"/>
                     <field name="period_id"/>
+                    <field name="property_supplier_payment_term"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
                         <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
                         <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
                         <filter string="月份" domain="[]" context="{'group_by':'period_id'}"/>
                     </group>
-
                 </search>
             </field>
         </record>
@@ -115,8 +119,10 @@
                     <field name="product_id"/>
                     <field name="company_id"/>
                     <field name="quarter"/>
+                    <field name="property_supplier_payment_term"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
                         <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
                         <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
                         <filter string="季度" domain="[]" context="{'group_by':'quarter'}"/>
@@ -161,8 +167,10 @@
                     <field name="product_id"/>
                     <field name="company_id"/>
                     <field name="date"/>
+                    <field name="property_supplier_payment_term"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
                         <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
                         <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
                     </group>
