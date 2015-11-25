@@ -22,13 +22,53 @@ class account_periodly_search(models.Model):
 
     @api.multi
     def btn_search(self):
-        periodly_ids = self.env['account.periodly'].search([])
-        periodly_ids.unlink()
+        print 111111111, fields.Datetime.now()
+        sql_del1 = """delete from qdodoo_account_partner_line where 1=1"""
+        self.env.cr.execute(sql_del1)
+        sql_del2 = """delete from qdodoo_account_partner_report where 1=1"""
+        self.env.cr.execute(sql_del2)
+        sql_del3 = """delete from account_periodly where 1=1"""
+        self.env.cr.execute(sql_del3)
+        # self.env['account.periodly'].search([]).unlink()
+        print 22222222, fields.Datetime.now()
         per_list = []
+        starting_balance_dict = {}  # 科目期初
+        start_partner_dict = {}  # 客户期初
+        account_list = []  # 起初科目
         per_ids = self.env['account.period'].search(
             [('date_start', '>=', self.start_p.date_start), ('date_stop', '<=', self.end_p.date_stop)])
+        # 查询出所有的会计区间
         for per_id in per_ids:
             per_list.append(per_id.id)
+            # 查询每个会计的区间起初
+            sql3 = """
+            select
+                l.partner_id as partner_id,
+                l.account_id as account_id,
+                l.company_id as company_id,
+                (l.debit-l.credit) as balance
+            from
+                account_move_line l
+                left join account_period p on (l.period_id=p.id)
+            where
+                p.date_start < '%s' and l.company_id=%s
+            group by l.partner_id,l.account_id,l.company_id,l.debit,l.credit
+            """ % (per_id.date_start, per_id.company_id.id)
+            self.env.cr.execute(sql3)
+            res_balance = self.env.cr.fetchall()
+            if res_balance:
+                for balance_l in res_balance:
+                    # （会计区间id，科目，公司）
+                    key_balance = (per_id.id, balance_l[1], balance_l[2])
+                    # （客户，会计区间，科目，公司）
+                    key_balance_partner = (balance_l[0], per_id.id, balance_l[1], balance_l[2])
+                    # {（会计区间id，科目，公司）:余额}
+                    starting_balance_dict[key_balance] = starting_balance_dict.get(key_balance, 0) + balance_l[3]
+                    # {（客户，会计区间，科目，公司）:余额}
+                    start_partner_dict[key_balance_partner] = start_partner_dict.get(key_balance_partner, 0) + \
+                                                              balance_l[3]
+                    if key_balance_partner not in account_list:
+                        account_list.append(key_balance_partner)
         sql = ''
         if per_list and len(per_list) == 1:
             sql = """
@@ -100,35 +140,14 @@ class account_periodly_search(models.Model):
                 partner_line_dict[partner_key] = [(line[4], line[5], line[6], line[7], line[8])]
                 partner_key_list.append(partner_key)
         return_ids = []
-        # 获取账期开始时间
-        # 获取期初
-        sql3 = """
-            select
-                l.partner_id as partner_id,
-                l.account_id as account_id,
-                (l.debit-l.credit) as balance
-            from
-                account_move_line l
-                left join account_period p on (l.period_id=p.id)
-            where
-                p.date_start < '%s'
-            """ % (self.start_p.date_start)
-        self.env.cr.execute(sql3)
-        starting_balance_dict = {}  # 科目期初
-        start_partner_dict = {}  # 客户期初
-        res_balance = self.env.cr.fetchall()
-        if res_balance:
-            for balance_l in res_balance:
-                starting_balance_dict[balance_l[1]] = starting_balance_dict.get(balance_l[1], 0) + balance_l[2]
-                start_partner_dict[balance_l[:2]] = start_partner_dict.get(balance_l[:2], 0) + balance_l[2]
-        for key in partner_key_list:
+        for key in list(set(partner_key_list + account_list)):
             if key[1:] not in for_list:
-                ending_balance = starting_balance_dict.get(key[2], 0) + debit_dict.get(key[1:], 0) - credit_dict.get(
+                ending_balance = starting_balance_dict.get(key[1:], 0) + debit_dict.get(key[1:], 0) - credit_dict.get(
                     key[1:], 0)
                 balance = debit_dict.get(key[1:], 0) - credit_dict.get(key[1:], 0)
                 sql_1 = """
                 insert into account_periodly (period_id,starting_balance,ending_balance,account_id,company_id,debit,credit,balance) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) returning id
-                """ % (key[1], starting_balance_dict.get(key[2], 0), ending_balance, key[2], key[3],
+                """ % (key[1], starting_balance_dict.get(key[1:], 0), ending_balance, key[2], key[3],
                        debit_dict.get(key[1:], 0),
                        credit_dict.get(key[1:], 0), balance)
                 self.env.cr.execute(sql_1)
@@ -136,9 +155,9 @@ class account_periodly_search(models.Model):
                 for_dict[key[1:]] = sql_result1[0][0]
                 for_list.append(key[1:])
                 return_ids.append(sql_result1[0][0])
-            starting_balance_partner = start_partner_dict.get((key[0], key[2]), 0)
-            ending_balance_partner = start_partner_dict.get((key[0], key[2]), 0) + partner_dict_debit.get(key,
-                                                                                                          0) - partner_dict_credit.get(
+            starting_balance_partner = start_partner_dict.get(key, 0)
+            ending_balance_partner = start_partner_dict.get(key, 0) + partner_dict_debit.get(key,
+                                                                                             0) - partner_dict_credit.get(
                 key, 0)
 
             if key[0]:
@@ -165,6 +184,8 @@ class account_periodly_search(models.Model):
                                                                              'view_account_periodly_tree')
         view_model2, view_id2 = self.env['ir.model.data'].get_object_reference('oecn_account_print',
                                                                                'view_account_periodly_form')
+        search_model, search_id = self.env['ir.model.data'].get_object_reference('oecn_account_print',
+                                                                                 'view_account_periodly_search')
 
         return {
             'name': (u'科目余额表'),
@@ -175,6 +196,7 @@ class account_periodly_search(models.Model):
             'domain': [('id', 'in', return_ids)],
             'views': [(view_id, 'tree'), (view_id2, 'form')],
             'view_id': [view_id],
+            'search_view_id': [search_id],
         }
 
 

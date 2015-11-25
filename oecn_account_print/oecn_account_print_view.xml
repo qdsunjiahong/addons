@@ -169,10 +169,14 @@
             <field name="model">account.periodly</field>
             <field name="arch" type="xml">
                 <search string="科目余额表">
-                    <field name="fiscalyear_id"/>
                     <field name="period_id"/>
                     <field name="account_id"/>
-                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="company_id"/>
+                    <group string="分组按">
+                        <filter string="期间" domain="[]" context="{'group_by' : 'period_id'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
+                    </group>
                 </search>
             </field>
         </record>
