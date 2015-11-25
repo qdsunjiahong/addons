@@ -48,9 +48,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                     pp.name_template as product_name,
                     ail.quantity as product_qty,
                     (ail.price_unit * ail.quantity) as product_amount,
-                    pp.default_code as default_code
+                    pp.default_code as default_code,
+                    pt.uom_po_id as uom_id
                 from account_invoice_line ail
                     LEFT JOIN product_product pp ON pp.id = ail.product_id
+                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -79,11 +81,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                 product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                 for pr in product_ids:
                     pro_l.append(pr.id)
-                if len(pro_l)>1:
+                if len(pro_l) > 1:
                     sql_l = sql_l + ' and ail.product_id in %s'
                     sql_domain.append(tuple(pro_l))
-                elif len(pro_l)==1:
-                    sql_l=sql_l+' and ail.product_id = %s'
+                elif len(pro_l) == 1:
+                    sql_l = sql_l + ' and ail.product_id = %s'
                     sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
@@ -96,7 +98,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = (i[0], i[1], i[-1])
+                    k = (i[0], i[1], i[-2], i[-1])
                     if k in product_list:
                         product_num_dict[k] += i[2]
                         product_amount_dict[k] += i[3]
@@ -113,9 +115,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                         data = {
                             'year': j[0],
                             'product_id': j[1],
-                            'default_code': j[-1],
+                            'default_code': j[2],
                             'product_qty': product_num_dict.get(j, 0),
                             'price_unit': price_unit,
+                            'uom_id': j[3]
                         }
                         cre_obj = report_obj.create(data)
                         result_list.append(cre_obj.id)
@@ -143,9 +146,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                     pp.name_template as product_id,
                     ail.quantity as product_qty,
                     (ail.price_unit * ail.quantity) as product_amount,
-                    pp.default_code as default_code
+                    pp.default_code as default_code,
+                    pt.uom_po_id as uom_id
                 from account_invoice_line ail
                     LEFT JOIN product_product pp ON pp.id = ail.product_id
+                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -200,11 +205,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                 product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                 for pr in product_ids:
                     pro_l.append(pr.id)
-                if len(pro_l)>1:
+                if len(pro_l) > 1:
                     sql_l = sql_l + ' and ail.product_id in %s'
                     sql_domain.append(tuple(pro_l))
-                elif len(pro_l)==1:
-                    sql_l=sql_l+' and ail.product_id = %s'
+                elif len(pro_l) == 1:
+                    sql_l = sql_l + ' and ail.product_id = %s'
                     sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
@@ -217,7 +222,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
-                    k = (r[0], r[1], r[-1])
+                    k = (r[0], r[1], r[-2], r[-1])
                     if k in product_list:
                         product_num_dict[k] += r[2]
                         product_amount_dict[k] += r[3]
@@ -233,9 +238,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                     data = {
                         'period_id': product_l[0],
                         'product_id': product_l[1],
-                        'default_code': product_l[-1],
+                        'default_code': product_l[2],
                         'product_qty': product_num_dict.get(product_l, 0),
-                        'price_unit': price_unit
+                        'price_unit': price_unit,
+                        'uom_id': product_l[3]
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
@@ -277,7 +283,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                     end_p = '03' + '/' + str(n_year)
                     per_starts = per_obj.search([('name', '=', start_p)])
                     if per_starts:
-                        quarter_start[key] = per_starts.date_start + " 00:00:01"
+                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
                     per_stops = per_obj.search([('name', '=', end_p)])
                     if per_stops:
                         quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
@@ -364,9 +370,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                     pp.name_template as product_name,
                     ail.quantity as product_qty,
                     (ail.price_unit * ail.quantity) as product_amount,
-                    pp.default_code as default_code
+                    pp.default_code as default_code,
+                    pt.uom_po_id as uom_id
                 from account_invoice_line ail
                     LEFT JOIN product_product pp ON pp.id = ail.product_id
+                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -382,11 +390,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                     product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                     for pr in product_ids:
                         pro_l.append(pr.id)
-                    if len(pro_l)>1:
+                    if len(pro_l) > 1:
                         sql_l = sql_l + ' and ail.product_id in %s'
                         sql_domain.append(tuple(pro_l))
-                    elif len(pro_l)==1:
-                        sql_l=sql_l+' and ail.product_id = %s'
+                    elif len(pro_l) == 1:
+                        sql_l = sql_l + ' and ail.product_id = %s'
                         sql_domain.append(pro_l[0])
                 if self.partner_id:
                     sql_l = sql_l + ' and ai.partner_id = %s'
@@ -405,7 +413,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                 res = self.env.cr.fetchall()
                 if res:
                     for r in res:
-                        k = (d, r[0], r[-1])
+                        k = (d, r[0], r[-2], r[-1])
                         if k in product_list:
                             product_num_dict[k] += r[1]
                             product_amount_dict[k] += r[2]
@@ -422,9 +430,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                     data = {
                         'quarter': product_l[0],
                         'product_id': product_l[1],
-                        'default_code': product_l[-1],
+                        'default_code': product_l[2],
                         'price_unit': price_unit,
-                        'product_qty': product_num_dict.get(product_l, 0)
+                        'product_qty': product_num_dict.get(product_l, 0),
+                        'uom_id': product_l[3]
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
@@ -452,9 +461,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                     pp.name_template as product_name,
                     ail.quantity as product_qty,
                     (ail.price_unit * ail.quantity) as product_amount,
-                    pp.default_code as default_code
+                    pp.default_code as default_code,
+                    pt.uom_po_id as uom_id
                 from account_invoice_line ail
                     LEFT JOIN product_product pp ON pp.id = ail.product_id
+                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -473,11 +484,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                 product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                 for pr in product_ids:
                     pro_l.append(pr.id)
-                if len(pro_l)>1:
+                if len(pro_l) > 1:
                     sql_l = sql_l + ' and ail.product_id in %s'
                     sql_domain.append(tuple(pro_l))
-                elif len(pro_l)==1:
-                    sql_l=sql_l+' and ail.product_id = %s'
+                elif len(pro_l) == 1:
+                    sql_l = sql_l + ' and ail.product_id = %s'
                     sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
@@ -490,7 +501,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = (i[0], i[-1])
+                    k = (i[0], i[-2], i[-1])
                     if k in product_list:
                         product_num_dict[k] += i[1]
                         product_amount_dict[k] += i[2]
@@ -509,6 +520,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'default_code': product_l[1],
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit,
+                        'uom_id': product_l[2]
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
@@ -535,9 +547,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                     pp.name_template as product_name,
                     ail.quantity as product_qty,
                     (ail.price_unit * ail.quantity) as product_amount,
-                    pp.default_code as default_code
+                    pp.default_code as default_code,
+                    pt.uom_po_id as uom_id
                 from account_invoice_line ail
                     LEFT JOIN product_product pp ON pp.id = ail.product_id
+                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
@@ -560,11 +574,11 @@ class qdodoo_purchase_price_wizard(models.Model):
                 product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                 for pr in product_ids:
                     pro_l.append(pr.id)
-                if len(pro_l)>1:
+                if len(pro_l) > 1:
                     sql_l = sql_l + ' and ail.product_id in %s'
                     sql_domain.append(tuple(pro_l))
-                elif len(pro_l)==1:
-                    sql_l=sql_l+' and ail.product_id = %s'
+                elif len(pro_l) == 1:
+                    sql_l = sql_l + ' and ail.product_id = %s'
                     sql_domain.append(pro_l[0])
             if self.partner_id:
                 sql_l = sql_l + ' and ai.partner_id = %s'
@@ -574,7 +588,7 @@ class qdodoo_purchase_price_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for i in res:
-                    k = (i[0], i[-1])
+                    k = (i[0], i[-2], i[-1])
                     if k in product_list:
                         product_num_dict[k] += i[1]
                         product_amount_dict[k] += i[2]
@@ -591,9 +605,10 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'start_date': self.start_date,
                         'end_date': self.end_date,
                         'product_id': product_l[0],
-                        'default_code': product_l[-1],
+                        'default_code': product_l[1],
                         'product_qty': product_num_dict.get(product_l, 0),
                         'price_unit': price_unit,
+                        'uom_id': product_l[2]
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
