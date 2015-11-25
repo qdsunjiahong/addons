@@ -57,12 +57,14 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 (sm.product_uom_qty * sm.price_unit) as product_amount,
                 po.partner_id as partner_id,
                 po.location_id as location_id,
-                po.company_id as company_id
+                po.company_id as company_id,
+                pt.uom_po_id as uom_id
             FROM stock_move sm
                 LEFT JOIN stock_picking sp on sp.id = sm.picking_id
                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                 LEFT JOIN purchase_order po on po.id = pol.order_id
                 LEFT JOIN product_product pp on pp.id = sm.product_id
+                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
             where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
             """
         if int(self.search_choice) == 1:
@@ -106,6 +108,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': r[1],
                         'default_code': r[2],
                         'product_qty': r[3],
+                        'uom_id': r[-1],
                         'price_unit': r[4],
                         'product_amount': r[5],
                         'location_id': r[7],
@@ -115,7 +118,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
-                    k = (year, r[1], r[2])
+                    k = (year, r[1], r[2], r[-1])
                     if k in product_list_p:
                         product_dict_num[k] += r[3]
                         product_dict_amount[k] += r[5]
@@ -132,6 +135,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'year': j[0],
                         'product_id': j[1],
                         'product_qty': product_dict_num.get(j, 0),
+                        'uom_id': j[-1],
                         'price_unit': price_u,
                         'product_amount': product_dict_amount.get(j, 0)
                     }
@@ -179,12 +183,14 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 (sm.product_uom_qty * sm.price_unit) as product_amount,
                                 po.partner_id as partner_id,
                                 po.location_id as location_id,
-                                po.company_id as company_id
+                                po.company_id as company_id,
+                                pt.uom_po_id as uom_id
                             FROM stock_move sm
                                 LEFT JOIN stock_picking sp on sp.id = sm.picking_id
                                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                                 LEFT JOIN purchase_order po on po.id = pol.order_id
                                 LEFT JOIN product_product pp on pp.id = sm.product_id
+                                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                             where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
                             """
                         sql_domain2 = []
@@ -223,6 +229,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'product_id': r[1],
                                     "default_code": r[2],
                                     'product_qty': r[3],
+                                    'uom_id':r[-1],
                                     'price_unit': r[4],
                                     'product_amount': r[5],
                                     'location_id': r[7],
@@ -232,7 +239,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
-                                k = (per_dict_time.get(per_time, ''), r[1], r[2])
+                                k = (per_dict_time.get(per_time, ''), r[1], r[2],r[-1])
                                 if k in product_list_p:
                                     product_dict_num[k] += r[3]
                                     product_dict_amount[k] += r[5]
@@ -251,6 +258,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'period_id': product_l[0],
                                     'product_id': product_l[1],
                                     'default_code': product_l[2],
+                                    'uom_id':product_l[-1],
                                     'product_qty': product_dict_num.get(product_l, 0),
                                     'product_amount': product_dict_amount.get(product_l, 0),
                                     'price_unit': price_unit
@@ -319,6 +327,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 'product_id': r[1],
                                 "default_code": r[2],
                                 'product_qty': r[3],
+                                'uom_id':r[-1],
                                 'price_unit': r[4],
                                 'product_amount': r[5],
                                 'location_id': r[7],
@@ -328,7 +337,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             }
                             cre_obj2 = report_obj.create(data)
                             result_list.append(cre_obj2.id)
-                            k = (r[0][:7], r[1], r[2])
+                            k = (r[0][:7], r[1], r[2],r[-1])
                             if k in product_list_p:
                                 product_dict_num[k] += r[3]
                                 product_dict_amount[k] += r[5]
@@ -345,6 +354,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 'period_id': product_l[0],
                                 'product_id': product_l[1],
                                 'default_code': product_l[2],
+                                'uom_id':product_l[-1],
                                 'product_qty': product_dict_num.get(product_l, 0),
                                 'product_amount': product_dict_amount.get(product_l, 0),
                                 'price_unit': price_unit
@@ -395,13 +405,15 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 (sm.product_uom_qty * sm.price_unit) as product_amount,
                                 po.partner_id as partner_id,
                                 po.location_id as location_id,
-                                po.company_id as company_id
+                                po.company_id as company_id,
+                                pt.uom_po_id as uom_id
 
                             FROM stock_move sm
                                 LEFT JOIN stock_picking sp on sp.id = sm.picking_id
                                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                                 LEFT JOIN purchase_order po on po.id = pol.order_id
                                 LEFT JOIN product_product pp on pp.id = sm.product_id
+                                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                             where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
                             """
                         sql_domain2 = []
@@ -443,6 +455,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'product_id': r[1],
                                     "default_code": r[2],
                                     'product_qty': r[3],
+                                    'uom_id':r[-1],
                                     'price_unit': r[4],
                                     'product_amount': r[5],
                                     'location_id': r[7],
@@ -452,7 +465,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
-                                k = (per, r[1], r[2])
+                                k = (per, r[1], r[2],r[-1])
                                 if k in product_list_p:
                                     product_dict_num[k] += r[3]
                                     product_dict_amount[k] += r[5]
@@ -472,6 +485,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'product_id': product_l[1],
                                     'default_code': product_l[2],
                                     'product_qty': product_dict_num.get(product_l, 0),
+                                    'uom_id':product_l[-1],
                                     'product_amount': product_dict_amount.get(product_l, 0),
                                     'price_unit': price_unit
                                 }
@@ -528,13 +542,14 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 (sm.product_uom_qty * sm.price_unit) as product_amount,
                                 po.partner_id as partner_id,
                                 po.location_id as location_id,
-                                po.company_id as company_id
-
+                                po.company_id as company_id,
+                                pt.uom_po_id as uom_id
                             FROM stock_move sm
                                 LEFT JOIN stock_picking sp on sp.id = sm.picking_id
                                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                                 LEFT JOIN purchase_order po on po.id = pol.order_id
                                 LEFT JOIN product_product pp on pp.id = sm.product_id
+                                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                             where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
                             """
                         sql_domain2 = []
@@ -574,6 +589,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'product_id': r[1],
                                     "default_code": r[2],
                                     'product_qty': r[3],
+                                    'uom_id':r[-1],
                                     'price_unit': r[4],
                                     'product_amount': r[5],
                                     'location_id': r[7],
@@ -583,7 +599,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
-                                k = (per2, r[1], r[2])
+                                k = (per2, r[1], r[2],r[-1])
                                 if k in product_list_p:
                                     product_dict_num[k] += r[3]
                                     product_dict_amount[k] += r[5]
@@ -602,6 +618,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'period_id': product_l[0],
                                     'product_id': product_l[1],
                                     'default_code': product_l[2],
+                                    'uom_id':product_l[-1],
                                     'product_qty': product_dict_num.get(product_l, 0),
                                     'product_amount': product_dict_amount.get(product_l, 0),
                                     'price_unit': price_unit
@@ -744,12 +761,14 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         (sm.product_uom_qty * sm.price_unit) as product_amount,
                         po.partner_id as partner_id,
                         po.location_id as location_id,
-                        po.company_id as company_id
+                        po.company_id as company_id,
+                        pt.uom_po_id as uom_id
                     FROM stock_move sm
                         LEFT JOIN stock_picking sp on sp.id = sm.picking_id
                         LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                         LEFT JOIN purchase_order po on po.id = pol.order_id
                         LEFT JOIN product_product pp on pp.id = sm.product_id
+                        LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
                     """
                 sql_domain.append(supplier_id)
@@ -790,6 +809,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             'product_id': r[1],
                             "default_code": r[2],
                             'product_qty': r[3],
+                            'uom_id':r[-1],
                             'price_unit': r[4],
                             'product_amount': r[5],
                             'location_id': r[7],
@@ -799,7 +819,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         }
                         cre_obj2 = report_obj.create(data)
                         result_list.append(cre_obj2.id)
-                        k = (q, r[1], r[2])
+                        k = (q, r[1], r[2],r[-1])
                         if k in product_list_p:
                             product_dict_num[k] += r[3]
                             product_dict_amount[k] += r[5]
@@ -817,6 +837,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'quarter': product_l[0],
                         'product_id': product_l[1],
                         'default_code': product_l[-1],
+                        'uom_id':product_l[-1],
                         'price_unit': price_unit,
                         'product_qty': product_dict_num.get(product_l, 0),
                         'product_amount': product_dict_amount.get(product_l, 0),
@@ -878,6 +899,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': r[1],
                         "default_code": r[2],
                         'product_qty': r[3],
+                        'uom_id':r[-1],
                         'price_unit': r[4],
                         'product_amount': r[5],
                         'location_id': r[7],
@@ -888,7 +910,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
 
                     cre_obj2 = report_obj.create(data)
                     result_list.append(cre_obj2.id)
-                    k = (r[1], r[2])
+                    k = (r[1], r[2],r[-1])
                     if k in product_list_p:
                         product_dict_num[k] += r[3]
                         product_dict_amount[k] += r[5]
@@ -906,6 +928,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': product_l[0],
                         'default_code': product_l[1],
                         'product_qty': product_dict_num.get(product_l, 0),
+                        'uom_id':product_l[-1],
                         'price_unit': price_unit,
                         'product_amount': product_dict_amount.get(product_l, 0),
                     }
@@ -965,6 +988,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': r[1],
                         "default_code": r[2],
                         'product_qty': r[3],
+                        'uom_id':r[-1],
                         'price_unit': r[4],
                         'product_amount': r[5],
                         'location_id': r[7],
@@ -975,7 +999,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     cre_obj2 = report_obj.create(data)
                     result_list.append(cre_obj2.id)
 
-                    k = (r[1], r[2])
+                    k = (r[1], r[2],r[-1])
                     if k in product_list_p:
                         product_dict_num[k] += r[3]
                         product_dict_amount[k] += r[5]
@@ -992,6 +1016,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': product_l[0],
                         'default_code': product_l[1],
                         'product_qty': product_dict_num.get(product_l, 0),
+                        'uom_id':product_l[-1],
                         'product_amount': product_dict_amount.get(product_l, 0),
                         'price_unit': price_unit,
                     }

@@ -12,6 +12,7 @@
                     <field name="product_id"/>
                     <field name="default_code"/>
                     <field name="product_qty"/>
+                    <field name="uom_id"/>
                     <field name="price_unit"/>
                     <field name="product_amount"/>
                     <field name="company_id"/>
@@ -53,6 +54,7 @@
                     <field name="product_id"/>
                     <field name="default_code"/>
                     <field name="product_qty"/>
+                    <field name="uom_id"/>
                     <field name="price_unit"/>
                     <field name="product_amount"/>
                     <field name="company_id"/>
@@ -102,6 +104,7 @@
                     <field name="product_id"/>
                     <field name="default_code"/>
                     <field name="product_qty"/>
+                    <field name="uom_id"/>
                     <field name="price_unit"/>
                     <field name="product_amount"/>
                     <field name="company_id"/>
@@ -150,6 +153,7 @@
                     <field name="product_id"/>
                     <field name="default_code"/>
                     <field name="product_qty"/>
+                    <field name="uom_id"/>
                     <field name="price_unit"/>
                     <field name="product_amount"/>
                     <field name="company_id"/>
