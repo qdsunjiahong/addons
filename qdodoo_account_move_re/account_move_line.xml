@@ -68,7 +68,8 @@
                                             </group>
 
                                             <group groups="analytic.group_analytic_accounting" string="Analytic">
-                                                <field name="analytic_account_id"/>
+                                                <field name="required_assistant" invisible="1"/>
+                                                <field name="analytic_account_id" attrs="{'required':[('required_assistant','=',True)]}" domain="[('type','in',('normal','contract'))]"/>
                                             </group>
                                         </group>
                                         <separator string="Internal Note"/>
