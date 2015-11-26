@@ -7,16 +7,19 @@
 ###########################################################################################
 
 {
-    'name': '辅助核算项选择必填',  # 模块名称
+    'name': u'会计明细增加库位、销售团队',  # 模块名称
     'version': '1.0',  # 版本
     'category': 'Technology',  # 分类
     'author': 'qdodoo Technology',  # 作者
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'account', 'sale'],  # 依赖模块
+    'depends': ['base', 'account','stock','stock_account','qdodoo_account_assistant'],  # 依赖模块
     'data': [
-        'qdodoo_account_assistant.xml'
+        'account_move_line.xml',
+        # 'qdodoo_stock_move_inherit.xml',
+        # 'qdodoo_res_config.xml'
+        # ...
     ],  # 更新XML,CSV
     'js': [
         # 'static/src/js/account_move_reconciliation.js',
@@ -42,7 +45,7 @@
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
     'description': """
-    辅助核算项选择必填
+    会计凭证金额、不含税金额只读
     """,
 }
 
