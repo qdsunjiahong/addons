@@ -7,16 +7,16 @@
 ###########################################################################################
 
 {
-    'name': u'生产会计明细设置',  # 模块名称
+    'name': u'生产订单增加强制会计区间',  # 模块名称
     'version': '1.0',  # 版本
     'category': 'Technology',  # 分类
     'author': 'qdodoo Technology',  # 作者
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'mrp', 'mrp_byproduct', 'stock', 'account', 'stock_account', 'qdodoo_account_move_re'],  # 依赖模块
+    'depends': ['base', 'mrp', 'stock', 'account', 'stock_account'],  # 依赖模块
     'data': [
-
+        'qdodoo_mrp_materials_view.xml',
     ],  # 更新XML,CSV
     'js': [
         # 'static/src/js/account_move_reconciliation.js',

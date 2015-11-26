@@ -10,7 +10,6 @@
 
 from openerp import models, fields
 
-
 class qdodoo_stock_quant_inherit(models.Model):
     _inherit = 'stock.quant'
     '''
