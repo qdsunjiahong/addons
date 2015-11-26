@@ -23,6 +23,7 @@ class qdodoo_plan_purchase_order(models.Model):
     """
     _name = 'qdodoo.plan.purchase.order'    # 模型名称
     _description = 'qdodoo.plan.purchase.order'    # 模型描述
+    _order = 'id desc'
 
     name = fields.Char(u'单号',copy=False)
     location_name = fields.Many2one('stock.warehouse',u'仓库', required=True)
@@ -32,7 +33,7 @@ class qdodoo_plan_purchase_order(models.Model):
     location_id = fields.Many2one('stock.location',u'入库库位')
     order_line = fields.One2many('qdodoo.plan.purchase.order.line', 'order_id', u'产品明细',required=True)
     import_file = fields.Binary(string="导入的Excel文件")
-    state = fields.Selection([('draft',u'草稿'),('confirmed',u'确认'),('done',u'完成')],u'状态')
+    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
 
     _defaults = {
         'minimum_planned_date': datetime.now().date(),
@@ -101,11 +102,25 @@ class qdodoo_plan_purchase_order(models.Model):
             return {'value': {'location_id': warehouse.lot_stock_id.id}}
         return {}
 
-    # 确认
+    # 提交
     def btn_draft_confirmed(self, cr, uid, ids, context=None):
         line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
         line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
-        line_obj.write(cr, uid, line_id, {'state':'done'})
+        line_obj.write(cr, uid, line_id, {'state':'sent'})
+        return self.write(cr, uid, ids, {'state':'sent'})
+
+    # 确认
+    def btn_confirmed(self, cr, uid, ids, context=None):
+        line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
+        line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
+        line_obj.write(cr, uid, line_id, {'state':'apply'})
+        return self.write(cr, uid, ids, {'state':'apply'})
+
+    # 审批
+    def btn_approve(self, cr, uid, ids, context=None):
+        line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
+        line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
+        line_obj.write(cr, uid, line_id, {'state':'confirmed'})
         return self.write(cr, uid, ids, {'state':'confirmed'})
 
     # 转换采购单
@@ -155,13 +170,30 @@ class qdodoo_plan_purchase_order_line(models.Model):
 
     order_id = fields.Many2one('qdodoo.plan.purchase.order',u'计划转采购单')
     product_id = fields.Many2one('product.product',u'产品',required=True)
-    plan_date = fields.Date(u'到货日期',required=True)
+    plan_date_jh = fields.Date(u'到货日期(计划)',required=True)
+    plan_date = fields.Date(u'到货日期(采购)',required=True)
     name = fields.Char(u'备注')
     price_unit = fields.Float(u'单价')
-    qty = fields.Float(u'数量',required=True)
+    qty_jh = fields.Float(u'数量(计划)',required=True)
+    qty = fields.Float(u'数量(采购)',required=True)
     uom_id = fields.Many2one('product.uom',u'单位')
     partner_id = fields.Many2one('res.partner',u'供应商')
-    state = fields.Selection([('draft','draft'),('done','done')],u'状态')
+    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
+    colors = fields.Char(string=u'颜色', compute='_get_colors')
+
+    # 获取颜色
+    def _get_colors(self):
+        for ids in self:
+            if ids.plan_date_jh != ids.plan_date or ids.qty_jh != ids.qty:
+                ids.colors = 'red'
+
+    # 带出默认值
+    def create(self, cr, uid, vals, context=None):
+        if vals.get('plan_date_jh'):
+            vals['plan_date'] = vals.get('plan_date_jh')
+        if vals.get('qty_jh'):
+            vals['qty'] = vals.get('qty_jh')
+        return super(qdodoo_plan_purchase_order_line, self).create(cr, uid, vals, context=context)
 
     # 根据产品和供应商修改产品价格
     def onchange_product_id(self, cr, uid, ids, product_id, partner_id, qty, uom_id,context=None):
@@ -172,12 +204,17 @@ class qdodoo_plan_purchase_order_line(models.Model):
         date_order = datetime.now()
         if product_id:
             product_obj = self.pool.get('product.product').browse(cr, uid, product_id, context=context)
+            # 获取产品对应的供应商和送货周期
+            purchase_dict = {}
+            for line in product_obj.seller_ids:
+                purchase_dict[line.name.id] = line.delay
             if partner_id:
                 pricelist_id = partner_obj.browse(cr, uid, partner_id).property_product_pricelist_purchase.id
                 date_order_str = date_order.strftime(DEFAULT_SERVER_DATE_FORMAT)
                 price = product_pricelist.price_get(cr, uid, [pricelist_id],
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
                 res['value']['price_unit'] = price
+                res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
             else:
                 res['value']['price_unit'] = product_obj.standard_price
             res['value']['name'] = product_obj.product_tmpl_id.name
