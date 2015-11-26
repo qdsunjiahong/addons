@@ -89,7 +89,7 @@
                                        on_change="onchange_partner_id(False, partner_id, account_id, debit, credit, parent.date, parent.journal_id, context)"/>
                                 <field name="account_id"
                                        domain="[('journal_id','=',parent.journal_id),('company_id', '=', parent.company_id)]"/>
-                                <field name="date_maturity"/>
+                                <field name="sale_team_id"/>
                                 <field name="debit" sum="Total Debit"/>
                                 <field name="credit" sum="Total Credit"/>
                                 <field name="analytic_account_id" groups="analytic.group_analytic_accounting"/>

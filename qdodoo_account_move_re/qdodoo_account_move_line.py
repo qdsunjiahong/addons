@@ -15,6 +15,24 @@ class qdodoo_account_move_line(models.Model):
     _inherit = 'account.move.line'
 
     location_in_id = fields.Many2one('stock.location', string=u'库位')
+    sale_team_id = fields.Many2one('crm.case.section',u'销售团队')
+
+    # 创建分录明细的时候，源单据是否是销售订单，如果是，则获取对应的销售团队
+    def create(self, cr, uid, valus, context=None):
+        ref = valus.get('ref')
+        picking_obj = self.pool.get('stock.picking')
+        sale_obj = self.pool.get('sale.order')
+        if ref:
+            # 获取关联的库存调拨单
+            picking_ids = picking_obj.search(cr, uid, [('name','=',ref)])
+            if picking_ids:
+                for line in picking_obj.browse(cr, uid, picking_ids):
+                    # 获取关联的销售订单
+                    sale_ids = sale_obj.search(cr, uid, [('name','=',line.origin)])
+                    if sale_ids:
+                        obj = sale_obj.browse(cr, uid, sale_ids[0])
+                        valus['sale_team_id'] = obj.section_id.id if obj.section_id else (obj.partner_id.section_id.id if obj.partner_id.section_id else '')
+        return super(qdodoo_account_move_line, self).create(cr, uid, valus, context=context)
 
 
 class qdodoo_stock_move(models.Model):
