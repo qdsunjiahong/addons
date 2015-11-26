@@ -93,7 +93,8 @@
                                 <field name="sale_team_id"/>
                                 <field name="debit" sum="Total Debit"/>
                                 <field name="credit" sum="Total Credit"/>
-                                <field name="analytic_account_id" groups="analytic.group_analytic_accounting"/>
+                                <field name="required_assistant" invisible="1"/>
+                                <field name="analytic_account_id" attrs="{'required':[('required_assistant','=',True)]}" groups="analytic.group_analytic_accounting"/>
                                 <field name="amount_currency"/>
                                 <field name="currency_id" groups="base.group_multi_currency"/>
                                 <field name="tax_code_id"/>
