@@ -45,7 +45,7 @@ class qdodoo_mrp_actual_theory_report(report_sxw.rml_parse):
                     sm.product_id as product_id,
                     sm.price_unit as actual_price,
                     sm.product_uom_qty as actual_consumption_num,
-                    mp.product_qty as product_qty,
+                    (select sum(sm.product_qty) from stock_move sm where sm.production_id=mp.id) as product_number,
                     mppl.product_qty as theory_num,
                     mp.location_dest_id as location_id,
                     mp.analytic_account as analytic_account
@@ -88,7 +88,7 @@ class qdodoo_mrp_actual_theory_report(report_sxw.rml_parse):
         product_obj = self.pool.get('product.product')
         product_ids = product_obj.search(self.cr,self.uid,['|',('active','=',1),('active','=',0)])
         for product_id in product_obj.browse(self.cr,self.uid,product_ids):
-            dict_product[product_id.id] = product_id.name
+            dict_product[product_id.id] = product_id.name_template
         # 根据id获取生产单名字
         dict_production = {}
         production_obj = self.pool.get('mrp.production')
