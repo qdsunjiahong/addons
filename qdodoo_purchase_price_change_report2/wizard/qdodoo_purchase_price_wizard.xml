@@ -19,7 +19,7 @@
                         </group>
                         <div>
                             <label for="partner_id" string="供应商" attrs="{'invisible':[('search_choice','=',False)]}"/>
-                            <field name="partner_id" domain="[('supplier','=',True)]"
+                            <field name="partner_id" domain="[('supplier','=',True),('is_internal_company','!=',True)]"
                                    attrs="{'invisible':[('search_choice','=',False)]}"/>
                         </div>
                         <div>
@@ -40,13 +40,13 @@
                         <div>
                             <label for="product_id"
                                    attrs="{'invisible':[('company_id','=',False)]}"/>
-                            <field name="product_id" domain="[('company_id','=',company_id)]"
+                            <field name="product_id" domain="[('company_id','=',company_id),('purchase_ok','=',True)]"
                                    attrs="{'invisible':[('company_id','=',False)]}"/>
                         </div>
                         <div>
                             <label for="product_id2"
                                    attrs="{'invisible':[('company_id','!=',False)]}"/>
-                            <field name="product_id2"
+                            <field name="product_id2" domain="[('purchase_ok','=',True)]"
                                    attrs="{'invisible':[('company_id','!=',False)]}"/>
                         </div>
 

@@ -8,6 +8,7 @@
 
 from openerp import models, fields, api, _
 from openerp.exceptions import except_orm
+import copy
 
 
 class qdodoo_purchase_price_wizard(models.Model):
@@ -32,36 +33,45 @@ class qdodoo_purchase_price_wizard(models.Model):
     @api.multi
     def action_done(self):
         report_obj = self.env['qdodoo.purchase.price.report']
-        supplier_id = self.env['res.partner'].search([('name', '=', u'前期库存'), ('active', '=', True)])[0].id
+        supplier_ids = self.pool.get('res.partner').search(self.env.cr, self.env.uid,
+                                                           ['|', '|', ('name', 'ilike', u'期初'),
+                                                            ('name', 'ilike', u'前期'), '&',
+                                                            ('is_internal_company', '=', True),
+                                                            ('supplier', '=', True)])
         un_ids = report_obj.search([])
         un_ids.unlink()
+        sql_l = """
+            select
+                af.name as af_name,
+                pp.name_template as product_name,
+                ail.quantity as product_qty,
+                (ail.price_unit * ail.quantity) as product_amount,
+                pp.default_code as default_code,
+                pt.uom_po_id as uom_id
+            from account_invoice_line ail
+                LEFT JOIN product_product pp ON pp.id = ail.product_id
+                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
+                LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
+                LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
+                LEFT JOIN purchase_order po ON po.id = pir.purchase_id
+                LEFT JOIN account_period ap ON ap.id = ai.period_id
+                LEFT JOIN account_fiscalyear af ON af.id= ap.fiscalyear_id
+            where po.state = 'done' and ai.state != 'cancel'
+            """
+        sql_domain = []
         model_obj = self.env['ir.model.data']
+        if len(supplier_ids) == 1:
+            sql_l = sql_l + " and ail.partner_id != %s"
+            sql_domain.append(supplier_ids[0])
+        elif len(supplier_ids) > 1:
+            sql_l = sql_l + " and ail.partner_id not in %s"
+            sql_domain.append(tuple(supplier_ids))
         result_list = []
         product_list = []
         product_num_dict = {}
         product_amount_dict = {}
         # 年度查询
         if int(self.search_choice) == 1:
-            sql_l = """
-                select
-                    af.name as af_name,
-                    pp.name_template as product_name,
-                    ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount,
-                    pp.default_code as default_code,
-                    pt.uom_po_id as uom_id
-                from account_invoice_line ail
-                    LEFT JOIN product_product pp ON pp.id = ail.product_id
-                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-                    LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
-                    LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
-                    LEFT JOIN purchase_order po ON po.id = pir.purchase_id
-                    LEFT JOIN account_period ap ON ap.id = ai.period_id
-                    LEFT JOIN account_fiscalyear af ON af.id= ap.fiscalyear_id
-                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
-            """
-            sql_domain = []
-            sql_domain.append(supplier_id)
             if self.year:
                 year_list = []
                 year_ids = self.env['account.fiscalyear'].search([('name', '=', self.year.name)])
@@ -122,22 +132,24 @@ class qdodoo_purchase_price_wizard(models.Model):
                         }
                         cre_obj = report_obj.create(data)
                         result_list.append(cre_obj.id)
-                if result_list:
-                    vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                        'qdodoo_purchase_price_report_tree1')
-                    view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                           'qdodoo_purchase_price_report_search1')
-                    return {
-                        'name': _('采购价格变动表'),
-                        'view_type': 'form',
-                        "view_mode": 'tree',
-                        'res_model': 'qdodoo.purchase.price.report',
-                        'type': 'ir.actions.act_window',
-                        'domain': [('id', 'in', result_list)],
-                        'views': [(view_id, 'tree')],
-                        'view_id': [view_id],
-                        'search_view_id': [search_id]
-                    }
+            if result_list:
+                vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                    'qdodoo_purchase_price_report_tree1')
+                view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                       'qdodoo_purchase_price_report_search1')
+                return {
+                    'name': _('采购价格变动表'),
+                    'view_type': 'form',
+                    "view_mode": 'tree',
+                    'res_model': 'qdodoo.purchase.price.report',
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', result_list)],
+                    'views': [(view_id, 'tree')],
+                    'view_id': [view_id],
+                    'search_view_id': [search_id]
+                }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
         #####月份查询
         elif int(self.search_choice) == 5:
             sql_l = """
@@ -155,10 +167,15 @@ class qdodoo_purchase_price_wizard(models.Model):
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
                     LEFT JOIN account_period ap ON ap.id = ai.period_id
-                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
+                where po.state = 'done' and ai.state != 'cancel'
             """
             sql_domain = []
-            sql_domain.append(supplier_id)
+            if len(supplier_ids) == 1:
+                sql_l = sql_l + " and ail.partner_id != %s"
+                sql_domain.append(supplier_ids[0])
+            elif len(supplier_ids) > 1:
+                sql_l = sql_l + " and ail.partner_id not in %s"
+            sql_domain.append(tuple(supplier_ids))
             per_list = []
             year_obj = self.env['account.fiscalyear']
             per_obj = self.env['account.period']
@@ -215,7 +232,7 @@ class qdodoo_purchase_price_wizard(models.Model):
                 sql_l = sql_l + ' and ai.partner_id = %s'
                 sql_domain.append(self.partner_id.id)
             if self.company_id and self.company_id.name != u'惠美集团':
-                sql_l = sql_l + ' and ai.company_id=%s'
+                sql_l = sql_l + ' and ai.company_id = %s'
                 sql_domain.append(self.company_id.id)
             sql = sql_l % tuple(sql_domain)
             self.env.cr.execute(sql)
@@ -245,24 +262,48 @@ class qdodoo_purchase_price_wizard(models.Model):
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
-                if result_list:
-                    vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                        'qdodoo_purchase_price_report_tree2')
-                    view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                           'qdodoo_purchase_price_report_search2')
-                    return {
-                        'name': _('采购价格变动表'),
-                        'view_type': 'form',
-                        "view_mode": 'tree',
-                        'res_model': 'qdodoo.purchase.price.report',
-                        'type': 'ir.actions.act_window',
-                        'domain': [('id', 'in', result_list)],
-                        'views': [(view_id, 'tree')],
-                        'view_id': [view_id],
-                        'search_view_id': [search_id]
-                    }
+            if result_list:
+                vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                    'qdodoo_purchase_price_report_tree2')
+                view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                       'qdodoo_purchase_price_report_search2')
+                return {
+                    'name': _('采购价格变动表'),
+                    'view_type': 'form',
+                    "view_mode": 'tree',
+                    'res_model': 'qdodoo.purchase.price.report',
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', result_list)],
+                    'views': [(view_id, 'tree')],
+                    'view_id': [view_id],
+                    'search_view_id': [search_id]
+                }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
         # # 季度查询
         elif int(self.search_choice) == 2:
+            sql_l = """
+                select
+                    pp.name_template as product_name,
+                    ail.quantity as product_qty,
+                    (ail.price_unit * ail.quantity) as product_amount,
+                    pp.default_code as default_code,
+                    pt.uom_po_id as uom_id
+                from account_invoice_line ail
+                    LEFT JOIN product_product pp ON pp.id = ail.product_id
+                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
+                    LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
+                    LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
+                    LEFT JOIN purchase_order po ON po.id = pir.purchase_id
+                where po.state = 'done' and ai.state != 'cancel'
+                """
+            sql_domain = []
+            if len(supplier_ids) == 1:
+                sql_l = sql_l + " and ail.partner_id != %s"
+                sql_domain.append(supplier_ids[0])
+            elif len(supplier_ids) > 1:
+                sql_l = sql_l + " and ail.partner_id not in %s"
+                sql_domain.append(tuple(supplier_ids))
             if not self.year:
                 year_list = self.env['account.fiscalyear'].search([])
             else:
@@ -365,50 +406,35 @@ class qdodoo_purchase_price_wizard(models.Model):
                         quarter_stop[key4] = per_stops4[0].date_stop + ' 23:59:59'
                     quarter_key.append(key4)
             for d in quarter_key:
-                sql_l = """
-                select
-                    pp.name_template as product_name,
-                    ail.quantity as product_qty,
-                    (ail.price_unit * ail.quantity) as product_amount,
-                    pp.default_code as default_code,
-                    pt.uom_po_id as uom_id
-                from account_invoice_line ail
-                    LEFT JOIN product_product pp ON pp.id = ail.product_id
-                    LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-                    LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
-                    LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
-                    LEFT JOIN purchase_order po ON po.id = pir.purchase_id
-                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
-                """
-                sql_domain = []
-                sql_domain.append(supplier_id)
+                sql_domain2 = copy.deepcopy(sql_domain)
+                sql_l2 = sql_l
                 if self.product_id:
-                    sql_l = sql_l + ' and ail.product_id = %s'
-                    sql_domain.append(self.product_id.id)
+                    sql_l2 = sql_l2 + ' and ail.product_id = %s'
+                    sql_domain2.append(self.product_id.id)
                 pro_l = []
                 if self.product_id2:
                     product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                     for pr in product_ids:
                         pro_l.append(pr.id)
                     if len(pro_l) > 1:
-                        sql_l = sql_l + ' and ail.product_id in %s'
-                        sql_domain.append(tuple(pro_l))
+                        sql_l2 = sql_l2 + ' and ail.product_id in %s'
+                        sql_domain2.append(tuple(pro_l))
                     elif len(pro_l) == 1:
-                        sql_l = sql_l + ' and ail.product_id = %s'
-                        sql_domain.append(pro_l[0])
+                        sql_l2 = sql_l2 + ' and ail.product_id = %s'
+                        sql_domain2.append(pro_l[0])
                 if self.partner_id:
-                    sql_l = sql_l + ' and ai.partner_id = %s'
-                    sql_domain.append(self.partner_id.id)
+                    sql_l2 = sql_l2 + ' and ai.partner_id = %s'
+                    sql_domain2.append(self.partner_id.id)
                 if quarter_start.get(d, None) != None:
-                    sql_l = sql_l + " and ai.date_invoice >= '%s'"
-                    sql_domain.append(quarter_start.get(d))
+                    sql_l2 = sql_l2 + " and ai.date_invoice >= '%s'"
+                    sql_domain2.append(quarter_start.get(d))
                 if quarter_stop.get(d, None) != None:
-                    sql_domain.append(quarter_stop.get(d))
-                    sql_l = sql_l + " and ai.date_invoice <= '%s'"
+                    sql_domain2.append(quarter_stop.get(d))
+                    sql_l2 = sql_l2 + " and ai.date_invoice <= '%s'"
                 if self.company_id:
-                    sql_l = sql_l + " and ai.company_id = %s"
-                    sql_domain.append(self.company_id.id)
-                sql = sql_l % tuple(sql_domain)
+                    sql_l2 = sql_l2 + " and ai.company_id = %s"
+                    sql_domain2.append(self.company_id.id)
+                sql = sql_l2 % tuple(sql_domain2)
                 self.env.cr.execute(sql)
                 res = self.env.cr.fetchall()
                 if res:
@@ -453,6 +479,8 @@ class qdodoo_purchase_price_wizard(models.Model):
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
 
         #####日期查询
         elif int(self.search_choice) == 3:
@@ -469,10 +497,15 @@ class qdodoo_purchase_price_wizard(models.Model):
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
-                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
+                where po.state = 'done' and ai.state != 'cancel'
             """
             sql_domain = []
-            sql_domain.append(supplier_id)
+            if len(supplier_ids) == 1:
+                sql_l = sql_l + " and ail.partner_id != %s"
+                sql_domain.append(supplier_ids[0])
+            elif len(supplier_ids) > 1:
+                sql_l = sql_l + " and ail.partner_id not in %s"
+                sql_domain.append(tuple(supplier_ids))
             if self.date:
                 sql_l = sql_l + " and ai.date_invoice = '%s'"
                 sql_domain.append(self.date)
@@ -524,22 +557,24 @@ class qdodoo_purchase_price_wizard(models.Model):
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
-                if result_list:
-                    vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                        'qdodoo_purchase_price_report_tree4')
-                    view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                           'qdodoo_purchase_price_report_search4')
-                    return {
-                        'name': _('采购价格变动表'),
-                        'view_type': 'form',
-                        "view_mode": 'tree',
-                        'res_model': 'qdodoo.purchase.price.report',
-                        'type': 'ir.actions.act_window',
-                        'domain': [('id', 'in', result_list)],
-                        'views': [(view_id, 'tree')],
-                        'view_id': [view_id],
-                        'search_view_id': [search_id]
-                    }
+            if result_list:
+                vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                    'qdodoo_purchase_price_report_tree4')
+                view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                       'qdodoo_purchase_price_report_search4')
+                return {
+                    'name': _('采购价格变动表'),
+                    'view_type': 'form',
+                    "view_mode": 'tree',
+                    'res_model': 'qdodoo.purchase.price.report',
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', result_list)],
+                    'views': [(view_id, 'tree')],
+                    'view_id': [view_id],
+                    'search_view_id': [search_id]
+                }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
         #####时间段查询
         elif int(self.search_choice) == 4:
             sql_l = """
@@ -555,10 +590,15 @@ class qdodoo_purchase_price_wizard(models.Model):
                     LEFT JOIN purchase_invoice_rel pir ON pir.invoice_id = ail.invoice_id
                     LEFT JOIN account_invoice ai ON ai.id = ail.invoice_id and pir.invoice_id=ai.id
                     LEFT JOIN purchase_order po ON po.id = pir.purchase_id
-                where po.state = 'done' and ai.state != 'cancel' and ai.partner_id != %s
+                where po.state = 'done' and ai.state != 'cancel'
             """
             sql_domain = []
-            sql_domain.append(supplier_id)
+            if len(supplier_ids) == 1:
+                sql_l = sql_l + " and ail.partner_id != %s"
+                sql_domain.append(supplier_ids[0])
+            elif len(supplier_ids) > 1:
+                sql_l = sql_l + " and ail.partner_id not in %s"
+                sql_domain.append(tuple(supplier_ids))
             sql_l = sql_l + " and ai.date_invoice >= '%s'"
             sql_domain.append(self.start_date)
             sql_l = sql_l + " and ai.date_invoice <= '%s'"
@@ -612,19 +652,21 @@ class qdodoo_purchase_price_wizard(models.Model):
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
-                if result_list:
-                    vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                        'qdodoo_purchase_price_report_tree5')
-                    view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
-                                                                           'qdodoo_purchase_price_report_search5')
-                    return {
-                        'name': _('采购价格变动表'),
-                        'view_type': 'form',
-                        "view_mode": 'tree',
-                        'res_model': 'qdodoo.purchase.price.report',
-                        'type': 'ir.actions.act_window',
-                        'domain': [('id', 'in', result_list)],
-                        'views': [(view_id, 'tree')],
-                        'view_id': [view_id],
-                        'search_view_id': [search_id]
-                    }
+            if result_list:
+                vie_model, view_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                    'qdodoo_purchase_price_report_tree5')
+                view_model, search_id = model_obj.get_object_reference('qdodoo_purchase_price_change_report2',
+                                                                       'qdodoo_purchase_price_report_search5')
+                return {
+                    'name': _('采购价格变动表'),
+                    'view_type': 'form',
+                    "view_mode": 'tree',
+                    'res_model': 'qdodoo.purchase.price.report',
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', result_list)],
+                    'views': [(view_id, 'tree')],
+                    'view_id': [view_id],
+                    'search_view_id': [search_id]
+                }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
