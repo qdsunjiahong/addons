@@ -7,6 +7,7 @@
 ###########################################################################################
 from openerp import models, fields, api, _
 from openerp.exceptions import except_orm
+import copy
 
 
 class qdodoo_stock_in_analytic_wizard(models.Model):
@@ -35,18 +36,20 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
     def action_done(self):
         # 存储展示数据模型
         report_obj = self.env['qdodoo.stock.in.analytic.report']
-        supplier_id = self.env['res.partner'].search([('name', '=', u'前期库存'), ('active', '=', True)])[0].id
         search_ids = report_obj.search([])
         search_ids.unlink()
+        supplier_ids = self.pool.get('res.partner').search(self.env.cr, self.env.uid,
+                                                           ['|', '|', ('name', 'ilike', u'期初'),
+                                                            ('name', 'ilike', u'前期'), '&',
+                                                            ('is_internal_company', '=', True),
+                                                            ('supplier', '=', True)])
         model_obj = self.env['ir.model.data']
         result_list = []
-        product_list_p = []
-        product_dict_num = {}  # 数量
-        product_dict_amount = {}  # 金额
         partner_dict = {}
         partner_ids = self.env['res.partner'].search([])
         for partner_id in partner_ids:
             partner_dict[partner_id.id] = partner_id.property_supplier_payment_term.name
+        sql_domain = []
         sql_l = """
             select
                 sp.min_date as date,
@@ -61,15 +64,20 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 pt.uom_po_id as uom_id
             FROM stock_move sm
                 LEFT JOIN stock_picking sp on sp.id = sm.picking_id
+                LEFT JOIN res_partner rp on rp.id = sp.partner_id
                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                 LEFT JOIN purchase_order po on po.id = pol.order_id
                 LEFT JOIN product_product pp on pp.id = sm.product_id
                 LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
+            where sm.state = 'done' and sp.state = 'done' and po.state = 'done'
             """
+        if len(supplier_ids) == 1:
+            sql_l = sql_l + " and sp.partner_id != %s"
+            sql_domain.append(supplier_ids[0])
+        elif len(supplier_ids) > 1:
+            sql_l = sql_l + " and sp.partner_id not in %s"
+            sql_domain.append(tuple(supplier_ids))
         if int(self.search_choice) == 1:
-            sql_domain = []
-            sql_domain.append(supplier_id)
             if self.year:
                 start_datetime = self.year.date_start + ' 00:00:01'
                 end_datetime = self.year.date_stop + ' 23:59:59'
@@ -118,29 +126,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
-                    k = (year, r[1], r[2], r[-1])
-                    if k in product_list_p:
-                        product_dict_num[k] += r[3]
-                        product_dict_amount[k] += r[5]
-                    else:
-                        product_dict_num[k] = r[3]
-                        product_dict_amount[k] = r[5]
-                        product_list_p.append(k)
-                for j in product_list_p:
-                    if product_dict_num.get(j, 0) == 0:
-                        price_u = 0
-                    else:
-                        price_u = product_dict_amount.get(j, 0) / product_dict_num.get(j, 0)
-                    data2 = {
-                        'year': j[0],
-                        'product_id': j[1],
-                        'product_qty': product_dict_num.get(j, 0),
-                        'uom_id': j[-1],
-                        'price_unit': price_u,
-                        'product_amount': product_dict_amount.get(j, 0)
-                    }
-                    cre_obj2 = report_obj.create(data2)
-                    result_list.append(cre_obj2.id)
             if result_list:
                 vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                     'qdodoo_stock_in_analytic_report1')
@@ -157,6 +142,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     'view_id': [view_id],
                     'search_view_id': [search_id]
                 }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
         #####月份查询
         elif int(self.search_choice) == 5:
             per_obj = self.env['account.period']
@@ -173,30 +160,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         per_dict_time[k] = month_l + '/' + str(self.year.name)
                 if per_list_time:
                     for per_time in per_list_time:
-                        sql_l = """
-                            select
-                                sp.min_date as date,
-                                pp.name_template as product_name,
-                                pp.default_code as default_code,
-                                sm.product_uom_qty as product_qty,
-                                sm.price_unit as price_unit,
-                                (sm.product_uom_qty * sm.price_unit) as product_amount,
-                                po.partner_id as partner_id,
-                                po.location_id as location_id,
-                                po.company_id as company_id,
-                                pt.uom_po_id as uom_id
-                            FROM stock_move sm
-                                LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                                LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                                LEFT JOIN purchase_order po on po.id = pol.order_id
-                                LEFT JOIN product_product pp on pp.id = sm.product_id
-                                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-                            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
-                            """
-                        sql_domain2 = []
-                        sql_domain2.append(supplier_id)
+                        sql_l2 = sql_l
+                        sql_domain2 = copy.deepcopy(sql_domain)
                         if self.product_id:
-                            sql_l = sql_l + ' and sm.product_id = %s'
+                            sql_l2 = sql_l2 + ' and sm.product_id = %s'
                             sql_domain2.append(self.product_id.id)
                         pro_l = []
                         if self.product_id2:
@@ -204,21 +171,21 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             for pr in product_ids:
                                 pro_l.append(pr.id)
                             if len(pro_l) > 1:
-                                sql_l = sql_l + ' and sm.product_id in %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id in %s'
                                 sql_domain2.append(tuple(pro_l))
                             elif len(pro_l) == 1:
-                                sql_l = sql_l + ' and sm.product_id = %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id = %s'
                                 sql_domain2.append(pro_l[0])
                         if self.partner_id:
-                            sql_l = sql_l + ' and po.partner_id = %s'
+                            sql_l2 = sql_l2 + ' and po.partner_id = %s'
                             sql_domain2.append(self.partner_id.id)
                         if self.company_id:
-                            sql_l = sql_l + ' and po.company_id=%s'
+                            sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
-                        sql = sql_l % tuple(sql_domain2)
+                        sql = sql_l2 % tuple(sql_domain2)
                         self.env.cr.execute(sql)
                         res = self.env.cr.fetchall()
                         if res:
@@ -229,7 +196,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'product_id': r[1],
                                     "default_code": r[2],
                                     'product_qty': r[3],
-                                    'uom_id':r[-1],
+                                    'uom_id': r[-1],
                                     'price_unit': r[4],
                                     'product_amount': r[5],
                                     'location_id': r[7],
@@ -239,34 +206,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
-                                k = (per_dict_time.get(per_time, ''), r[1], r[2],r[-1])
-                                if k in product_list_p:
-                                    product_dict_num[k] += r[3]
-                                    product_dict_amount[k] += r[5]
-                                else:
-                                    product_dict_num[k] = r[3]
-                                    product_dict_amount[k] = r[5]
-                                    product_list_p.append(k)
-                            for product_l in product_list_p:
-                                if product_dict_num.get(product_l, 0) == 0:
-                                    price_unit = 0
-                                else:
-                                    price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
-                                        product_l,
-                                        0)
-                                data2 = {
-                                    'period_id': product_l[0],
-                                    'product_id': product_l[1],
-                                    'default_code': product_l[2],
-                                    'uom_id':product_l[-1],
-                                    'product_qty': product_dict_num.get(product_l, 0),
-                                    'product_amount': product_dict_amount.get(product_l, 0),
-                                    'price_unit': price_unit
-                                }
-                                cre_obj = report_obj.create(data2)
-                                result_list.append(cre_obj.id)
-                        else:
-                            continue
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                             'qdodoo_stock_in_analytic_report5')
@@ -287,8 +226,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     else:
                         raise except_orm(_(u'提示'), _(u'未查询到数据'))
             elif self.year and self.month:
-                sql_domain = []
-                sql_domain.append(supplier_id)
                 per_ids = per_obj.search([('name', '=', str(self.month) + '/' + str(self.year.name))])
                 if per_ids:
                     start_datetime = per_ids[0].date_start + ' 00:00:01'
@@ -327,7 +264,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 'product_id': r[1],
                                 "default_code": r[2],
                                 'product_qty': r[3],
-                                'uom_id':r[-1],
+                                'uom_id': r[-1],
                                 'price_unit': r[4],
                                 'product_amount': r[5],
                                 'location_id': r[7],
@@ -337,30 +274,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             }
                             cre_obj2 = report_obj.create(data)
                             result_list.append(cre_obj2.id)
-                            k = (r[0][:7], r[1], r[2],r[-1])
-                            if k in product_list_p:
-                                product_dict_num[k] += r[3]
-                                product_dict_amount[k] += r[5]
-                            else:
-                                product_dict_num[k] = r[3]
-                                product_dict_amount[k] = r[5]
-                                product_list_p.append(k)
-                        for product_l in product_list_p:
-                            if product_dict_num.get(product_l, 0) == 0:
-                                price_unit = 0
-                            else:
-                                price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
-                            data2 = {
-                                'period_id': product_l[0],
-                                'product_id': product_l[1],
-                                'default_code': product_l[2],
-                                'uom_id':product_l[-1],
-                                'product_qty': product_dict_num.get(product_l, 0),
-                                'product_amount': product_dict_amount.get(product_l, 0),
-                                'price_unit': price_unit
-                            }
-                            cre_obj = report_obj.create(data2)
-                            result_list.append(cre_obj.id)
                         if result_list:
                             vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                                 'qdodoo_stock_in_analytic_report5')
@@ -377,6 +290,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 'view_id': [view_id],
                                 'search_view_id': [search_id]
                             }
+                        else:
+                            raise except_orm(_(u'提示'), _(u'未查询到数据'))
             elif not self.year and self.month:
                 ye_li = []
                 year_ids = year_obj.search([])
@@ -395,31 +310,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             per_dict_time[k] = str(self.month) + '/' + str(ye_l)
                 if per_list_time:
                     for per_time in per_list_time:
-                        sql_l = """
-                            select
-                                sp.min_date as date,
-                                pp.name_template as product_name,
-                                pp.default_code as default_code,
-                                sm.product_uom_qty as product_qty,
-                                sm.price_unit as price_unit,
-                                (sm.product_uom_qty * sm.price_unit) as product_amount,
-                                po.partner_id as partner_id,
-                                po.location_id as location_id,
-                                po.company_id as company_id,
-                                pt.uom_po_id as uom_id
-
-                            FROM stock_move sm
-                                LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                                LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                                LEFT JOIN purchase_order po on po.id = pol.order_id
-                                LEFT JOIN product_product pp on pp.id = sm.product_id
-                                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-                            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
-                            """
-                        sql_domain2 = []
-                        sql_domain2.append(supplier_id)
+                        sql_l2 = sql_l
+                        sql_domain2 = copy.deepcopy(sql_domain)
                         if self.product_id:
-                            sql_l = sql_l + ' and sm.product_id = %s'
+                            sql_l2 = sql_l2 + ' and sm.product_id = %s'
                             sql_domain2.append(self.product_id.id)
                         pro_l = []
                         if self.product_id2:
@@ -427,21 +321,21 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             for pr in product_ids:
                                 pro_l.append(pr.id)
                             if len(pro_l) > 1:
-                                sql_l = sql_l + ' and sm.product_id in %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id in %s'
                                 sql_domain2.append(tuple(pro_l))
                             elif len(pro_l) == 1:
-                                sql_l = sql_l + ' and sm.product_id = %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id = %s'
                                 sql_domain2.append(pro_l[0])
                         if self.partner_id:
-                            sql_l = sql_l + ' and po.partner_id = %s'
+                            sql_l2 = sql_l2 + ' and po.partner_id = %s'
                             sql_domain2.append(self.partner_id.id)
                         if self.company_id:
-                            sql_l = sql_l + ' and po.company_id=%s'
+                            sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
-                        sql = sql_l % tuple(sql_domain2)
+                        sql = sql_l2 % tuple(sql_domain2)
                         self.env.cr.execute(sql)
                         res = self.env.cr.fetchall()
                         if res:
@@ -455,7 +349,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'product_id': r[1],
                                     "default_code": r[2],
                                     'product_qty': r[3],
-                                    'uom_id':r[-1],
+                                    'uom_id': r[-1],
                                     'price_unit': r[4],
                                     'product_amount': r[5],
                                     'location_id': r[7],
@@ -465,34 +359,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
-                                k = (per, r[1], r[2],r[-1])
-                                if k in product_list_p:
-                                    product_dict_num[k] += r[3]
-                                    product_dict_amount[k] += r[5]
-                                else:
-                                    product_dict_num[k] = r[3]
-                                    product_dict_amount[k] = r[5]
-                                    product_list_p.append(k)
-                            for product_l in product_list_p:
-                                if product_dict_num.get(product_l, 0) == 0:
-                                    price_unit = 0
-                                else:
-                                    price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
-                                        product_l,
-                                        0)
-                                data2 = {
-                                    'period_id': product_l[0],
-                                    'product_id': product_l[1],
-                                    'default_code': product_l[2],
-                                    'product_qty': product_dict_num.get(product_l, 0),
-                                    'uom_id':product_l[-1],
-                                    'product_amount': product_dict_amount.get(product_l, 0),
-                                    'price_unit': price_unit
-                                }
-                                cre_obj = report_obj.create(data2)
-                                result_list.append(cre_obj.id)
-                        else:
-                            continue
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                             'qdodoo_stock_in_analytic_report5')
@@ -532,30 +398,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 per_dict_time[k] = month_l + '/' + str(ye_l)
                 if per_list_time:
                     for per_time in per_list_time:
-                        sql_l = """
-                            select
-                                sp.min_date as date,
-                                pp.name_template as product_name,
-                                pp.default_code as default_code,
-                                sm.product_uom_qty as product_qty,
-                                sm.price_unit as price_unit,
-                                (sm.product_uom_qty * sm.price_unit) as product_amount,
-                                po.partner_id as partner_id,
-                                po.location_id as location_id,
-                                po.company_id as company_id,
-                                pt.uom_po_id as uom_id
-                            FROM stock_move sm
-                                LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                                LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                                LEFT JOIN purchase_order po on po.id = pol.order_id
-                                LEFT JOIN product_product pp on pp.id = sm.product_id
-                                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-                            where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
-                            """
-                        sql_domain2 = []
-                        sql_domain2.append(supplier_id)
+                        sql_l2 = sql_l
+                        sql_domain2 = copy.deepcopy(sql_domain)
                         if self.product_id:
-                            sql_l = sql_l + ' and sm.product_id = %s'
+                            sql_l2 = sql_l2 + ' and sm.product_id = %s'
                             sql_domain2.append(self.product_id.id)
                         pro_l = []
                         if self.product_id2:
@@ -563,21 +409,21 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             for pr in product_ids:
                                 pro_l.append(pr.id)
                             if len(pro_l) > 1:
-                                sql_l = sql_l + ' and sm.product_id in %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id in %s'
                                 sql_domain2.append(tuple(pro_l))
                             elif len(pro_l) == 1:
-                                sql_l = sql_l + ' and sm.product_id = %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id = %s'
                                 sql_domain2.append(pro_l[0])
                         if self.partner_id:
-                            sql_l = sql_l + ' and po.partner_id = %s'
+                            sql_l2 = sql_l2 + ' and po.partner_id = %s'
                             sql_domain2.append(self.partner_id.id)
                         if self.company_id:
-                            sql_l = sql_l + ' and po.company_id=%s'
+                            sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
-                        sql = sql_l % tuple(sql_domain2)
+                        sql = sql_l2 % tuple(sql_domain2)
                         self.env.cr.execute(sql)
                         res = self.env.cr.fetchall()
                         if res:
@@ -589,7 +435,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'product_id': r[1],
                                     "default_code": r[2],
                                     'product_qty': r[3],
-                                    'uom_id':r[-1],
+                                    'uom_id': r[-1],
                                     'price_unit': r[4],
                                     'product_amount': r[5],
                                     'location_id': r[7],
@@ -599,34 +445,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 }
                                 cre_obj2 = report_obj.create(data)
                                 result_list.append(cre_obj2.id)
-                                k = (per2, r[1], r[2],r[-1])
-                                if k in product_list_p:
-                                    product_dict_num[k] += r[3]
-                                    product_dict_amount[k] += r[5]
-                                else:
-                                    product_dict_num[k] = r[3]
-                                    product_dict_amount[k] = r[5]
-                                    product_list_p.append(k)
-                            for product_l in product_list_p:
-                                if product_dict_num.get(product_l, 0) == 0:
-                                    price_unit = 0
-                                else:
-                                    price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
-                                        product_l,
-                                        0)
-                                data2 = {
-                                    'period_id': product_l[0],
-                                    'product_id': product_l[1],
-                                    'default_code': product_l[2],
-                                    'uom_id':product_l[-1],
-                                    'product_qty': product_dict_num.get(product_l, 0),
-                                    'product_amount': product_dict_amount.get(product_l, 0),
-                                    'price_unit': price_unit
-                                }
-                                cre_obj = report_obj.create(data2)
-                                result_list.append(cre_obj.id)
-                        else:
-                            continue
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                             'qdodoo_stock_in_analytic_report5')
@@ -750,55 +568,35 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         quarter_stop[key4] = per_stops4[0].date_stop + ' 23:59:59'
                     quarter_key.append(key4)
             for q in quarter_key:
-                sql_domain = []
-                sql_l = """
-                    select
-                        sp.min_date as date,
-                        pp.name_template as product_name,
-                        pp.default_code as default_code,
-                        sm.product_uom_qty as product_qty,
-                        sm.price_unit as price_unit,
-                        (sm.product_uom_qty * sm.price_unit) as product_amount,
-                        po.partner_id as partner_id,
-                        po.location_id as location_id,
-                        po.company_id as company_id,
-                        pt.uom_po_id as uom_id
-                    FROM stock_move sm
-                        LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                        LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                        LEFT JOIN purchase_order po on po.id = pol.order_id
-                        LEFT JOIN product_product pp on pp.id = sm.product_id
-                        LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
-                    where sm.state = 'done' and sp.state = 'done' and po.partner_id != %s
-                    """
-                sql_domain.append(supplier_id)
+                sql_domain2 = copy.deepcopy(sql_domain)
+                sql_l2 = sql_l
                 if quarter_start.get(q, None) != None:
-                    sql_l = sql_l + " and sp.min_date >= '%s'"
-                    sql_domain.append(quarter_start.get(q))
+                    sql_l2 = sql_l2 + " and sp.min_date >= '%s'"
+                    sql_domain2.append(quarter_start.get(q))
                 if quarter_stop.get(q, None) != None:
-                    sql_domain.append(quarter_stop.get(q))
-                    sql_l = sql_l + " and sp.min_date <= '%s'"
+                    sql_domain2.append(quarter_stop.get(q))
+                    sql_l2 = sql_l2 + " and sp.min_date <= '%s'"
                 if self.product_id:
-                    sql_l = sql_l + ' and sm.product_id = %s'
-                    sql_domain.append(self.product_id.id)
+                    sql_l2 = sql_l2 + ' and sm.product_id = %s'
+                    sql_domain2.append(self.product_id.id)
                 pro_l = []
                 if self.product_id2:
                     product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                     for pr in product_ids:
                         pro_l.append(pr.id)
                     if len(pro_l) > 1:
-                        sql_l = sql_l + ' and sm.product_id in %s'
-                        sql_domain.append(tuple(pro_l))
+                        sql_l2 = sql_l2 + ' and sm.product_id in %s'
+                        sql_domain2.append(tuple(pro_l))
                     elif len(pro_l) == 1:
-                        sql_l = sql_l + ' and sm.product_id = %s'
-                        sql_domain.append(pro_l[0])
+                        sql_l2 = sql_l2 + ' and sm.product_id = %s'
+                        sql_domain2.append(pro_l[0])
                 if self.partner_id:
-                    sql_l = sql_l + ' and po.partner_id = %s'
-                    sql_domain.append(self.partner_id.id)
+                    sql_l2 = sql_l2 + ' and po.partner_id = %s'
+                    sql_domain2.append(self.partner_id.id)
                 if self.company_id:
-                    sql_l = sql_l + ' and po.company_id = %s'
+                    sql_l2 = sql_l2 + ' and po.company_id = %s'
                     sql_domain.append(self.company_id.id)
-                sql = sql_l % tuple(sql_domain)
+                sql = sql_l2 % tuple(sql_domain2)
                 self.env.cr.execute(sql)
                 res = self.env.cr.fetchall()
                 if res:
@@ -809,7 +607,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             'product_id': r[1],
                             "default_code": r[2],
                             'product_qty': r[3],
-                            'uom_id':r[-1],
+                            'uom_id': r[-1],
                             'price_unit': r[4],
                             'product_amount': r[5],
                             'location_id': r[7],
@@ -819,51 +617,26 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         }
                         cre_obj2 = report_obj.create(data)
                         result_list.append(cre_obj2.id)
-                        k = (q, r[1], r[2],r[-1])
-                        if k in product_list_p:
-                            product_dict_num[k] += r[3]
-                            product_dict_amount[k] += r[5]
-                        else:
-                            product_dict_num[k] = r[3]
-                            product_dict_amount[k] = r[5]
-                            product_list_p.append(k)
-            if product_list_p:
-                for product_l in product_list_p:
-                    if product_dict_num.get(product_l, 0) == 0:
-                        price_unit = 0
-                    else:
-                        price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
-                    data = {
-                        'quarter': product_l[0],
-                        'product_id': product_l[1],
-                        'default_code': product_l[-1],
-                        'uom_id':product_l[-1],
-                        'price_unit': price_unit,
-                        'product_qty': product_dict_num.get(product_l, 0),
-                        'product_amount': product_dict_amount.get(product_l, 0),
-                    }
-                    cre_obj = report_obj.create(data)
-                    result_list.append(cre_obj.id)
-                if result_list:
-                    vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                        'qdodoo_stock_in_analytic_report2')
-                    view_model, search_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                           'qdodoo_stock_in_analytic_search2')
-                    return {
-                        'name': _('入库分析表'),
-                        'view_type': 'form',
-                        "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
-                        'type': 'ir.actions.act_window',
-                        'domain': [('id', 'in', result_list)],
-                        'views': [(view_id, 'tree')],
-                        'view_id': [view_id],
-                        'search_view_id': [search_id]
-                    }
+            if result_list:
+                vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
+                                                                    'qdodoo_stock_in_analytic_report2')
+                view_model, search_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
+                                                                       'qdodoo_stock_in_analytic_search2')
+                return {
+                    'name': _('入库分析表'),
+                    'view_type': 'form',
+                    "view_mode": 'tree',
+                    'res_model': 'qdodoo.stock.in.analytic.report',
+                    'type': 'ir.actions.act_window',
+                    'domain': [('id', 'in', result_list)],
+                    'views': [(view_id, 'tree')],
+                    'view_id': [view_id],
+                    'search_view_id': [search_id]
+                }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查找到数据'))
         #####日期查询
         elif int(self.search_choice) == 3:
-            sql_domain = []
-            sql_domain.append(supplier_id)
             start_datetime = self.date + ' 00:00:01'
             end_datetime = self.date + ' 23:59:59'
             sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
@@ -899,7 +672,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': r[1],
                         "default_code": r[2],
                         'product_qty': r[3],
-                        'uom_id':r[-1],
+                        'uom_id': r[-1],
                         'price_unit': r[4],
                         'product_amount': r[5],
                         'location_id': r[7],
@@ -910,30 +683,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
 
                     cre_obj2 = report_obj.create(data)
                     result_list.append(cre_obj2.id)
-                    k = (r[1], r[2],r[-1])
-                    if k in product_list_p:
-                        product_dict_num[k] += r[3]
-                        product_dict_amount[k] += r[5]
-                    else:
-                        product_dict_num[k] = r[3]
-                        product_dict_amount[k] = r[5]
-                        product_list_p.append(k)
-                for product_l in product_list_p:
-                    if product_dict_num.get(product_l, 0) == 0:
-                        price_unit = 0
-                    else:
-                        price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
-                    data = {
-                        'date': self.date,
-                        'product_id': product_l[0],
-                        'default_code': product_l[1],
-                        'product_qty': product_dict_num.get(product_l, 0),
-                        'uom_id':product_l[-1],
-                        'price_unit': price_unit,
-                        'product_amount': product_dict_amount.get(product_l, 0),
-                    }
-                    cre_obj = report_obj.create(data)
-                    result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                         'qdodoo_stock_in_analytic_report3')
@@ -950,10 +699,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
+                else:
+                    raise except_orm(_(u'提示'), _(u'未查询到数据'))
         #####时间段查询
         elif int(self.search_choice) == 4:
-            sql_domain = []
-            sql_domain.append(supplier_id)
             sql_l = sql_l + " and sp.min_date >= '%s'"
             sql_domain.append(self.start_date + ' 00:00:01')
             sql_l = sql_l + " and sp.min_date <= '%s'"
@@ -988,7 +737,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': r[1],
                         "default_code": r[2],
                         'product_qty': r[3],
-                        'uom_id':r[-1],
+                        'uom_id': r[-1],
                         'price_unit': r[4],
                         'product_amount': r[5],
                         'location_id': r[7],
@@ -998,30 +747,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     }
                     cre_obj2 = report_obj.create(data)
                     result_list.append(cre_obj2.id)
-
-                    k = (r[1], r[2],r[-1])
-                    if k in product_list_p:
-                        product_dict_num[k] += r[3]
-                        product_dict_amount[k] += r[5]
-                    else:
-                        product_dict_num[k] = r[3]
-                        product_dict_amount[k] = r[5]
-                        product_list_p.append(k)
-                for product_l in product_list_p:
-                    if product_dict_num.get(product_l, 0) == 0:
-                        price_unit = 0
-                    else:
-                        price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
-                    data = {
-                        'product_id': product_l[0],
-                        'default_code': product_l[1],
-                        'product_qty': product_dict_num.get(product_l, 0),
-                        'uom_id':product_l[-1],
-                        'product_amount': product_dict_amount.get(product_l, 0),
-                        'price_unit': price_unit,
-                    }
-                    cre_obj = report_obj.create(data)
-                    result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                         'qdodoo_stock_in_analytic_report3')
@@ -1038,3 +763,5 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
+                else:
+                    raise except_orm(_(u'提示'), _(u'未查询到数据'))

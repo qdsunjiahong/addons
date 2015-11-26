@@ -17,7 +17,9 @@
     'depends': ['base', 'stock', 'purchase', 'product'],  # 依赖模块
     'data': [
         'wizard/qdodoo_stock_in_analytic_wizard.xml',
-        'report/qdodoo_stock_in_analytic_report.xml'
+        'wizard/qdodoo_stock_in_analytic_wizard2.xml',
+        'report/qdodoo_stock_in_analytic_report.xml',
+        'report/qdodoo_stock_in_analytic_report2.xml'
         # ...
     ],  # 更新XML,CSV
     'js': [
