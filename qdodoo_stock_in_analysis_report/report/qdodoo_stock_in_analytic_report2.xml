@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_stock_in_analytic_report2_1" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <tree string="入库分析合计表">
+                    <field name="year"/>
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="default_code"/>
+                    <field name="product_qty"/>
+                    <field name="uom_id"/>
+                    <field name="price_unit"/>
+                    <field name="product_amount"/>
+                    <field name="property_supplier_payment_term"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_search2_1" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <search string="入库分析合计表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="property_supplier_payment_term"/>
+                    <group string="分组按">
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="年份" domain="[]" context="{'group_by':'year'}"/>
+                        <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_report2_2" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <tree string="入库分析合计表">
+                    <field name="period_id"/>
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="default_code"/>
+                    <field name="product_qty"/>
+                    <field name="uom_id"/>
+                    <field name="price_unit"/>
+                    <field name="product_amount"/>
+                    <field name="property_supplier_payment_term"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_search2_2" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <search string="入库分析合计表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="property_supplier_payment_term"/>
+                    <group string="分组按">
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="月份" domain="[]" context="{'group_by':'period_id'}"/>
+                        <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_report2_3" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <tree string="入库分析合计表">
+                    <field name="quarter"/>
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="default_code"/>
+                    <field name="product_qty"/>
+                    <field name="uom_id"/>
+                    <field name="price_unit"/>
+                    <field name="product_amount"/>
+                    <field name="property_supplier_payment_term"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_search2_3" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <search string="入库分析合计表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="property_supplier_payment_term"/>
+                    <group string="分组按">
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="季度" domain="[]" context="{'group_by':'quarter'}"/>
+                        <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_report2_4" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <tree string="入库分析合计表">
+                    <field name="date"/>
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="default_code"/>
+                    <field name="product_qty"/>
+                    <field name="uom_id"/>
+                    <field name="price_unit"/>
+                    <field name="product_amount"/>
+                    <field name="property_supplier_payment_term"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_search2_4" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <search string="入库分析合计表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="property_supplier_payment_term"/>
+                    <group string="分组按">
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_report2_5" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <tree string="入库分析合计表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="default_code"/>
+                    <field name="product_qty"/>
+                    <field name="uom_id"/>
+                    <field name="price_unit"/>
+                    <field name="product_amount"/>
+                    <field name="property_supplier_payment_term"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_search2_5" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.report2</field>
+            <field name="arch" type="xml">
+                <search string="入库分析合计表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="property_supplier_payment_term"/>
+                    <group string="分组按">
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+    </data>
+</openerp>

@@ -1,12 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <openerp>
     <data>
-
-        <record id="qdodoo_stock_in_analytic_wizard_form" model="ir.ui.view">
-            <field name="name">入库分析表</field>
-            <field name="model">qdodoo.stock.in.analytic.wizard</field>
+        <record id="qdodoo_stock_in_analytic_wizard_form2" model="ir.ui.view">
+            <field name="name">入库分析合计表</field>
+            <field name="model">qdodoo.stock.in.analytic.wizard2</field>
             <field name="arch" type="xml">
-                <form string="入库分析表">
+                <form string="入库分析合计表">
                     <sheet>
                         <div>
                             <label for="search_choice" string="查询方式"/>
@@ -52,7 +51,7 @@
 
                     </sheet>
                     <footer>
-                        <button string="确定" name="action_done" type="object" class="oe_highlight"/>
+                        <button string="确定" name="action_done2" type="object" class="oe_highlight"/>
                         or
                         <button string="取消" class="oe_link" special="cancel"/>
                     </footer>
@@ -60,16 +59,16 @@
             </field>
         </record>
 
-        <record id="action_qdodoo_stock_in_analytic_wizard" model="ir.actions.act_window">
-            <field name="name">入库分析表</field>
-            <field name="res_model">qdodoo.stock.in.analytic.wizard</field>
+        <record id="action_qdodoo_stock_in_analytic_wizard2" model="ir.actions.act_window">
+            <field name="name">入库分析合计表</field>
+            <field name="res_model">qdodoo.stock.in.analytic.wizard2</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
-            <field name="view_id" ref="qdodoo_stock_in_analytic_wizard_form"/>
+            <field name="view_id" ref="qdodoo_stock_in_analytic_wizard_form2"/>
             <field name="target">new</field>
         </record>
-        <menuitem icon="STOCK_INDENT" name="入库分析表" action="action_qdodoo_stock_in_analytic_wizard"
-                  id="menu_qdodoo_stock_in_analytic"
+        <menuitem icon="STOCK_INDENT" name="入库分析合计表" action="action_qdodoo_stock_in_analytic_wizard2"
+                  id="menu_qdodoo_stock_in_analytic2"
                   parent="base.next_id_73"/>
 
     </data>

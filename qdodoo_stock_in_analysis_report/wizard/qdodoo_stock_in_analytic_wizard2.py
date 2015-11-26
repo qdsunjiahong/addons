@@ -7,14 +7,15 @@
 ###########################################################################################
 from openerp import models, fields, api, _
 from openerp.exceptions import except_orm
+import copy
 
 
-class qdodoo_stock_in_analytic_wizard(models.Model):
+class qdodoo_stock_in_analytic_wizard2(models.Model):
     """
     入库分析表wizard
     """
-    _name = 'qdodoo.stock.in.analytic.wizard'
-    _description = 'qdodoo.stock.in.analytic.wizard'
+    _name = 'qdodoo.stock.in.analytic.wizard2'
+    _description = 'qdodoo.stock.in.analytic.wizard2'
 
     search_choice = fields.Selection(((1, u'年份'), (5, u'月份'), (2, u'季度'), (3, u'日期'), (4, u'时间段')),
                                      string=u'查询方式', required=True, default=4)
@@ -32,10 +33,15 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
     product_id2 = fields.Many2one('product.product', string=u'产品')
 
     @api.multi
-    def action_done(self):
+    def action_done2(self):
         # 存储展示数据模型
-        report_obj = self.env['qdodoo.stock.in.analytic.report']
-        supplier_id = self.env['res.partner'].search([('name', '=', u'前期库存'), ('active', '=', True)])[0].id
+        report_obj = self.env['qdodoo.stock.in.analytic.report2']
+        supplier_ids = self.pool.get('res.partner').search(self.env.cr, self.env.uid,
+                                                           ['|', '|', ('name', 'ilike', u'期初'),
+                                                            ('name', 'ilike', u'前期'), '&',
+                                                            ('is_internal_company', '=', True),
+                                                            ('supplier', '=', True)])
+        report_obj.search([]).unlink()
         search_ids = report_obj.search([])
         search_ids.unlink()
         model_obj = self.env['ir.model.data']
@@ -44,30 +50,35 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
         product_dict_num = {}  # 数量
         product_dict_amount = {}  # 金额
         partner_dict = {}
+        sql_domain = []
         partner_ids = self.env['res.partner'].search([])
-        for partner_id in partner_ids:
-            partner_dict[partner_id.id] = partner_id.property_supplier_payment_term.name
         sql_l = """
             select
-                sp.min_date as date,
                 pp.name_template as product_name,
                 pp.default_code as default_code,
                 sm.product_uom_qty as product_qty,
-                sm.price_unit as price_unit,
                 (sm.product_uom_qty * sm.price_unit) as product_amount,
                 po.partner_id as partner_id,
-                po.location_id as location_id,
-                po.company_id as company_id
+                pt.uom_po_id as uom_id,
+                sp.min_date as date
             FROM stock_move sm
                 LEFT JOIN stock_picking sp on sp.id = sm.picking_id
+                LEFT JOIN res_partner rp on rp.id = sp.partner_id
                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                 LEFT JOIN purchase_order po on po.id = pol.order_id
                 LEFT JOIN product_product pp on pp.id = sm.product_id
-            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
+                LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
+            where sm.state = 'done' and sp.state = 'done' and po.state = 'done'
             """
+        for partner_id in partner_ids:
+            partner_dict[partner_id.id] = partner_id.property_supplier_payment_term.name
+        if len(supplier_ids) == 1:
+            sql_l = sql_l + " and sp.partner_id != %s"
+            sql_domain.append(supplier_ids[0])
+        elif len(supplier_ids) > 1:
+            sql_l = sql_l + " and sp.partner_id not in %s"
+            sql_domain.append(tuple(supplier_ids))
         if int(self.search_choice) == 1:
-            sql_domain = []
-            sql_domain.append(supplier_id)
             if self.year:
                 start_datetime = self.year.date_start + ' 00:00:01'
                 end_datetime = self.year.date_stop + ' 23:59:59'
@@ -99,29 +110,15 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
-                    year = r[0][:4]
-                    data = {
-                        'year': year,
-                        'date': r[0],
-                        'product_id': r[1],
-                        'default_code': r[2],
-                        'product_qty': r[3],
-                        'price_unit': r[4],
-                        'product_amount': r[5],
-                        'location_id': r[7],
-                        'company_id': r[8],
-                        'partner_id': r[6],
-                        'property_supplier_payment_term': partner_dict.get(r[6],'')
-                    }
-                    cre_obj = report_obj.create(data)
-                    result_list.append(cre_obj.id)
-                    k = (year, r[1], r[2])
+                    year = r[6][:4]
+                    # (年度，产品，编码，供应商，公司，单位)
+                    k = (year, r[0], r[1], r[4], r[5])
                     if k in product_list_p:
-                        product_dict_num[k] += r[3]
+                        product_dict_num[k] += r[2]
                         product_dict_amount[k] += r[5]
                     else:
-                        product_dict_num[k] = r[3]
-                        product_dict_amount[k] = r[5]
+                        product_dict_num[k] = r[2]
+                        product_dict_amount[k] = r[3]
                         product_list_p.append(k)
                 for j in product_list_p:
                     if product_dict_num.get(j, 0) == 0:
@@ -131,22 +128,28 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     data2 = {
                         'year': j[0],
                         'product_id': j[1],
+                        'default_code': j[2],
+                        'partner_id': j[3],
+                        'uom_id': j[4],
                         'product_qty': product_dict_num.get(j, 0),
                         'price_unit': price_u,
-                        'product_amount': product_dict_amount.get(j, 0)
+                        'product_amount': product_dict_amount.get(j, 0),
+                        'property_supplier_payment_term': partner_dict.get(j[3], '')
                     }
                     cre_obj2 = report_obj.create(data2)
                     result_list.append(cre_obj2.id)
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
             if result_list:
                 vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                    'qdodoo_stock_in_analytic_report1')
+                                                                    'qdodoo_stock_in_analytic_report2_1')
                 view_model, search_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                       'qdodoo_stock_in_analytic_search1')
+                                                                       'qdodoo_stock_in_analytic_search2_1')
                 return {
                     'name': _('入库分析表'),
                     'view_type': 'form',
                     "view_mode": 'tree',
-                    'res_model': 'qdodoo.stock.in.analytic.report',
+                    'res_model': 'qdodoo.stock.in.analytic.report2',
                     'type': 'ir.actions.act_window',
                     'domain': [('id', 'in', result_list)],
                     'views': [(view_id, 'tree')],
@@ -169,28 +172,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         per_dict_time[k] = month_l + '/' + str(self.year.name)
                 if per_list_time:
                     for per_time in per_list_time:
-                        sql_l = """
-                            select
-                                sp.min_date as date,
-                                pp.name_template as product_name,
-                                pp.default_code as default_code,
-                                sm.product_uom_qty as product_qty,
-                                sm.price_unit as price_unit,
-                                (sm.product_uom_qty * sm.price_unit) as product_amount,
-                                po.partner_id as partner_id,
-                                po.location_id as location_id,
-                                po.company_id as company_id
-                            FROM stock_move sm
-                                LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                                LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                                LEFT JOIN purchase_order po on po.id = pol.order_id
-                                LEFT JOIN product_product pp on pp.id = sm.product_id
-                            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
-                            """
-                        sql_domain2 = []
-                        sql_domain2.append(supplier_id)
+                        sql_l2 = sql_l
+                        sql_domain2 = copy.deepcopy(sql_domain)
                         if self.product_id:
-                            sql_l = sql_l + ' and sm.product_id = %s'
+                            sql_l2 = sql_l2 + ' and sm.product_id = %s'
                             sql_domain2.append(self.product_id.id)
                         pro_l = []
                         if self.product_id2:
@@ -198,78 +183,65 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             for pr in product_ids:
                                 pro_l.append(pr.id)
                             if len(pro_l) > 1:
-                                sql_l = sql_l + ' and sm.product_id in %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id in %s'
                                 sql_domain2.append(tuple(pro_l))
                             elif len(pro_l) == 1:
-                                sql_l = sql_l + ' and sm.product_id = %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id = %s'
                                 sql_domain2.append(pro_l[0])
                         if self.partner_id:
-                            sql_l = sql_l + ' and po.partner_id = %s'
+                            sql_l2 = sql_l2 + ' and po.partner_id = %s'
                             sql_domain2.append(self.partner_id.id)
                         if self.company_id:
-                            sql_l = sql_l + ' and po.company_id=%s'
+                            sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
-                        sql = sql_l % tuple(sql_domain2)
+                        sql = sql_l2 % tuple(sql_domain2)
                         self.env.cr.execute(sql)
                         res = self.env.cr.fetchall()
                         if res:
                             for r in res:
-                                data = {
-                                    'period_id': per_dict_time.get(per_time, ''),
-                                    'date': r[0],
-                                    'product_id': r[1],
-                                    "default_code": r[2],
-                                    'product_qty': r[3],
-                                    'price_unit': r[4],
-                                    'product_amount': r[5],
-                                    'location_id': r[7],
-                                    'company_id': r[8],
-                                    'partner_id': r[6],
-                                    'property_supplier_payment_term': partner_dict.get(r[6],'')
-                                }
-                                cre_obj2 = report_obj.create(data)
-                                result_list.append(cre_obj2.id)
-                                k = (per_dict_time.get(per_time, ''), r[1], r[2])
+                                # (月份，产品，编码，供应商，单位)
+                                k = (per_dict_time.get(per_time, ''), r[0], r[1], r[4], r[5])
                                 if k in product_list_p:
-                                    product_dict_num[k] += r[3]
-                                    product_dict_amount[k] += r[5]
+                                    product_dict_num[k] += r[2]
+                                    product_dict_amount[k] += r[3]
                                 else:
-                                    product_dict_num[k] = r[3]
-                                    product_dict_amount[k] = r[5]
+                                    product_dict_num[k] = r[2]
+                                    product_dict_amount[k] = r[3]
                                     product_list_p.append(k)
-                            for product_l in product_list_p:
-                                if product_dict_num.get(product_l, 0) == 0:
-                                    price_unit = 0
-                                else:
-                                    price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
-                                        product_l,
-                                        0)
-                                data2 = {
-                                    'period_id': product_l[0],
-                                    'product_id': product_l[1],
-                                    'default_code': product_l[2],
-                                    'product_qty': product_dict_num.get(product_l, 0),
-                                    'product_amount': product_dict_amount.get(product_l, 0),
-                                    'price_unit': price_unit
-                                }
-                                cre_obj = report_obj.create(data2)
-                                result_list.append(cre_obj.id)
+                    for product_l in product_list_p:
+                        if product_dict_num.get(product_l, 0) == 0:
+                            price_unit = 0
                         else:
-                            continue
+                            price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
+                                product_l,
+                                0)
+                        data2 = {
+                            'period_id': product_l[0],
+                            'product_id': product_l[1],
+                            'default_code': product_l[2],
+                            'partner_id': product_l[3],
+                            'uom_id': product_l[4],
+                            'product_qty': product_dict_num.get(product_l, 0),
+                            'product_amount': product_dict_amount.get(product_l, 0),
+                            'price_unit': price_unit,
+                            'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                        }
+                        cre_obj = report_obj.create(data2)
+                        result_list.append(cre_obj.id)
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                            'qdodoo_stock_in_analytic_report5')
+                                                                            'qdodoo_stock_in_analytic_report2_2')
                         view_model, search_id = model_obj.get_object_reference(
                             'qdodoo_stock_in_analysis_report',
-                            'qdodoo_stock_in_analytic_search5')
+                            'qdodoo_stock_in_analytic_search2_2')
                         return {
                             'name': _('入库分析表'),
                             'view_type': 'form',
                             "view_mode": 'tree',
-                            'res_model': 'qdodoo.stock.in.analytic.report',
+                            'res_model': 'qdodoo.stock.in.analytic.report2',
                             'type': 'ir.actions.act_window',
                             'domain': [('id', 'in', result_list)],
                             'views': [(view_id, 'tree')],
@@ -279,8 +251,6 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     else:
                         raise except_orm(_(u'提示'), _(u'未查询到数据'))
             elif self.year and self.month:
-                sql_domain = []
-                sql_domain.append(supplier_id)
                 per_ids = per_obj.search([('name', '=', str(self.month) + '/' + str(self.year.name))])
                 if per_ids:
                     start_datetime = per_ids[0].date_start + ' 00:00:01'
@@ -313,28 +283,14 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     res = self.env.cr.fetchall()
                     if res:
                         for r in res:
-                            data = {
-                                'period_id': str(self.month) + '/' + str(self.year.name),
-                                'date': r[0],
-                                'product_id': r[1],
-                                "default_code": r[2],
-                                'product_qty': r[3],
-                                'price_unit': r[4],
-                                'product_amount': r[5],
-                                'location_id': r[7],
-                                'company_id': r[8],
-                                'partner_id': r[6],
-                                'property_supplier_payment_term': partner_dict.get(r[6],'')
-                            }
-                            cre_obj2 = report_obj.create(data)
-                            result_list.append(cre_obj2.id)
-                            k = (r[0][:7], r[1], r[2])
+                            # (月份，产品，编码，供应商，单位)
+                            k = (r[0][:7], r[0], r[1], r[4], r[5])
                             if k in product_list_p:
-                                product_dict_num[k] += r[3]
-                                product_dict_amount[k] += r[5]
+                                product_dict_num[k] += r[2]
+                                product_dict_amount[k] += r[3]
                             else:
-                                product_dict_num[k] = r[3]
-                                product_dict_amount[k] = r[5]
+                                product_dict_num[k] = r[2]
+                                product_dict_amount[k] = r[3]
                                 product_list_p.append(k)
                         for product_l in product_list_p:
                             if product_dict_num.get(product_l, 0) == 0:
@@ -345,22 +301,25 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 'period_id': product_l[0],
                                 'product_id': product_l[1],
                                 'default_code': product_l[2],
+                                'partner_id': product_l[3],
+                                'uom_id': product_l[4],
                                 'product_qty': product_dict_num.get(product_l, 0),
                                 'product_amount': product_dict_amount.get(product_l, 0),
-                                'price_unit': price_unit
+                                'price_unit': price_unit,
+                                'property_supplier_payment_term': partner_dict.get(product_l[3], '')
                             }
                             cre_obj = report_obj.create(data2)
                             result_list.append(cre_obj.id)
                         if result_list:
                             vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                                'qdodoo_stock_in_analytic_report5')
+                                                                                'qdodoo_stock_in_analytic_report2_2')
                             view_model, search_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                                   'qdodoo_stock_in_analytic_search5')
+                                                                                   'qdodoo_stock_in_analytic_search2_2')
                             return {
                                 'name': _('入库分析表'),
                                 'view_type': 'form',
                                 "view_mode": 'tree',
-                                'res_model': 'qdodoo.stock.in.analytic.report',
+                                'res_model': 'qdodoo.stock.in.analytic.report2',
                                 'type': 'ir.actions.act_window',
                                 'domain': [('id', 'in', result_list)],
                                 'views': [(view_id, 'tree')],
@@ -385,29 +344,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             per_dict_time[k] = str(self.month) + '/' + str(ye_l)
                 if per_list_time:
                     for per_time in per_list_time:
-                        sql_l = """
-                            select
-                                sp.min_date as date,
-                                pp.name_template as product_name,
-                                pp.default_code as default_code,
-                                sm.product_uom_qty as product_qty,
-                                sm.price_unit as price_unit,
-                                (sm.product_uom_qty * sm.price_unit) as product_amount,
-                                po.partner_id as partner_id,
-                                po.location_id as location_id,
-                                po.company_id as company_id
-
-                            FROM stock_move sm
-                                LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                                LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                                LEFT JOIN purchase_order po on po.id = pol.order_id
-                                LEFT JOIN product_product pp on pp.id = sm.product_id
-                            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
-                            """
-                        sql_domain2 = []
-                        sql_domain2.append(supplier_id)
+                        sql_l2 = sql_l
+                        sql_domain2 = copy.deepcopy(sql_domain)
                         if self.product_id:
-                            sql_l = sql_l + ' and sm.product_id = %s'
+                            sql_l2 = sql_l2 + ' and sm.product_id = %s'
                             sql_domain2.append(self.product_id.id)
                         pro_l = []
                         if self.product_id2:
@@ -415,81 +355,69 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             for pr in product_ids:
                                 pro_l.append(pr.id)
                             if len(pro_l) > 1:
-                                sql_l = sql_l + ' and sm.product_id in %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id in %s'
                                 sql_domain2.append(tuple(pro_l))
                             elif len(pro_l) == 1:
-                                sql_l = sql_l + ' and sm.product_id = %s'
+                                sql_l2 = sql_l2 + ' and sm.product_id = %s'
                                 sql_domain2.append(pro_l[0])
                         if self.partner_id:
-                            sql_l = sql_l + ' and po.partner_id = %s'
+                            sql_l2 = sql_l2 + ' and po.partner_id = %s'
                             sql_domain2.append(self.partner_id.id)
                         if self.company_id:
-                            sql_l = sql_l + ' and po.company_id=%s'
+                            sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
-                        sql = sql_l % tuple(sql_domain2)
+                        sql = sql_l2 % tuple(sql_domain2)
                         self.env.cr.execute(sql)
                         res = self.env.cr.fetchall()
                         if res:
                             per_ids2 = per_obj.search([('name', '=', str(self.month) + '/' + per_time[1][:4])])
+                            per = ''
                             if per_ids2:
                                 per = per_ids2[0].name
                             for r in res:
-                                data = {
-                                    'period_id': per,
-                                    'date': r[0],
-                                    'product_id': r[1],
-                                    "default_code": r[2],
-                                    'product_qty': r[3],
-                                    'price_unit': r[4],
-                                    'product_amount': r[5],
-                                    'location_id': r[7],
-                                    'company_id': r[8],
-                                    'partner_id': r[6],
-                                    'property_supplier_payment_term': partner_dict.get(r[6],'')
-                                }
-                                cre_obj2 = report_obj.create(data)
-                                result_list.append(cre_obj2.id)
-                                k = (per, r[1], r[2])
+                                # (月份，产品，编码，供应商，单位)
+                                k = (per, r[0], r[1], r[4], r[5])
                                 if k in product_list_p:
-                                    product_dict_num[k] += r[3]
-                                    product_dict_amount[k] += r[5]
+                                    product_dict_num[k] += r[2]
+                                    product_dict_amount[k] += r[3]
                                 else:
-                                    product_dict_num[k] = r[3]
-                                    product_dict_amount[k] = r[5]
+                                    product_dict_num[k] = r[2]
+                                    product_dict_amount[k] = r[3]
                                     product_list_p.append(k)
-                            for product_l in product_list_p:
-                                if product_dict_num.get(product_l, 0) == 0:
-                                    price_unit = 0
-                                else:
-                                    price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
-                                        product_l,
-                                        0)
-                                data2 = {
-                                    'period_id': product_l[0],
-                                    'product_id': product_l[1],
-                                    'default_code': product_l[2],
-                                    'product_qty': product_dict_num.get(product_l, 0),
-                                    'product_amount': product_dict_amount.get(product_l, 0),
-                                    'price_unit': price_unit
-                                }
-                                cre_obj = report_obj.create(data2)
-                                result_list.append(cre_obj.id)
+                    for product_l in product_list_p:
+                        if product_dict_num.get(product_l, 0) == 0:
+                            price_unit = 0
                         else:
-                            continue
+                            price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
+                                product_l,
+                                0)
+                        data2 = {
+                            'period_id': product_l[0],
+                            'product_id': product_l[1],
+                            'default_code': product_l[2],
+                            'partner_id': product_l[3],
+                            'uom_id': product_l[4],
+                            'product_qty': product_dict_num.get(product_l, 0),
+                            'product_amount': product_dict_amount.get(product_l, 0),
+                            'price_unit': price_unit,
+                            'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                        }
+                        cre_obj = report_obj.create(data2)
+                        result_list.append(cre_obj.id)
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                            'qdodoo_stock_in_analytic_report5')
+                                                                            'qdodoo_stock_in_analytic_report2_2')
                         view_model, search_id = model_obj.get_object_reference(
                             'qdodoo_stock_in_analysis_report',
-                            'qdodoo_stock_in_analytic_search5')
+                            'qdodoo_stock_in_analytic_search2_2')
                         return {
                             'name': _('入库分析表'),
                             'view_type': 'form',
                             "view_mode": 'tree',
-                            'res_model': 'qdodoo.stock.in.analytic.report',
+                            'res_model': 'qdodoo.stock.in.analytic.report2',
                             'type': 'ir.actions.act_window',
                             'domain': [('id', 'in', result_list)],
                             'views': [(view_id, 'tree')],
@@ -518,109 +446,77 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 per_dict_time[k] = month_l + '/' + str(ye_l)
                 if per_list_time:
                     for per_time in per_list_time:
-                        sql_l = """
-                            select
-                                sp.min_date as date,
-                                pp.name_template as product_name,
-                                pp.default_code as default_code,
-                                sm.product_uom_qty as product_qty,
-                                sm.price_unit as price_unit,
-                                (sm.product_uom_qty * sm.price_unit) as product_amount,
-                                po.partner_id as partner_id,
-                                po.location_id as location_id,
-                                po.company_id as company_id
-
-                            FROM stock_move sm
-                                LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                                LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
-                                LEFT JOIN purchase_order po on po.id = pol.order_id
-                                LEFT JOIN product_product pp on pp.id = sm.product_id
-                            where sm.state = 'done' and sp.state = 'done' and po.state = 'done' and po.partner_id != %s
-                            """
-                        sql_domain2 = []
-                        sql_domain2.append(supplier_id)
+                        sql_l2 = sql_l
+                        sql_do = copy.deepcopy(sql_domain)
                         if self.product_id:
-                            sql_l = sql_l + ' and sm.product_id = %s'
-                            sql_domain2.append(self.product_id.id)
+                            sql_l2 = sql_l2 + ' and sm.product_id = %s'
+                            sql_do.append(self.product_id.id)
                         pro_l = []
                         if self.product_id2:
                             product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                             for pr in product_ids:
                                 pro_l.append(pr.id)
                             if len(pro_l) > 1:
-                                sql_l = sql_l + ' and sm.product_id in %s'
-                                sql_domain2.append(tuple(pro_l))
+                                sql_l2 = sql_l2 + ' and sm.product_id in %s'
+                                sql_do.append(tuple(pro_l))
                             elif len(pro_l) == 1:
-                                sql_l = sql_l + ' and sm.product_id = %s'
-                                sql_domain2.append(pro_l[0])
+                                sql_l2 = sql_l2 + ' and sm.product_id = %s'
+                                sql_do.append(pro_l[0])
                         if self.partner_id:
-                            sql_l = sql_l + ' and po.partner_id = %s'
-                            sql_domain2.append(self.partner_id.id)
+                            sql_l2 = sql_l2 + ' and po.partner_id = %s'
+                            sql_do.append(self.partner_id.id)
                         if self.company_id:
-                            sql_l = sql_l + ' and po.company_id=%s'
-                            sql_domain2.append(self.company_id.id)
-                        sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
-                        sql_domain2.append(per_time[0])
-                        sql_domain2.append(per_time[1])
-                        sql = sql_l % tuple(sql_domain2)
+                            sql_l2 = sql_l2 + ' and po.company_id=%s'
+                            sql_do.append(self.company_id.id)
+                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_do.append(per_time[0])
+                        sql_do.append(per_time[1])
+                        sql = sql_l2 % tuple(sql_do)
                         self.env.cr.execute(sql)
                         res = self.env.cr.fetchall()
                         if res:
                             per2 = per_dict_time.get(per_time, '')
                             for r in res:
-                                data = {
-                                    'period_id': per2,
-                                    'date': r[0],
-                                    'product_id': r[1],
-                                    "default_code": r[2],
-                                    'product_qty': r[3],
-                                    'price_unit': r[4],
-                                    'product_amount': r[5],
-                                    'location_id': r[7],
-                                    'company_id': r[8],
-                                    'partner_id': r[6],
-                                    'property_supplier_payment_term': partner_dict.get(r[6],'')
-                                }
-                                cre_obj2 = report_obj.create(data)
-                                result_list.append(cre_obj2.id)
-                                k = (per2, r[1], r[2])
+                                # (月份，产品，编码，供应商，单位)
+                                k = (per2, r[0], r[1], r[4], r[5])
                                 if k in product_list_p:
-                                    product_dict_num[k] += r[3]
-                                    product_dict_amount[k] += r[5]
+                                    product_dict_num[k] += r[2]
+                                    product_dict_amount[k] += r[3]
                                 else:
-                                    product_dict_num[k] = r[3]
-                                    product_dict_amount[k] = r[5]
+                                    product_dict_num[k] = r[2]
+                                    product_dict_amount[k] = r[3]
                                     product_list_p.append(k)
-                            for product_l in product_list_p:
-                                if product_dict_num.get(product_l, 0) == 0:
-                                    price_unit = 0
-                                else:
-                                    price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
-                                        product_l,
-                                        0)
-                                data2 = {
-                                    'period_id': product_l[0],
-                                    'product_id': product_l[1],
-                                    'default_code': product_l[2],
-                                    'product_qty': product_dict_num.get(product_l, 0),
-                                    'product_amount': product_dict_amount.get(product_l, 0),
-                                    'price_unit': price_unit
-                                }
-                                cre_obj = report_obj.create(data2)
-                                result_list.append(cre_obj.id)
+                    for product_l in product_list_p:
+                        if product_dict_num.get(product_l, 0) == 0:
+                            price_unit = 0
                         else:
-                            continue
+                            price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
+                                product_l,
+                                0)
+                        data2 = {
+                            'period_id': product_l[0],
+                            'product_id': product_l[1],
+                            'default_code': product_l[2],
+                            'partner_id': product_l[3],
+                            'uom_id': product_l[4],
+                            'product_qty': product_dict_num.get(product_l, 0),
+                            'product_amount': product_dict_amount.get(product_l, 0),
+                            'price_unit': price_unit,
+                            'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                        }
+                        cre_obj = report_obj.create(data2)
+                        result_list.append(cre_obj.id)
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                            'qdodoo_stock_in_analytic_report5')
+                                                                            'qdodoo_stock_in_analytic_report2_2')
                         view_model, search_id = model_obj.get_object_reference(
                             'qdodoo_stock_in_analysis_report',
-                            'qdodoo_stock_in_analytic_search5')
+                            'qdodoo_stock_in_analytic_search2_2')
                         return {
                             'name': _('入库分析表'),
                             'view_type': 'form',
                             "view_mode": 'tree',
-                            'res_model': 'qdodoo.stock.in.analytic.report',
+                            'res_model': 'qdodoo.stock.in.analytic.report2',
                             'type': 'ir.actions.act_window',
                             'domain': [('id', 'in', result_list)],
                             'views': [(view_id, 'tree')],
@@ -733,61 +629,48 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         quarter_stop[key4] = per_stops4[0].date_stop + ' 23:59:59'
                     quarter_key.append(key4)
             for q in quarter_key:
-                sql_domain = []
-                sql_domain.append(supplier_id)
+
+                sql_l2 = sql_l
+                sql_domain2 = copy.deepcopy(sql_domain)
                 if quarter_start.get(q, None) != None:
-                    sql_l = sql_l + " and sp.min_date >= '%s'"
-                    sql_domain.append(quarter_start.get(q))
+                    sql_l2 = sql_l2 + " and sp.min_date >= '%s'"
+                    sql_domain2.append(quarter_start.get(q))
                 if quarter_stop.get(q, None) != None:
-                    sql_domain.append(quarter_stop.get(q))
-                    sql_l = sql_l + " and sp.min_date <= '%s'"
+                    sql_domain2.append(quarter_stop.get(q))
+                    sql_l2 = sql_l2 + " and sp.min_date <= '%s'"
                 if self.product_id:
-                    sql_l = sql_l + ' and sm.product_id = %s'
-                    sql_domain.append(self.product_id.id)
+                    sql_l2 = sql_l2 + ' and sm.product_id = %s'
+                    sql_domain2.append(self.product_id.id)
                 pro_l = []
                 if self.product_id2:
                     product_ids = self.env['product.product'].search([('name', '=', self.product_id2.name)])
                     for pr in product_ids:
                         pro_l.append(pr.id)
                     if len(pro_l) > 1:
-                        sql_l = sql_l + ' and sm.product_id in %s'
-                        sql_domain.append(tuple(pro_l))
+                        sql_l2 = sql_l2 + ' and sm.product_id in %s'
+                        sql_domain2.append(tuple(pro_l))
                     elif len(pro_l) == 1:
-                        sql_l = sql_l + ' and sm.product_id = %s'
-                        sql_domain.append(pro_l[0])
+                        sql_l2 = sql_l2 + ' and sm.product_id = %s'
+                        sql_domain2.append(pro_l[0])
                 if self.partner_id:
-                    sql_l = sql_l + ' and po.partner_id = %s'
-                    sql_domain.append(self.partner_id.id)
+                    sql_l2 = sql_l2 + ' and po.partner_id = %s'
+                    sql_domain2.append(self.partner_id.id)
                 if self.company_id:
-                    sql_l = sql_l + ' and po.company_id = %s'
-                    sql_domain.append(self.company_id.id)
-                sql = sql_l % tuple(sql_domain)
+                    sql_l2 = sql_l2 + ' and po.company_id = %s'
+                    sql_domain2.append(self.company_id.id)
+                sql = sql_l2 % tuple(sql_domain2)
                 self.env.cr.execute(sql)
                 res = self.env.cr.fetchall()
                 if res:
                     for r in res:
-                        data = {
-                            'quarter': q,
-                            'date': r[0],
-                            'product_id': r[1],
-                            "default_code": r[2],
-                            'product_qty': r[3],
-                            'price_unit': r[4],
-                            'product_amount': r[5],
-                            'location_id': r[7],
-                            'company_id': r[8],
-                            'partner_id': r[6],
-                            'property_supplier_payment_term': partner_dict.get(r[6],'')
-                        }
-                        cre_obj2 = report_obj.create(data)
-                        result_list.append(cre_obj2.id)
-                        k = (q, r[1], r[2])
+                        # (季度,产品，编码，供应商,单位)
+                        k = (q, r[0], r[1], r[4], r[5])
                         if k in product_list_p:
-                            product_dict_num[k] += r[3]
-                            product_dict_amount[k] += r[5]
+                            product_dict_num[k] += r[2]
+                            product_dict_amount[k] += r[3]
                         else:
-                            product_dict_num[k] = r[3]
-                            product_dict_amount[k] = r[5]
+                            product_dict_num[k] = r[2]
+                            product_dict_amount[k] = r[3]
                             product_list_p.append(k)
             if product_list_p:
                 for product_l in product_list_p:
@@ -798,33 +681,36 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     data = {
                         'quarter': product_l[0],
                         'product_id': product_l[1],
-                        'default_code': product_l[-1],
+                        'default_code': product_l[2],
+                        'uom_id': product_l[4],
+                        'partner_id': product_l[3],
                         'price_unit': price_unit,
                         'product_qty': product_dict_num.get(product_l, 0),
                         'product_amount': product_dict_amount.get(product_l, 0),
+                        'property_supplier_payment_term': partner_dict.get(product_l[3], '')
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                        'qdodoo_stock_in_analytic_report2')
+                                                                        'qdodoo_stock_in_analytic_report2_3')
                     view_model, search_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                           'qdodoo_stock_in_analytic_search2')
+                                                                           'qdodoo_stock_in_analytic_search2_3')
                     return {
                         'name': _('入库分析表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.stock.in.analytic.report2',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查询到数据'))
         #####日期查询
         elif int(self.search_choice) == 3:
-            sql_domain = []
-            sql_domain.append(supplier_id)
             start_datetime = self.date + ' 00:00:01'
             end_datetime = self.date + ' 23:59:59'
             sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
@@ -855,28 +741,14 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
-                    data = {
-                        'date': r[0],
-                        'product_id': r[1],
-                        "default_code": r[2],
-                        'product_qty': r[3],
-                        'price_unit': r[4],
-                        'product_amount': r[5],
-                        'location_id': r[7],
-                        'company_id': r[8],
-                        'partner_id': r[6],
-                        'property_supplier_payment_term': partner_dict.get(r[6],'')
-                    }
-
-                    cre_obj2 = report_obj.create(data)
-                    result_list.append(cre_obj2.id)
-                    k = (r[1], r[2])
+                    # (日期,产品，编码，供应商，单位)
+                    k = (self.date, r[0], r[1], r[4], r[5])
                     if k in product_list_p:
-                        product_dict_num[k] += r[3]
-                        product_dict_amount[k] += r[5]
+                        product_dict_num[k] += r[2]
+                        product_dict_amount[k] += r[3]
                     else:
-                        product_dict_num[k] = r[3]
-                        product_dict_amount[k] = r[5]
+                        product_dict_num[k] = r[2]
+                        product_dict_amount[k] = r[3]
                         product_list_p.append(k)
                 for product_l in product_list_p:
                     if product_dict_num.get(product_l, 0) == 0:
@@ -884,35 +756,38 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     else:
                         price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
                     data = {
-                        'date': self.date,
-                        'product_id': product_l[0],
-                        'default_code': product_l[1],
+                        'date': product_l[0],
+                        'product_id': product_l[1],
+                        'default_code': product_l[2],
                         'product_qty': product_dict_num.get(product_l, 0),
+                        'uom_id': product_l[4],
+                        'partner_id': product_l[3],
                         'price_unit': price_unit,
                         'product_amount': product_dict_amount.get(product_l, 0),
+                        'property_supplier_payment_term': partner_dict.get(product_l[3], '')
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                        'qdodoo_stock_in_analytic_report3')
+                                                                        'qdodoo_stock_in_analytic_report2_4')
                     view_model, search_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                           'qdodoo_stock_in_analytic_search3')
+                                                                           'qdodoo_stock_in_analytic_search2_4')
                     return {
                         'name': _('入库分析表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.stock.in.analytic.report2',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查到数据'))
         #####时间段查询
         elif int(self.search_choice) == 4:
-            sql_domain = []
-            sql_domain.append(supplier_id)
             sql_l = sql_l + " and sp.min_date >= '%s'"
             sql_domain.append(self.start_date + ' 00:00:01')
             sql_l = sql_l + " and sp.min_date <= '%s'"
@@ -942,28 +817,14 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
-                    data = {
-                        'date': r[0],
-                        'product_id': r[1],
-                        "default_code": r[2],
-                        'product_qty': r[3],
-                        'price_unit': r[4],
-                        'product_amount': r[5],
-                        'location_id': r[7],
-                        'company_id': r[8],
-                        'partner_id': r[6],
-                        'property_supplier_payment_term': partner_dict.get(r[6],'')
-                    }
-                    cre_obj2 = report_obj.create(data)
-                    result_list.append(cre_obj2.id)
-
-                    k = (r[1], r[2])
+                    # (产品，编码，供应商，单位)
+                    k = (r[0], r[1], r[4], r[5])
                     if k in product_list_p:
-                        product_dict_num[k] += r[3]
-                        product_dict_amount[k] += r[5]
+                        product_dict_num[k] += r[2]
+                        product_dict_amount[k] += r[3]
                     else:
-                        product_dict_num[k] = r[3]
-                        product_dict_amount[k] = r[5]
+                        product_dict_num[k] = r[2]
+                        product_dict_amount[k] = r[3]
                         product_list_p.append(k)
                 for product_l in product_list_p:
                     if product_dict_num.get(product_l, 0) == 0:
@@ -974,24 +835,29 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_id': product_l[0],
                         'default_code': product_l[1],
                         'product_qty': product_dict_num.get(product_l, 0),
+                        'partner_id': product_l[2],
+                        'uom_id': product_l[3],
                         'product_amount': product_dict_amount.get(product_l, 0),
                         'price_unit': price_unit,
+                        'property_supplier_payment_term': partner_dict.get(product_l[2], '')
                     }
                     cre_obj = report_obj.create(data)
                     result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                        'qdodoo_stock_in_analytic_report3')
+                                                                        'qdodoo_stock_in_analytic_report2_5')
                     view_model, search_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
-                                                                           'qdodoo_stock_in_analytic_search3')
+                                                                           'qdodoo_stock_in_analytic_search2_5')
                     return {
                         'name': _('入库分析表'),
                         'view_type': 'form',
                         "view_mode": 'tree',
-                        'res_model': 'qdodoo.stock.in.analytic.report',
+                        'res_model': 'qdodoo.stock.in.analytic.report2',
                         'type': 'ir.actions.act_window',
                         'domain': [('id', 'in', result_list)],
                         'views': [(view_id, 'tree')],
                         'view_id': [view_id],
                         'search_view_id': [search_id]
                     }
+            else:
+                raise except_orm(_(u'提示'), _(u'未查到数据'))
