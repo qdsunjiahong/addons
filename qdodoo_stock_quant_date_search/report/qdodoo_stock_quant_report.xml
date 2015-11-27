@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="search_qdodoo_stock_quant_report2" model="ir.ui.view">
+            <field name="name">总库存报表</field>
+            <field name="model">qdodoo.stock.quant.report2</field>
+            <field name="arch" type="xml">
+                <search string="总库存报表">
+                    <field name="product_name"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="qdodoo_stock_quant_report2" model="ir.ui.view">
+            <field name="name">总库存报表</field>
+            <field name="model">qdodoo.stock.quant.report2</field>
+            <field name="arch" type="xml">
+                <tree string="总库存报表">
+                    <field name="product_name"/>
+                    <field name="product_default"/>
+                    <field name="product_qty"/>
+                    <field name="uom"/>
+                    <field name="product_amount"/>
+                    <field name="price_unit"/>
+                </tree>
+            </field>
+        </record>
+    </data>
+</openerp>
