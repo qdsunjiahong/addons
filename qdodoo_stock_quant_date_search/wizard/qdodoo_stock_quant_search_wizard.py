@@ -19,6 +19,7 @@ class qdodoo_stock_quant_search(models.Model):
     date = fields.Date(string=u'日期')
     company_id = fields.Many2one('res.company', string=u'公司')
     product_id = fields.Many2one('product.product', string=u'产品')
+    product_id2=fields.Many2one('product.product',string=u'产品')
 
     @api.multi
     def action_done(self):
@@ -58,9 +59,9 @@ class qdodoo_stock_quant_search(models.Model):
             if self.company_id:
                 sql = sql + " and sq.company_id = %s"
                 sql_domain.append(self.company_id.id)
-                if self.product_id:
+                if self.product_id2:
                     sql = sql + " and sq.product_id=%s"
-                    sql_domain.append(self.product_id.id)
+                    sql_domain.append(self.product_id2.id)
             else:
                 if self.product_id:
                     product_ids = self.pool.get('product.product').search(self.env.cr, self.env.uid, [
