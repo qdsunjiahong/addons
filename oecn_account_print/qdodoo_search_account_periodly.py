@@ -22,15 +22,12 @@ class account_periodly_search(models.Model):
 
     @api.multi
     def btn_search(self):
-        print 111111111, fields.Datetime.now()
         sql_del1 = """delete from qdodoo_account_partner_line where 1=1"""
         self.env.cr.execute(sql_del1)
         sql_del2 = """delete from qdodoo_account_partner_report where 1=1"""
         self.env.cr.execute(sql_del2)
         sql_del3 = """delete from account_periodly where 1=1"""
         self.env.cr.execute(sql_del3)
-        # self.env['account.periodly'].search([]).unlink()
-        print 22222222, fields.Datetime.now()
         per_list = []
         starting_balance_dict = {}  # 科目期初
         start_partner_dict = {}  # 客户期初
