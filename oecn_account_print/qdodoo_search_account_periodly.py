@@ -77,7 +77,6 @@ class account_periodly_search(models.Model):
                     l.debit as debit,
                     l.credit as credit,
                     (l.debit-l.credit) as balance,
-                    l.date as date,
                     l.name as line_name,
                     am.name as move_name
                 from
