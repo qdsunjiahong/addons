@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="qdodoo_sale_order_consolidation_form" model="ir.ui.view">
+            <field name="name">销售单合并</field>
+            <field name="model">qdodoo_sale_order_consolidation</field>
+            <field name="arch" type="xml">
+                <form string="销售单合并">
+                    <sheet>
+                        <group>
+                            <separator string="你确定要合并这些单据吗?"/>
+                            <label string="注意：只能合并相同客户，库位相同，产品相同的单据"
+                                   colspan="4"/>
+                            <field name="sale_ids"/>
+                        </group>
+                        <footer>
+                            <button string="确定" name="action_done" type="object" class="oe_highlight"/>
+                            or
+                            <button string="取消" class="oe_link" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="action_qdodoo_sale_order_consolidation1" model="ir.actions.act_window">
+            <field name="name">销售单合并</field>
+            <field name="res_model">qdodoo_sale_order_consolidation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_sale_order_consolidation_form"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+        <record id="action_qdodoo_sale_order_consolidation2" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+            <field eval="'sale.order'" name="model"/>
+            <field name="name">销售单合并</field>
+            <field eval="'ir.actions.act_window,'+str(action_qdodoo_sale_order_consolidation1)" name="value"/>
+        </record>
+    </data>
+</openerp>
