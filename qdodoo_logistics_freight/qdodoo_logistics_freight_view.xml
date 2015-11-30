@@ -248,6 +248,7 @@
                     <field name="all_volume_rate"/>
                     <field name="location_id_tfs"/>
                     <field name="location_dest_id_tfs"/>
+                    <field name="invoice_state"/>
                     <field name="amount_untaxed" sum="Total Untaxed amount" string="Untaxed"/>
                     <field name="amount_total" sum="Total amount"/>
                     <field name="state"/>

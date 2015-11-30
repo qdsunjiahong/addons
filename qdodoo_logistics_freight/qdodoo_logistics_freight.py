@@ -79,10 +79,23 @@ class qdodoo_purchase_order_inherit(models.Model):
     location_id_tfs = fields.Many2one('stock.location',u'源库位')
     location_dest_id_tfs = fields.Many2one('stock.location',u'目标库位')
     shipper_tfs = fields.Many2one('delivery.carrier',u'车型')
+    invoice_state = fields.Selection([('draft',u'草稿'),
+            ('proforma',u'形式发票'),
+            ('proforma2',u'形式发票'),
+            ('open',u'待支付'),
+            ('paid',u'已付'),
+            ('cancel',u'已取消'),],u'发票状态',compute='_get_state')
 
     _defaults={
             "is_logistics":False,
             }
+
+    # 获取对应的发票状态
+    def _get_state(self):
+        for ids in self:
+            # 获取关联的发票
+            for id in ids.invoice_ids:
+                ids.invoice_state = id.state
 
     # 获取满载率
     def _get_all_volume_rate(self):
