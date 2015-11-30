@@ -23,33 +23,32 @@ class qdodoo_reverse_transfer(models.Model):
         if not record_id:
             raise except_orm(_(u'警告'), _(u'移动单与采购单关联异常'))
         sale_obj = self.env['sale.order']
+        purchase_obj = self.env['purchase.order']
         picking_obj = self.env['stock.picking']
-        code = picking_obj.browse(record_id).picking_type_id.code
-        if code == "outgoing":
-            picking_id = picking_obj.browse(record_id)
-            sale_id = sale_obj.search([('procurement_group_id', '=', picking_id.group_id.id)])
-            if not sale_id or len(sale_id) > 1:
-                raise except_orm(_(u'警告'), _(u'销售单与移库蛋关联异常'))
-            for move_l in sale_id.order_line:
+        origin = picking_obj.browse(record_id).origin
+        purchase_ids = purchase_obj.search([('name', '=', origin)])
+        sale_ids = sale_obj.search([('name', '=', origin)])
+        if sale_ids:
+            for move_l in sale_ids.order_line:
                 product_price_list[move_l.product_id.id] = move_l.price_unit
-        elif code == 'incoming':
-            query = """
-                SELECT
-                  po.id
-                FROM stock_picking p,
-                     stock_move m,
-                     purchase_order_line pol,
-                     purchase_order po
-                WHERE p.id = %s and po.id = pol.order_id and pol.id = m.purchase_line_id and m.picking_id = p.id
-                GROUP BY picking_id, po.id
-            """ % record_id
-            self.env.cr.execute(query)
-            res = self.env.cr.fetchall()
-            if res and len(res) == 1:
-                purchase_id = self.env['purchase.order'].browse(res[0][0])
-                if purchase_id.order_line:
-                    for order_id in purchase_id.order_line:
-                        product_price_list[order_id.product_id.id] = order_id.price_unit
+        elif purchase_ids:
+            # query = """
+            #     SELECT
+            #       po.id
+            #     FROM stock_picking p,
+            #          stock_move m,
+            #          purchase_order_line pol,
+            #          purchase_order po
+            #     WHERE p.id = %s and po.id = pol.order_id and pol.id = m.purchase_line_id and m.picking_id = p.id
+            #     GROUP BY picking_id, po.id
+            # """ % record_id
+            # self.env.cr.execute(query)
+            # res = self.env.cr.fetchall()
+            # if res and len(res) == 1:
+            #     purchase_id = purchase_obj.browse(res[0][0])
+            #     if purchase_id.order_line:
+            for order_id in purchase_ids.order_line:
+                product_price_list[order_id.product_id.id] = order_id.price_unit
         new_picking_id, pick_type_id = super(qdodoo_reverse_transfer, self)._create_returns()
         picking_id2 = picking_obj.browse(new_picking_id)
         if picking_id2.move_lines:
