@@ -59,25 +59,33 @@ class qdodoo_purchase_sale_order(models.Model):
             }}
 
     # 赋值产品到所有的公司
+    # def copy_product_company(self, cr, uid):
+    #     template_obj = self.pool.get('product.template')
+    #     company_obj = self.pool.get('res.company')
+    #     template_ids = template_obj.search(cr, uid, [])
+    #     num = 0
+    #     for line in template_obj.browse(cr ,uid, template_ids):
+    #         num += 1
+    #         company_ids = company_obj.search(cr, uid, [])
+    #         company_ids.remove(line.company_id.id)
+    #         name = line.name
+    #         default_code = line.default_code
+    #         if default_code:
+    #             res_ids = template_obj.search(cr, uid, [('default_code','=',default_code)])
+    #             if res_ids.remove(line.id):
+    #                 for res_id in template_obj.browse(cr ,uid, res_ids):
+    #                     company_ids.remove(res_id.company_id.id)
+    #         for company_id in company_ids:
+    #             template_obj.copy(cr, uid, line.id, {'name':name,'default_code':default_code,'company_id':company_id})
+    #     return True
+
     def copy_product_company(self, cr, uid):
         template_obj = self.pool.get('product.template')
-        company_obj = self.pool.get('res.company')
-        template_ids = template_obj.search(cr, uid, [])
-        num = 0
-        for line in template_obj.browse(cr ,uid, template_ids):
-            num += 1
-            company_ids = company_obj.search(cr, uid, [])
-            company_ids.remove(line.company_id.id)
-            name = line.name
-            default_code = line.default_code
-            if default_code:
-                res_ids = template_obj.search(cr, uid, [('default_code','=',default_code)])
-                if res_ids.remove(line.id):
-                    for res_id in template_obj.browse(cr ,uid, res_ids):
-                        company_ids.remove(res_id.company_id.id)
-            for company_id in company_ids:
-                template_obj.copy(cr, uid, line.id, {'name':name,'default_code':default_code,'company_id':company_id})
+        template_ids = template_obj.search(cr, uid, [('company_id','=',1)])
+        for line in template_ids:
+            template_obj.copy(cr, uid, line, {'company_id':4})
         return True
+
 
     def wkf_confirm_order(self, cr, uid, ids, context=None):
         super(qdodoo_purchase_sale_order, self).wkf_confirm_order(cr, uid, ids, context=context)
