@@ -123,7 +123,7 @@ class qdodoo_stock_quant_search(models.Model):
                         product_amount_dict[k_l] += res_l[3] * product_price_dict.get(res_l[4], 0)
                     else:
                         product_num_dict[k_l] = res_l[3]
-                        product_amount_dict[k_l] = res_l[4] * product_price_dict.get(res_l[4], 0)
+                        product_amount_dict[k_l] = res_l[3] * product_price_dict.get(res_l[4], 0)
                         product_name.append(k_l)
             elif ch == 2:
                 # resl(产品名称，编码，数量，产品ID)
