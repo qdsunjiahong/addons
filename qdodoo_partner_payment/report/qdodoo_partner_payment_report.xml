@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_partner_payment_report_tree" model="ir.ui.view">
+            <field name="name">供应商账务动态表</field>
+            <field name="model">qdodoo.partner.payment.report</field>
+            <field name="arch" type="xml">
+                <tree string="供应商账务动态表">
+                    <field name="partner_id"/>
+                    <field name="date"/>
+                    <field name="amount"/>
+                    <field name="paid_amount"/>
+                    <field name="unpaid_amount"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_partner_payment_report_search" model="ir.ui.view">
+            <field name="name">供应商账务动态表</field>
+            <field name="model">qdodoo.partner.payment.report</field>
+            <field name="arch" type="xml">
+                <search string="供应商账务动态表">
+                    <field name="partner_id"/>
+                </search>
+            </field>
+        </record>
+    </data>
+</openerp>
