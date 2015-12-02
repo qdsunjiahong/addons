@@ -49,10 +49,11 @@ class qdodoo_stock_quant_search(models.Model):
                     sq.qty as product_qty,
                     sq.product_id as product_id
                 from stock_quant sq
+                    LEFT JOIN stock_location sl on sl.id = sq.location_id
                     LEFT JOIN product_product pp on pp.id = sq.product_id
                     LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN product_uom pu on pu.id = pt.uom_id
-                where sq.qty != 0
+                where sq.qty != 0 and sl.usage = 'inventory'
             """
             # group_by_l = " group by pp.name_template,pp.default_code,sq.qty,sq.product_id,pu.name"
             ch = ch + 1
@@ -81,10 +82,11 @@ class qdodoo_stock_quant_search(models.Model):
                     qpb.balance_num as product_qty,
                     qpb.balance_money as product_amount
                 from qdodoo_previous_balance qpb
+                    LEFT JOIN stock_location sl on sl.id = qpb.location_id
                     LEFT JOIN product_product pp on pp.id = qpb.product_id
                     LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN product_uom pu on pu.id = pt.uom_id
-                where qpb.date = '%s'
+                where qpb.date = '%s' and sl.usage = 'inventory'
             """
             # group_by_l = " group by pp.name_template,pp.default_code,qpb.balance_num,qpb.balance_money,pu.name"
             sql_domain.append(self.date)
@@ -106,6 +108,7 @@ class qdodoo_stock_quant_search(models.Model):
                         sql = sql + " and qpb.product_id in %s"
                         sql_domain.append(tuple(product_ids))
         sql = sql % tuple(sql_domain)
+        print sql,11111
         self.env.cr.execute(sql)
         res = self.env.cr.fetchall()
         # 产品名称（产品名称，编码）
