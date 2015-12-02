@@ -9,11 +9,27 @@ class taylor_template(models.Model):
         在产品中添加相关价格表关联
         这样可以有效减少业务人员的操作量
     """
-
     _inherit = 'product.template'
 
     # 关联字段
     ref_pricelist_prolate = fields.One2many('pricelist.prolate.relation', 'ref_product_template', string='关联的价格表')
+    is_gifts = fields.Boolean(u'有赠品')
+    gifts_ids = fields.One2many('product.template.gifts','gifts_partner',u'赠品')
+
+    _defaults = {
+        'is_gifts':False
+    }
+
+class qdodoo_gifts_line(models.Model):
+    _name = 'product.template.gifts'
+
+    gifts_partner = fields.Many2one('product.template',u'谁的赠品')
+    name = fields.Many2one('product.template',u'赠品')
+    number = fields.Float(u'数量')
+
+    _defaults = {
+        'number':1.0
+    }
 
 class pricelist_prolate_relation(models.Model):
     _name = "pricelist.prolate.relation"
@@ -110,3 +126,20 @@ class pricelist_prolate_relation(models.Model):
                 item_ids = item_obj.search(cr, uid, [('price_version_item_id','=',obj.id)])
                 item_obj.unlink(cr, uid, item_ids)
         return super(pricelist_prolate_relation, self).unlink(cr, uid, ids, context=context)
+
+class qdodoo_sale_order_line_inherit_tfs(models.Model):
+    _inherit = 'sale.order.line'
+
+    multiple_number = fields.Float(u'数量',help="未乘倍数前的数量")
+
+class qdodoo_sale_order_inherit_tfs(models.Model):
+    _inherit = 'sale.order'
+
+    all_money = fields.Float(u'合计',compute='_get_all_money')
+
+    def _get_all_money(self):
+        num = 0.0
+        for line in self.order_line:
+            num += line.multiple_number * line.price_unit
+        self.all_money = num
+

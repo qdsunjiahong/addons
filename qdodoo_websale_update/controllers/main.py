@@ -85,7 +85,6 @@ class qdodoo_pageer(table_compute):
 
         # TODO keep with input type hidden
 
-
 class qdodooo_website_update(website_sale):
     """
         Taylor 原创自己的模块
@@ -95,6 +94,33 @@ class qdodooo_website_update(website_sale):
     @http.route(['/shop/bat/cart'], type='http', auth="public", methods=['POST'], website=True)
     def add_all_product(self, add_qty=1, set_qty=0,**kw):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        # 判断产品赠品问题
+        # 获取选择的产品列表
+        template_ids = []
+        for key in kw:
+            template_ids.append(int(key))
+        # 获取产品和赠品之间的id关系{产品：【赠品模型】}
+        gifts_dict = {}
+        template_obj = pool.get('product.template')
+        for line in template_obj.browse(cr, uid, template_ids):
+            if line.is_gifts and line.gifts_ids:
+                gifts_dict[line.id] = []
+                for key_line in line.gifts_ids:
+                    gifts_dict[line.id].append(key_line)
+        # 获取赠品的数量
+        gifts_num = {}
+        for key, value in kw.items():
+            if int(key) in gifts_dict:
+                for line_val in gifts_dict[int(key)]:
+                    if line_val.name.id in gifts_num:
+                        gifts_num[line_val.name.id] += line_val.number * float(value)
+                    else:
+                        gifts_num[line_val.name.id] = line_val.number * float(value)
+        # 判断赠品的数量是否超过
+        for key, value in kw.items():
+            if int(key) in gifts_num:
+                if float(value) > gifts_num[int(key)]:
+                    return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
         if not context.get('pricelist'):
             # pricelist 得到价格表 例如product.pricelist(25,)
             pricelist = self.get_pricelist()
@@ -115,7 +141,7 @@ class qdodooo_website_update(website_sale):
                     cr.execute(sql)
                     product_id = cr.fetchall()[0]
                     sale_order = request.website.sale_get_order(force_create=1)
-                    value=int(value)* multiple.get(int(key))
+                    # value=int(value)* multiple.get(int(key))
                     sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
 
         if output_warehouse:
@@ -124,6 +150,31 @@ class qdodooo_website_update(website_sale):
         # #得到销售订单
         # request.website.sale_get_order(force_create=1)._cart_update(product_id=int(product_id), add_qty=float(add_qty), set_qty=float(set_qty))
         # return request.redirect("/shop/cart")
+
+    @http.route(['/shop/cart'], type='http', auth="public", website=True)
+    def cart(self, **post):
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        order = request.website.sale_get_order()
+        if order:
+            from_currency = pool.get('product.price.type')._get_field_currency(cr, uid, 'list_price', context)
+            to_currency = order.pricelist_id.currency_id
+            compute_currency = lambda price: pool['res.currency']._compute(cr, uid, from_currency, to_currency, price, context=context)
+        else:
+            compute_currency = lambda price: price
+        multiple=request.session.get('taylor_session')
+        values = {
+            'multiple':multiple,
+            'order': order,
+            'compute_currency': compute_currency,
+            'suggested_products': [],
+        }
+        if order:
+            _order = order
+            if not context.get('pricelist'):
+                _order = order.with_context(pricelist=order.pricelist_id.id)
+            values['suggested_products'] = _order._cart_accessories()
+
+        return request.website.render("website_sale.cart", values)
 
     # 检测到路径中包含/shop
     @http.route(['/shop',
@@ -506,21 +557,19 @@ class qdodooo_website_update(website_sale):
     # 去掉地址页面
     @http.route(['/shop/checkout'], type='http', auth="public", website=True)
     def checkout(self, **post):
-        cr, uid, context = request.cr, request.uid, request.context
-
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         order = request.website.sale_get_order(force_create=1, context=context)
-
         redirection = self.checkout_redirection(order)
         if redirection:
             return redirection
         values = self.checkout_values()
+
         return request.redirect("/shop/confirm_order")
         # return request.website.render("website_sale.checkout", values)
 
     @http.route(['/shop/confirm_order'], type='http', auth="public", website=True)
     def confirm_order(self, **post):
         cr, uid, context, registry = request.cr, request.uid, request.context, request.registry
-
         # 得到销售订单
         order = request.website.sale_get_order(context=context)
         # 没有销售订单就返回销售列表
@@ -546,10 +595,47 @@ class qdodooo_website_update(website_sale):
 
         self.checkout_form_save(values["checkout"])
 
-
         request.session['sale_last_order_id'] = order.id
 
         request.website.sale_get_order(update_pricelist=True, context=context)
+        # 判断赠品是否合适
+        # 获取产品模板id和数量字典
+        # 获取产品模板对应产品字典
+        template_dict = {}
+        template_lst = []
+        product = {}
+        for line in order.order_line:
+            template_lst.append(line.product_id.product_tmpl_id.id)
+            template_dict[line.product_id.product_tmpl_id.id] = line.product_uom_qty
+            product[line.product_id.product_tmpl_id.id] = line.product_id.id
+        # 获取产品和赠品之间的关系
+        gifts_dict = {}
+        template_obj = registry.get('product.template')
+        line_obj = registry.get('sale.order.line')
+        for line in template_obj.browse(cr, uid, template_lst):
+            if line.is_gifts and line.gifts_ids:
+                gifts_dict[line.id] = []
+                for key_line in line.gifts_ids:
+                    gifts_dict[line.id].append(key_line)
+        # 获取赠品的数量
+        gifts_num = {}
+        for key, value in template_dict.items():
+            if key in gifts_dict:
+                for line_val in gifts_dict[key]:
+                    if line_val.name.id in gifts_num:
+                        gifts_num[line_val.name.id] += line_val.number * float(value)
+                    else:
+                        gifts_num[line_val.name.id] = line_val.number * float(value)
+        multiple=request.session.get('taylor_session')
+        # 判断赠品的数量是否超过
+        for key, value in template_dict.items():
+            line_ids = line_obj.search(cr, uid, [('product_id','=',product.get(key)),('order_id','=',order.id)])
+            line_obj_ids = line_obj.browse(cr, uid, line_ids[0])
+            if key in gifts_num:
+                line_obj.write(cr, uid, line_ids, {'price_unit':0.0})
+                if value > gifts_num[key]:
+                    return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
+            line_obj.write(cr, uid, line_ids, {'multiple_number':line_obj_ids.product_uom_qty*multiple.get(key)})
 
         return request.redirect("/shop/payment")
 
@@ -566,6 +652,8 @@ class qdodooo_website_update(website_sale):
         email_act = None
         # 得到销售对象
         sale_order_obj = request.registry['sale.order']
+        order_line_obj = request.registry['sale.order.line']
+        promotion_obj = request.registry['qdodoo.promotion']
         users_obj = request.registry['res.users']
         # 发票对象
         invoice_obj = request.registry['account.invoice']
@@ -581,11 +669,71 @@ class qdodooo_website_update(website_sale):
             order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
             # 还是在判断下 当前订单号 和缓存中的是否一致
             assert order.id == request.session.get('sale_last_order_id')
-
         if not order or not order.amount_total:
             return request.redirect('/shop')
         if not order.partner_id.analytic_account_id:
             raise except_orm(_('Warning!'),_('客户没有设置对应的辅助核算项，请检查客户资料是否正确！'))
+        # 获取{产品：金额} 更新明细中产品的数量
+        # 获取{产品分类：金额}
+        num_dict = {}
+        cage_dict = {}
+        for line in order.order_line:
+            if line.product_id.categ_id.id in cage_dict:
+                cage_dict[line.product_id.categ_id.id] += line.multiple_number * line.price_unit
+            else:
+                cage_dict[line.product_id.categ_id.id] = line.multiple_number * line.price_unit
+            num_dict[line.product_id.id] = line.multiple_number * line.price_unit
+            order_line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
+        # 判断是否有对应的满减促销单
+        date = datetime.datetime.now().date().strftime('%Y-%m-%d')
+        version = ''
+        promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','reduction'),('company_id','=',users_obj.browse(cr, SUPERUSER_ID, uid).company_id.id)])
+        if promotion_id:
+            # 判断是否有满足时间条件的版本
+            for line in promotion_obj.browse(cr, uid, promotion_id[0]).version_id:
+                if (line.date_start <= date or not line.date_start) and (line.date_end >= date or not line.date_end):
+                    version = line
+        # 如果存在满足时间段的版本
+        # 获取当前登录人的销售团队
+        user_section_id = users_obj.browse(cr, SUPERUSER_ID, uid).default_section_id
+        if not user_section_id:
+            raise except_orm(_('Warning!'),_('当前登录人未设置销售团队！'))
+        product_price_dict = {}
+        if version:
+            # 判断满足条件的条目
+            for line_key in version.items_id:
+                # 如果满足品牌
+                if line_key.section_id.id == user_section_id.id or not line_key.section_id:
+                    # 如果有单品
+                    if line_key.product_id and line_key.subtract_money and num_dict.get(line_key.product_id.id,0.0) >=line_key.all_money:
+                        if line_key.product_items in product_price_dict:
+                            product_price_dict[line_key.product_items] += num_dict.get(line_key.product_id.id,0.0)
+                        else:
+                            product_price_dict[line_key.product_items] = num_dict.get(line_key.product_id.id,0.0)
+                    else:
+                        # 如果有分类
+                        if line_key.category_id and line_key.subtract_money and cage_dict.get(line_key.category_id.id,0.0) >=line_key.all_money:
+                            if line_key.product_items in product_price_dict:
+                                product_price_dict[line_key.product_items] += cage_dict.get(line_key.category_id.id,0.0)
+                            else:
+                                product_price_dict[line_key.product_items] = cage_dict.get(line_key.category_id.id,0.0)
+                        else:
+                            # 判断总金额
+                            if order.all_money >= line_key.all_money and line_key.subtract_money:
+                                if line_key.product_items in product_price_dict:
+                                    product_price_dict[line_key.product_items] += line_key.subtract_money
+                                else:
+                                    product_price_dict[line_key.product_items] = line_key.subtract_money
+        for key,valus in product_price_dict.items():
+            val = {}
+            val['order_id'] = order.id
+            val['product_id'] = key.id
+            val['product_id'] = key.id
+            val['product_uom_qty'] = 1
+            val['product_uom'] = key.uom_id.id
+            val['price_unit'] = -valus
+            val['name'] = key.name
+            order_line_obj.create(cr ,uid, val)
         user_id = order.partner_id.user_id.id or uid
         section_obj = users_obj.browse(cr, SUPERUSER_ID, user_id)
         section_id = section_obj.default_section_id.id if section_obj.default_section_id else False
@@ -642,8 +790,7 @@ class qdodooo_website_update(website_sale):
         redirection = self.checkout_redirection(order)
         if redirection:
             return redirection
-
-
+        multiple=request.session.get('taylor_session')
         # 客户id
         shipping_partner_id = False
         # 如果存在订单
@@ -657,6 +804,7 @@ class qdodooo_website_update(website_sale):
         values = {
             'order': request.registry['sale.order'].browse(cr, SUPERUSER_ID, order.id, context=context)
         }
+        values['multiple'] = multiple
         values['errors'] = sale_order_obj._get_errors(cr, uid, order, context=context)
         values.update(sale_order_obj._get_website_data(cr, uid, order, context))
 
@@ -667,10 +815,6 @@ class qdodooo_website_update(website_sale):
             values['credit'] = 0
         else:
             values['credit'] = abs(have_money)
-        # fetch all registered payment means
-        # if tx:
-        #     acquirer_ids = [tx.acquirer_id.id]
-        # else:
         if not values['errors']:
             acquirer_ids = payment_obj.search(cr, SUPERUSER_ID, [('website_published', '=', True),
                                                                  ('company_id', '=', order.company_id.id)],

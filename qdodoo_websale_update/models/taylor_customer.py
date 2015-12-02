@@ -10,7 +10,6 @@
 
 from openerp.osv import fields, osv
 
-
 class taylor_customer(osv.Model):
     """
         在客户中添加出库仓库
@@ -29,6 +28,8 @@ class taylor_customer(osv.Model):
             warehouse = self.pool.get('stock.warehouse').browse(cr, uid, out_stock, context=context)
             return {'value': {'location_id': warehouse.lot_stock_id.id}}
         return {}
+
+
 
 
 

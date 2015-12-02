@@ -29,6 +29,7 @@
     'depends': ['base','share','hr','website_sale','hm','product','qdodoo_purchase_sale_order2'],  # 依赖模块
     'data': ['views/qdodoo_website_tempview.xml',
              'views/res_partner_inherit.xml',
+             'views/qdodoo_promotion_view.xml',
              'security/ir.model.access.csv',
              'views/door_deposit.xml',],
     'application': True,  # 是否认证

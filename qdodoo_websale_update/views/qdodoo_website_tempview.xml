@@ -377,6 +377,8 @@
                                         <th colspan="2" width="80">Product</th>
                                         <th width="100">Price</th>
                                         <th width="120">Quantity</th>
+                                        <th width="100">倍数</th>
+                                        <th width="100">实际数量</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -401,6 +403,12 @@
                                         </td>
                                         <td>
                                             <div t-esc="line.product_uom_qty"/>
+                                        </td>
+                                        <td>
+                                            <input type="text" style="white-space: nowrap;" t-att-value="multiple.get(line.product_id.product_tmpl_id.id)"  id="beishu"   readonly="True" size="3"/>
+                                        </td>
+                                        <td>
+                                            <div t-esc="line.multiple_number"/>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -448,22 +456,92 @@
                           <h4>预付款不足，交易无法完成，请尽快充值！</h4>
                         </div>
                     </div>
-                    <!--t-if="not website_sale_order.amount_total"-->
-                    <!--<div class="js_payment mb64 row"  id="payment_method">-->
-                        <!--<div class="col-lg-8 col-sm-8">-->
-                            <!--<form target="_self" action="/shop/payment/validate" method="post" class="pull-right">-->
-                                <!--<a style="width:100px;" class="btn btn-default btn-primary pull-right mb32 a-submit">-->
-                                    <!--<span>Pay Now-->
-                                        <!--<span class="fa fa-long-arrow-right"></span>-->
-                                    <!--</span>-->
-                                <!--</a>-->
-                            <!--</form>-->
-                        <!--</div>-->
-                    <!--</div>-->
             </div>
             </xpath>
         </template>
 
+        <template id="qdodoo_websale_update_cart" inherit_id="website_sale.cart">
+            <xpath expr="//table[@class='table table-striped table-condensed']" position="replace">
+                <table class='table table-striped table-condensed' id="cart_products" t-if="website_sale_order and website_sale_order.website_order_line">
+                      <thead>
+                          <tr>
+                              <th colspan="2" width="100">Product</th>
+                              <th width="100">Price</th>
+                              <th width="120">Quantity</th>
+                              <th width="120">倍数</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                        <t t-foreach="website_sale_order.website_order_line" t-as="line">
+                          <tr>
+                              <td colspan="2" t-if="not line.product_id.product_tmpl_id"></td>
+                              <td align="center" t-if="line.product_id.product_tmpl_id">
+                                  <span t-field="line.product_id.image_small"
+                                        t-field-options='{"widget": "image", "class": "img-rounded"}'/>
+                              </td>
+                              <td t-if="line.product_id.product_tmpl_id">
+                                  <div>
+                                      <a t-attf-href="/shop/product/#{ slug(line.product_id.product_tmpl_id) }">
+                                          <strong t-esc="line.product_id.name_get()[0][1]"/>
+                                      </a>
+                                  </div>
+                                  <div class="text-muted" t-field="line.name"/>
+                              </td>
+                              <td class="text-center" name="price">
+                                <t t-if="(compute_currency(line.product_id.lst_price) - line.price_unit) &gt; 1">
+                                  <del class="text-danger" style="white-space: nowrap;"
+                                    t-field="line.product_id.lst_price" t-field-options='{
+                                        "widget": "monetary",
+                                        "from_currency": "line.company_id.currency_id",
+                                        "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                                    }'/>&amp;nbsp;
+                                </t>
+                                <span t-field="line.price_unit" style="white-space: nowrap;" t-field-options='{
+                                     "widget": "monetary",
+                                     "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                                 }'/>
+                              </td>
+                              <td class="text-center">
+                                  <div class="input-group oe_website_spinner">
+                                      <span class="input-group-addon">
+                                          <a t-attf-href="#" class="mb8 js_add_cart_json" data-no-instant="">
+                                              <i class="fa fa-minus"></i>
+                                          </a>
+                                      </span>
+                                      <input type="text" class="js_quantity form-control"
+                                          t-att-data-line-id="line.id"
+                                          t-att-data-product-id="line.product_id.id"
+                                          t-att-value="int(line.product_uom_qty)"/>
+                                      <span class="input-group-addon">
+                                          <a t-attf-href="#" class="mb8 float_left js_add_cart_json" data-no-instant="">
+                                              <i class="fa fa-plus"></i>
+                                          </a>
+                                      </span>
+                                  </div>
+                              </td>
+                              <td>
+                                    <input type="text" class="form-control"   t-att-value="multiple.get(line.product_id.product_tmpl_id.id)"  id="beishu"   readonly="True" size="3"/>
+                                </td>
+                          </tr>
+                        </t>
+                      </tbody>
+                  </table>
+            </xpath>
+        </template>
+
+        <template id="qdodoo_websale_update_total" inherit_id="website_sale.total">
+            <xpath expr="//tr[@id='order_total']" position="replace">
+                <tr width="100" style="border-top: 1px solid #000" id="order_total">
+                    <th><h3>Total: </h3></th>
+                    <th class="text-right">
+                      <h3><span t-field="website_sale_order.all_money" style="white-space: nowrap;" t-field-options='{
+                          "widget": "monetary",
+                          "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                        }'/></h3>
+                    </th>
+                </tr>
+            </xpath>
+        </template>
 
         <template id="over" name="over">
             <t t-call="website.layout">

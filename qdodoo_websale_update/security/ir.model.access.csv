@@ -2,3 +2,7 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 
 access_qdodoo_product_template,公开 产品模板,product.model_product_template,share.group_share_user,1,0,0,0
 access_qdodoo_product_uom,公开 产品单位,product.model_product_uom,share.group_share_user,1,0,0,0
+access_qdodoo_product_template_gifts,公开 赠品,qdodoo_websale_update.model_product_template_gifts,share.group_share_user,1,0,0,0
+access_qdodoo_qdodoo_promotion,公开 促销单,qdodoo_websale_update.model_qdodoo_promotion,share.group_share_user,1,0,0,0
+access_qdodoo_qdodoo_promotion_version,公开 促销单版本,qdodoo_websale_update.model_qdodoo_promotion_version,share.group_share_user,1,0,0,0
+access_qdodoo_qdodoo_promotion_version_items,促销单版本明细 赠品,qdodoo_websale_update.model_qdodoo_promotion_version_items,share.group_share_user,1,0,0,0
