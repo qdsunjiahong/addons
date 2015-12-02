@@ -52,7 +52,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
         sql_domain = []
         sql_l = """
             select
-                sp.min_date as date,
+                ai.date_invoice as date,
                 pp.name_template as product_name,
                 pp.default_code as default_code,
                 sm.product_uom_qty as product_qty,
@@ -63,12 +63,12 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 po.company_id as company_id,
                 pt.uom_po_id as uom_id
             FROM stock_move sm
-                LEFT JOIN stock_picking sp on sp.id = sm.picking_id
-                LEFT JOIN res_partner rp on rp.id = sp.partner_id
                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                 LEFT JOIN purchase_order po on po.id = pol.order_id
                 LEFT JOIN product_product pp on pp.id = sm.product_id
                 LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
+                LEFT JOIN purchase_invoice_rel pir ON po.id = pir.purchase_id
+                LEFT JOIN account_invoice ai on pir.invoice_id=ai.id and ai.state != 'cancel'
             where sm.state = 'done' and sp.state = 'done' and po.state = 'done'
             """
         if len(supplier_ids) == 1:
@@ -79,9 +79,9 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             sql_domain.append(tuple(supplier_ids))
         if int(self.search_choice) == 1:
             if self.year:
-                start_datetime = self.year.date_start + ' 00:00:01'
-                end_datetime = self.year.date_stop + ' 23:59:59'
-                sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                start_datetime = self.year.date_start
+                end_datetime = self.year.date_stop
+                sql_l = sql_l + " and ai.date_invoice >= '%s' and ai.date_invoice <= '%s'"
                 sql_domain.append(start_datetime)
                 sql_domain.append(end_datetime)
             if self.product_id:
@@ -154,7 +154,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 month_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
                 for month_l in month_list:
                     per_ids = per_obj.search([('name', '=', month_l + '/' + str(self.year.name))])
-                    k = (per_ids[0].date_start + ' 00:00:01', per_ids[0].date_stop + ' 23:59:59')
+                    k = (per_ids[0].date_start, per_ids[0].date_stop)
                     if per_ids:
                         per_list_time.append(k)
                         per_dict_time[k] = month_l + '/' + str(self.year.name)
@@ -182,7 +182,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         if self.company_id:
                             sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and ai.date_invoice >= '%s' and ai.date_invoice <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
                         sql = sql_l2 % tuple(sql_domain2)
@@ -228,9 +228,9 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             elif self.year and self.month:
                 per_ids = per_obj.search([('name', '=', str(self.month) + '/' + str(self.year.name))])
                 if per_ids:
-                    start_datetime = per_ids[0].date_start + ' 00:00:01'
-                    end_datetime = per_ids[0].date_stop + ' 23:59:59'
-                    sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                    start_datetime = per_ids[0].date_start
+                    end_datetime = per_ids[0].date_stop
+                    sql_l = sql_l + " and ai.date_invoice >= '%s' and ai.date_invoice <= '%s'"
                     sql_domain.append(start_datetime)
                     sql_domain.append(end_datetime)
                     if self.product_id:
@@ -304,7 +304,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 if ye_li_new:
                     for ye_l in ye_li_new:
                         per_ids = per_obj.search([('name', '=', str(self.month) + '/' + str(ye_l))])
-                        k = (per_ids[0].date_start + ' 00:00:01', per_ids[0].date_stop + ' 23:59:59')
+                        k = (per_ids[0].date_start, per_ids[0].date_stop)
                         if per_ids:
                             per_list_time.append(k)
                             per_dict_time[k] = str(self.month) + '/' + str(ye_l)
@@ -332,7 +332,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         if self.company_id:
                             sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and ai.date_invoice >= '%s' and ai.date_invoice <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
                         sql = sql_l2 % tuple(sql_domain2)
@@ -393,7 +393,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         for month_l in month_list:
                             per_ids = per_obj.search([('name', '=', month_l + '/' + str(ye_l))])
                             if per_ids:
-                                k = (per_ids[0].date_start + ' 00:00:01', per_ids[0].date_stop + ' 23:59:59')
+                                k = (per_ids[0].date_start, per_ids[0].date_stop)
                                 per_list_time.append(k)
                                 per_dict_time[k] = month_l + '/' + str(ye_l)
                 if per_list_time:
@@ -420,7 +420,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         if self.company_id:
                             sql_l2 = sql_l2 + ' and po.company_id=%s'
                             sql_domain2.append(self.company_id.id)
-                        sql_l2 = sql_l2 + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
+                        sql_l2 = sql_l2 + " and ai.date_invoice >= '%s' and ai.date_invoice <= '%s'"
                         sql_domain2.append(per_time[0])
                         sql_domain2.append(per_time[1])
                         sql = sql_l2 % tuple(sql_domain2)
@@ -486,10 +486,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     end_p = '03' + '/' + str(n_year)
                     per_starts = per_obj.search([('name', '=', start_p)])
                     if per_starts:
-                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
+                        quarter_start[key] = per_starts[0].date_start
                     per_stops = per_obj.search([('name', '=', end_p)])
                     if per_stops:
-                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                        quarter_stop[key] = per_stops[0].date_stop
                     quarter_key.append(key)
                 elif int(self.quarter) == 2:
                     key = str(n_year) + "第二季度"
@@ -497,10 +497,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     end_p = '06' + '/' + str(n_year)
                     per_starts = per_obj.search([('name', '=', start_p)])
                     if per_starts:
-                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
+                        quarter_start[key] = per_starts[0].date_start
                     per_stops = per_obj.search([('name', '=', end_p)])
                     if per_stops:
-                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                        quarter_stop[key] = per_stops[0].date_stop
                     quarter_key.append(key)
 
                 elif int(self.quarter) == 3:
@@ -509,10 +509,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     end_p = '09' + '/' + str(n_year)
                     per_starts = per_obj.search([('name', '=', start_p)])
                     if per_starts:
-                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
+                        quarter_start[key] = per_starts[0].date_start
                     per_stops = per_obj.search([('name', '=', end_p)])
                     if per_stops:
-                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                        quarter_stop[key] = per_stops[0].date_stop
                     quarter_key.append(key)
 
                 elif int(self.quarter) == 4:
@@ -521,10 +521,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     end_p = '12' + '/' + str(n_year)
                     per_starts = per_obj.search([('name', '=', start_p)])
                     if per_starts:
-                        quarter_start[key] = per_starts[0].date_start + " 00:00:01"
+                        quarter_start[key] = per_starts[0].date_start
                     per_stops = per_obj.search([('name', '=', end_p)])
                     if per_stops:
-                        quarter_stop[key] = per_stops[0].date_stop + ' 23:59:59'
+                        quarter_stop[key] = per_stops[0].date_stop
                     quarter_key.append(key)
                 else:
                     start_p1 = '01' + '/' + str(n_year)
@@ -532,50 +532,50 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     per_starts1 = per_obj.search([('name', '=', start_p1)])
                     key1 = str(n_year) + "第一季度"
                     if per_starts1:
-                        quarter_start[key1] = per_starts1[0].date_start + " 00:00:01"
+                        quarter_start[key1] = per_starts1[0].date_start
                     per_stops1 = per_obj.search([('name', '=', end_p1)])
                     if per_stops1:
-                        quarter_stop[key1] = per_stops1[0].date_stop + ' 23:59:59'
+                        quarter_stop[key1] = per_stops1[0].date_stop
                     quarter_key.append(key1)
                     start_p2 = '04' + '/' + str(n_year)
                     end_p2 = '06' + '/' + str(n_year)
                     key2 = str(n_year) + "第二季度"
                     per_starts2 = per_obj.search([('name', '=', start_p2)])
                     if per_starts2:
-                        quarter_start[key2] = per_starts2[0].date_start + " 00:00:01"
+                        quarter_start[key2] = per_starts2[0].date_start
                     per_stops2 = per_obj.search([('name', '=', end_p2)])
                     if per_stops2:
-                        quarter_stop[key2] = per_stops2[0].date_stop + ' 23:59:59'
+                        quarter_stop[key2] = per_stops2[0].date_stop
                     quarter_key.append(key2)
                     start_p3 = '07' + '/' + str(n_year)
                     end_p3 = '09' + '/' + str(n_year)
                     key3 = str(n_year) + "第三季度"
                     per_starts3 = per_obj.search([('name', '=', start_p3)])
                     if per_starts3:
-                        quarter_start[key3] = per_starts3[0].date_start + " 00:00:01"
+                        quarter_start[key3] = per_starts3[0].date_start
                     per_stops3 = per_obj.search([('name', '=', end_p3)])
                     if per_stops3:
-                        quarter_stop[key3] = per_stops3[0].date_stop + ' 23:59:59'
+                        quarter_stop[key3] = per_stops3[0].date_stop
                     quarter_key.append(key3)
                     start_p4 = '10' + '/' + str(n_year)
                     end_p4 = '12' + '/' + str(n_year)
                     key4 = str(n_year) + "第四季度"
                     per_starts4 = per_obj.search([('name', '=', start_p4)])
                     if per_starts4:
-                        quarter_start[key4] = per_starts4[0].date_start + ' 23:59:59'
+                        quarter_start[key4] = per_starts4[0].date_start
                     per_stops4 = per_obj.search([('name', '=', end_p4)])
                     if per_stops4:
-                        quarter_stop[key4] = per_stops4[0].date_stop + ' 23:59:59'
+                        quarter_stop[key4] = per_stops4[0].date_stop
                     quarter_key.append(key4)
             for q in quarter_key:
                 sql_domain2 = copy.deepcopy(sql_domain)
                 sql_l2 = sql_l
                 if quarter_start.get(q, None) != None:
-                    sql_l2 = sql_l2 + " and sp.min_date >= '%s'"
+                    sql_l2 = sql_l2 + " and ai.date_invoice >= '%s'"
                     sql_domain2.append(quarter_start.get(q))
                 if quarter_stop.get(q, None) != None:
                     sql_domain2.append(quarter_stop.get(q))
-                    sql_l2 = sql_l2 + " and sp.min_date <= '%s'"
+                    sql_l2 = sql_l2 + " and ai.date_invoice <= '%s'"
                 if self.product_id:
                     sql_l2 = sql_l2 + ' and sm.product_id = %s'
                     sql_domain2.append(self.product_id.id)
@@ -637,11 +637,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 raise except_orm(_(u'提示'), _(u'未查找到数据'))
         #####日期查询
         elif int(self.search_choice) == 3:
-            start_datetime = self.date + ' 00:00:01'
-            end_datetime = self.date + ' 23:59:59'
-            sql_l = sql_l + " and sp.min_date >= '%s' and sp.min_date <= '%s'"
-            sql_domain.append(start_datetime)
-            sql_domain.append(end_datetime)
+            sql_l = sql_l + " and ai.date_invoice = '%s'"
+            sql_domain.append(self.date)
             if self.product_id:
                 sql_l = sql_l + ' and sm.product_id = %s'
                 sql_domain.append(self.product_id.id)
@@ -703,10 +700,10 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     raise except_orm(_(u'提示'), _(u'未查询到数据'))
         #####时间段查询
         elif int(self.search_choice) == 4:
-            sql_l = sql_l + " and sp.min_date >= '%s'"
-            sql_domain.append(self.start_date + ' 00:00:01')
-            sql_l = sql_l + " and sp.min_date <= '%s'"
-            sql_domain.append(self.end_date + ' 23:59:59')
+            sql_l = sql_l + " and ai.date_invoice >= '%s'"
+            sql_domain.append(self.start_date)
+            sql_l = sql_l + " and ai.date_invoice <= '%s'"
+            sql_domain.append(self.end_date)
             if self.company_id:
                 sql_l = sql_l + ' and po.company_id = %s'
                 sql_domain.append(self.company_id.id)
