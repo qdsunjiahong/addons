@@ -31,8 +31,10 @@ class qdodoo_stock_demant_wizard(models.Model):
     @api.multi
     def action_search(self):
         report_obj = self.env['qdodoo.stock.demant.report']
-        report_ids = report_obj.search([])
-        report_ids.unlink()
+        # report_ids = report_obj.search([])
+        # report_ids.unlink()
+        sql_select = "delete from qdodoo_stock_demant_report where 1=1"
+        self.env.cr.execute(sql_select)
         # 查询当前登录人允许查看的公司company_ids
         sql_company = """
             select rcul.cid as com_id
@@ -62,12 +64,12 @@ class qdodoo_stock_demant_wizard(models.Model):
         result_list = []
         # 查询出来的需求转换单
         if sd_ids:
-            sd_list = []  # 需求单列表
             out_num_dict = {}  # 出库数量
-            in_num_dict = {}
             location_s_id_dict = {}  # 源库位
             location_d_id_dict = {}  # 目的库位
+            in_num_dict = {} #入库数量
             for si_id in sd_ids:
+                sd_list = []  # 需求单列表
                 location_d_id = si_id.location_id2.id  # 目的库位id
                 # 根据需求转换单id查询对应的录像
                 sql = """
@@ -89,6 +91,8 @@ class qdodoo_stock_demant_wizard(models.Model):
                 procurement_ids = self.env['procurement.order'].search([('order_id_new','=',si_id.id)])
                 for line_id in procurement_ids:
                     sd_list.append(line_id.id)
+                if si_id.id == 1548:
+                    print sd_list,'1111111111111111111'
                 # 查询调拨单
                 stock_picking_out_ids = self.env['stock.move'].search(
                     [('procurement_id', 'in', sd_list), ('state', '=', 'done')])
