@@ -158,8 +158,8 @@ class account_move_line_inherit(osv.osv):
 
     _columns = {
         'log_is_two': fields.boolean(u'是否是第二次选择'),
-        # 'amount_to_pay': fields.function(_amount_residual,
-        #     type='float', string='Amount to pay', fnct_search=account_move_line._to_pay_search),
+        'amount_to_pay': fields.function(_amount_residual,
+            type='float', string='Amount to pay', fnct_search=account_move_line._to_pay_search),
     }
     _default = {
         'log_is_two': False,
