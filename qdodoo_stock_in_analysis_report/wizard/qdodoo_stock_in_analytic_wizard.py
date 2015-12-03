@@ -43,6 +43,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                                             ('name', 'ilike', u'前期'), '&',
                                                             ('is_internal_company', '=', True),
                                                             ('supplier', '=', True)])
+        product_domain = self.pool.get('product.product').search(self.env.cr, self.env.uid, [('type', '!=', 'service')])
         model_obj = self.env['ir.model.data']
         result_list = []
         partner_dict = {}
@@ -69,13 +70,13 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                 LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                 LEFT JOIN purchase_invoice_rel pir ON po.id = pir.purchase_id
                 LEFT JOIN account_invoice ai on pir.invoice_id=ai.id and ai.state != 'cancel'
-            where sm.state = 'done' and sp.state = 'done' and po.state = 'done'
+            where sm.state = 'done' and po.state = 'done'
             """
         if len(supplier_ids) == 1:
-            sql_l = sql_l + " and sp.partner_id != %s"
+            sql_l = sql_l + " and po.partner_id != %s"
             sql_domain.append(supplier_ids[0])
         elif len(supplier_ids) > 1:
-            sql_l = sql_l + " and sp.partner_id not in %s"
+            sql_l = sql_l + " and po.partner_id not in %s"
             sql_domain.append(tuple(supplier_ids))
         if int(self.search_choice) == 1:
             if self.year:
@@ -109,6 +110,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
+                    print r
                     year = r[0][:4]
                     data = {
                         'year': year,
