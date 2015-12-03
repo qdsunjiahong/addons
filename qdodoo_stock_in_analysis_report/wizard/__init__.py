@@ -7,4 +7,3 @@
 ###########################################################################################
 
 import qdodoo_stock_in_analytic_wizard
-import qdodoo_stock_in_analytic_wizard2
