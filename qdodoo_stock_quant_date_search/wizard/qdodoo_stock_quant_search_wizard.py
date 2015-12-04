@@ -53,7 +53,7 @@ class qdodoo_stock_quant_search(models.Model):
                     LEFT JOIN product_product pp on pp.id = sq.product_id
                     LEFT JOIN product_template pt on pt.id = pp.product_tmpl_id
                     LEFT JOIN product_uom pu on pu.id = pt.uom_id
-                where sq.qty != 0 and sl.usage = 'inventory'
+                where sl.usage = 'internal'
             """
             # group_by_l = " group by pp.name_template,pp.default_code,sq.qty,sq.product_id,pu.name"
             ch = ch + 1
@@ -108,7 +108,6 @@ class qdodoo_stock_quant_search(models.Model):
                         sql = sql + " and qpb.product_id in %s"
                         sql_domain.append(tuple(product_ids))
         sql = sql % tuple(sql_domain)
-        print sql,11111
         self.env.cr.execute(sql)
         res = self.env.cr.fetchall()
         # 产品名称（产品名称，编码）
