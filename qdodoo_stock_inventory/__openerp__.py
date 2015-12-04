@@ -17,7 +17,8 @@
     'depends': ['base', 'stock', 'mrp'],  # 依赖模块
     'data': [
         'wizard/qdodoo_stock_inventory_wizard.xml',
-        'report/qdodoo_stock_inventory_report.xml'
+        'report/qdodoo_stock_inventory_report.xml',
+        'qdodoo_stock_invotory_tree.xml'
     ],  # 更新XML,CSV
     'js': [
         # 'static/src/js/account_move_reconciliation.js',
