@@ -43,9 +43,12 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                                             ('name', 'ilike', u'前期'), '&',
                                                             ('is_internal_company', '=', True),
                                                             ('supplier', '=', True)])
-        product_domain = self.pool.get('product.product').search(self.env.cr, self.env.uid, [('type', '!=', 'service')])
+
         model_obj = self.env['ir.model.data']
         result_list = []
+        product_list_p = []
+        product_dict_num = {}
+        product_dict_amount = {}
         partner_dict = {}
         partner_ids = self.env['res.partner'].search([])
         for partner_id in partner_ids:
@@ -110,24 +113,51 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             res = self.env.cr.fetchall()
             if res:
                 for r in res:
-                    print r
-                    year = r[0][:4]
-                    data = {
-                        'year': year,
-                        'date': r[0],
-                        'product_id': r[1],
-                        'default_code': r[2],
-                        'product_qty': r[3],
-                        'uom_id': r[-1],
-                        'price_unit': r[4],
-                        'product_amount': r[5],
-                        'location_id': r[7],
-                        'company_id': r[8],
-                        'partner_id': r[6],
-                        'property_supplier_payment_term': partner_dict.get(r[6], '')
+                    if r[0]:
+                        year = r[0][:4]
+                        data = {
+                            'year': year,
+                            'date': r[0],
+                            'product_id': r[1],
+                            'default_code': r[2],
+                            'product_qty': r[3],
+                            'uom_id': r[-1],
+                            'price_unit': r[4],
+                            'product_amount': r[5],
+                            'location_id': r[7],
+                            'company_id': r[8],
+                            'partner_id': r[6],
+                            'property_supplier_payment_term': partner_dict.get(r[6], '')
+                        }
+                        cre_obj = report_obj.create(data)
+                        result_list.append(cre_obj.id)
+                        # (年度，产品，编码，供应商，单位)
+                        k = (year, r[1], r[2], r[6], r[9])
+                        if k in product_list_p:
+                            product_dict_num[k] += r[3]
+                            product_dict_amount[k] += r[5]
+                        else:
+                            product_dict_num[k] = r[3]
+                            product_dict_amount[k] = r[5]
+                            product_list_p.append(k)
+                for j in product_list_p:
+                    if product_dict_num.get(j, 0) == 0:
+                        price_u = 0
+                    else:
+                        price_u = product_dict_amount.get(j, 0) / product_dict_num.get(j, 0)
+                    data2 = {
+                        'year': j[0],
+                        'product_id': j[1],
+                        'default_code': j[2],
+                        'partner_id': j[3],
+                        'uom_id': j[4],
+                        'product_qty': product_dict_num.get(j, 0),
+                        'price_unit': price_u,
+                        'product_amount': product_dict_amount.get(j, 0),
+                        'property_supplier_payment_term': partner_dict.get(j[3], '')
                     }
-                    cre_obj = report_obj.create(data)
-                    result_list.append(cre_obj.id)
+                    cre_obj2 = report_obj.create(data2)
+                    result_list.append(cre_obj2.id)
             if result_list:
                 vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                     'qdodoo_stock_in_analytic_report1')
@@ -206,8 +236,37 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'partner_id': r[6],
                                     'property_supplier_payment_term': partner_dict.get(r[6], '')
                                 }
-                                cre_obj2 = report_obj.create(data)
-                                result_list.append(cre_obj2.id)
+                                cre_obj = report_obj.create(data)
+                                result_list.append(cre_obj.id)
+                                # (月份，产品，编码，供应商，单位)
+                                k = (per_dict_time.get(per_time, ''), r[1], r[2], r[6], r[9])
+                                if k in product_list_p:
+                                    product_dict_num[k] += r[3]
+                                    product_dict_amount[k] += r[5]
+                                else:
+                                    product_dict_num[k] = r[3]
+                                    product_dict_amount[k] = r[5]
+                                    product_list_p.append(k)
+                    for product_l in product_list_p:
+                        if product_dict_num.get(product_l, 0) == 0:
+                            price_unit = 0
+                        else:
+                            price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
+                                product_l,
+                                0)
+                        data2 = {
+                            'period_id': product_l[0],
+                            'product_id': product_l[1],
+                            'default_code': product_l[2],
+                            'partner_id': product_l[3],
+                            'uom_id': product_l[4],
+                            'product_qty': product_dict_num.get(product_l, 0),
+                            'product_amount': product_dict_amount.get(product_l, 0),
+                            'price_unit': price_unit,
+                            'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                        }
+                        cre_obj2 = report_obj.create(data2)
+                        result_list.append(cre_obj2.id)
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                             'qdodoo_stock_in_analytic_report5')
@@ -260,8 +319,9 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     res = self.env.cr.fetchall()
                     if res:
                         for r in res:
+                            per = str(self.month) + '/' + str(self.year.name)
                             data = {
-                                'period_id': str(self.month) + '/' + str(self.year.name),
+                                'period_id': per,
                                 'date': r[0],
                                 'product_id': r[1],
                                 "default_code": r[2],
@@ -274,7 +334,36 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                 'partner_id': r[6],
                                 'property_supplier_payment_term': partner_dict.get(r[6], '')
                             }
-                            cre_obj2 = report_obj.create(data)
+                            cre_obj = report_obj.create(data)
+                            result_list.append(cre_obj.id)
+                            # (月份，产品，编码，供应商，单位)
+                            k = (per, r[1], r[2], r[6], r[9])
+                            if k in product_list_p:
+                                product_dict_num[k] += r[3]
+                                product_dict_amount[k] += r[5]
+                            else:
+                                product_dict_num[k] = r[3]
+                                product_dict_amount[k] = r[5]
+                                product_list_p.append(k)
+                        for product_l in product_list_p:
+                            if product_dict_num.get(product_l, 0) == 0:
+                                price_unit = 0
+                            else:
+                                price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
+                                    product_l,
+                                    0)
+                            data2 = {
+                                'period_id': product_l[0],
+                                'product_id': product_l[1],
+                                'default_code': product_l[2],
+                                'partner_id': product_l[3],
+                                'uom_id': product_l[4],
+                                'product_qty': product_dict_num.get(product_l, 0),
+                                'product_amount': product_dict_amount.get(product_l, 0),
+                                'price_unit': price_unit,
+                                'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                            }
+                            cre_obj2 = report_obj.create(data2)
                             result_list.append(cre_obj2.id)
                         if result_list:
                             vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
@@ -359,8 +448,37 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'partner_id': r[6],
                                     'property_supplier_payment_term': partner_dict.get(r[6], '')
                                 }
-                                cre_obj2 = report_obj.create(data)
-                                result_list.append(cre_obj2.id)
+                                cre_obj = report_obj.create(data)
+                                result_list.append(cre_obj.id)
+                                # (月份，产品，编码，供应商，单位)
+                                k = (per, r[1], r[2], r[6], r[9])
+                                if k in product_list_p:
+                                    product_dict_num[k] += r[3]
+                                    product_dict_amount[k] += r[5]
+                                else:
+                                    product_dict_num[k] = r[3]
+                                    product_dict_amount[k] = r[5]
+                                    product_list_p.append(k)
+                    for product_l in product_list_p:
+                        if product_dict_num.get(product_l, 0) == 0:
+                            price_unit = 0
+                        else:
+                            price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
+                                product_l,
+                                0)
+                        data2 = {
+                            'period_id': product_l[0],
+                            'product_id': product_l[1],
+                            'default_code': product_l[2],
+                            'partner_id': product_l[3],
+                            'uom_id': product_l[4],
+                            'product_qty': product_dict_num.get(product_l, 0),
+                            'product_amount': product_dict_amount.get(product_l, 0),
+                            'price_unit': price_unit,
+                            'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                        }
+                        cre_obj2 = report_obj.create(data2)
+                        result_list.append(cre_obj2.id)
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                             'qdodoo_stock_in_analytic_report5')
@@ -445,8 +563,37 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                                     'partner_id': r[6],
                                     'property_supplier_payment_term': partner_dict.get(r[6], '')
                                 }
-                                cre_obj2 = report_obj.create(data)
-                                result_list.append(cre_obj2.id)
+                                cre_obj = report_obj.create(data)
+                                result_list.append(cre_obj.id)
+                                # (月份，产品，编码，供应商，单位)
+                                k = (per2, r[1], r[2], r[6], r[9])
+                                if k in product_list_p:
+                                    product_dict_num[k] += r[3]
+                                    product_dict_amount[k] += r[5]
+                                else:
+                                    product_dict_num[k] = r[3]
+                                    product_dict_amount[k] = r[5]
+                                    product_list_p.append(k)
+                    for product_l in product_list_p:
+                        if product_dict_num.get(product_l, 0) == 0:
+                            price_unit = 0
+                        else:
+                            price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(
+                                product_l,
+                                0)
+                        data2 = {
+                            'period_id': product_l[0],
+                            'product_id': product_l[1],
+                            'default_code': product_l[2],
+                            'partner_id': product_l[3],
+                            'uom_id': product_l[4],
+                            'product_qty': product_dict_num.get(product_l, 0),
+                            'product_amount': product_dict_amount.get(product_l, 0),
+                            'price_unit': price_unit,
+                            'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                        }
+                        cre_obj2 = report_obj.create(data2)
+                        result_list.append(cre_obj2.id)
                     if result_list:
                         vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                             'qdodoo_stock_in_analytic_report5')
@@ -619,6 +766,34 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         }
                         cre_obj2 = report_obj.create(data)
                         result_list.append(cre_obj2.id)
+                        # (季度,产品，编码，供应商,单位)
+                        k = (q, r[1], r[2], r[6], r[9])
+                        if k in product_list_p:
+                            product_dict_num[k] += r[3]
+                            product_dict_amount[k] += r[5]
+                        else:
+                            product_dict_num[k] = r[3]
+                            product_dict_amount[k] = r[5]
+                            product_list_p.append(k)
+            if product_list_p:
+                for product_l in product_list_p:
+                    if product_dict_num.get(product_l, 0) == 0:
+                        price_unit = 0
+                    else:
+                        price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
+                    data = {
+                        'quarter': product_l[0],
+                        'product_id': product_l[1],
+                        'default_code': product_l[2],
+                        'uom_id': product_l[4],
+                        'partner_id': product_l[3],
+                        'price_unit': price_unit,
+                        'product_qty': product_dict_num.get(product_l, 0),
+                        'product_amount': product_dict_amount.get(product_l, 0),
+                        'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                    }
+                    cre_obj = report_obj.create(data)
+                    result_list.append(cre_obj.id)
             if result_list:
                 vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                     'qdodoo_stock_in_analytic_report2')
@@ -682,6 +857,33 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
 
                     cre_obj2 = report_obj.create(data)
                     result_list.append(cre_obj2.id)
+                    # (日期,产品，编码，供应商，单位)
+                    k = (self.date, r[1], r[2], r[6], r[9])
+                    if k in product_list_p:
+                        product_dict_num[k] += r[3]
+                        product_dict_amount[k] += r[5]
+                    else:
+                        product_dict_num[k] = r[3]
+                        product_dict_amount[k] = r[5]
+                        product_list_p.append(k)
+                for product_l in product_list_p:
+                    if product_dict_num.get(product_l, 0) == 0:
+                        price_unit = 0
+                    else:
+                        price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
+                    data = {
+                        'date': product_l[0],
+                        'product_id': product_l[1],
+                        'default_code': product_l[2],
+                        'product_qty': product_dict_num.get(product_l, 0),
+                        'uom_id': product_l[4],
+                        'partner_id': product_l[3],
+                        'price_unit': price_unit,
+                        'product_amount': product_dict_amount.get(product_l, 0),
+                        'property_supplier_payment_term': partner_dict.get(product_l[3], '')
+                    }
+                    cre_obj = report_obj.create(data)
+                    result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                         'qdodoo_stock_in_analytic_report3')
@@ -746,6 +948,32 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                     }
                     cre_obj2 = report_obj.create(data)
                     result_list.append(cre_obj2.id)
+                    # (产品，编码，供应商，单位)
+                    k = (r[1], r[2], r[6], r[9])
+                    if k in product_list_p:
+                        product_dict_num[k] += r[3]
+                        product_dict_amount[k] += r[5]
+                    else:
+                        product_dict_num[k] = r[3]
+                        product_dict_amount[k] = r[5]
+                        product_list_p.append(k)
+                for product_l in product_list_p:
+                    if product_dict_num.get(product_l, 0) == 0:
+                        price_unit = 0
+                    else:
+                        price_unit = product_dict_amount.get(product_l, 0) / product_dict_num.get(product_l, 0)
+                    data = {
+                        'product_id': product_l[0],
+                        'default_code': product_l[1],
+                        'product_qty': product_dict_num.get(product_l, 0),
+                        'partner_id': product_l[2],
+                        'uom_id': product_l[3],
+                        'product_amount': product_dict_amount.get(product_l, 0),
+                        'price_unit': price_unit,
+                        'property_supplier_payment_term': partner_dict.get(product_l[2], '')
+                    }
+                    cre_obj = report_obj.create(data)
+                    result_list.append(cre_obj.id)
                 if result_list:
                     vie_model, view_id = model_obj.get_object_reference('qdodoo_stock_in_analysis_report',
                                                                         'qdodoo_stock_in_analytic_report3')

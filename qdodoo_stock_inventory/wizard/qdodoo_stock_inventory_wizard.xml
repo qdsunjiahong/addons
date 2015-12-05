@@ -10,7 +10,9 @@
                         <group colspan="4" col="4">
                             <field name="date"/>
                             <field name="inventory_id"
-                                   domain="[('company_id','=',company_id),('state','=','done'),('inventory_b','=',False)]"/>
+                                   domain="[('company_id','=',company_id),('state','=','confirm')]"/>
+                            <field name="debit_account" domain="[('company_id','=',company_id)]"/>
+                            <field name="credit_account" domain="[('company_id','=',company_id)]"/>
                         </group>
                         <div>
                             <label for="company_id" string="公司"/>

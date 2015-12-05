@@ -22,12 +22,12 @@ class qdodoo_stock_inventory_wizard(models.Model):
 
     date = fields.Date(string=u'日期', required=True)
     inventory_id = fields.Many2one('stock.inventory', string=u'盘点表', required=True)
+    debit_account = fields.Many2one('account.account', string=u'借方科目', required=True)
+    credit_account = fields.Many2one('account.account', string=u'贷方科目', required=True)
     company_id = fields.Many2one('res.company', string=u'公司', default=_get_company_id, required=True)
 
     @api.multi
     def action_inventory(self):
-        if self.inventory_id.inventory_b == True:
-            raise except_orm(_(u'警告'), _(u'盘点表%已盘点') % self.inventory_id.name)
         datetime_start = self.date + " 00:00:01"
         datetime_end = self.date + " 23:59:59"
         production_obj = self.env['mrp.production']
@@ -40,6 +40,18 @@ class qdodoo_stock_inventory_wizard(models.Model):
         end_product_list = []
         end_product_dict = {}
         report_obj = self.env['qdodoo.stock.inventory.report2']
+        account_move_line_obj = self.env['account.move.line']
+        res_inventory = self.inventory_id.action_done()
+        if res_inventory:
+            account_move_lines = account_move_line_obj.search([('name', '=', 'INV:' + self.inventory_id.name)])
+            if account_move_lines:
+                for move_line in account_move_lines:
+                    if move_line.debit > 0:
+                        move_line.write({'account_id': self.debit_account.id})
+                    elif move_line.credit > 0:
+                        move_line.write({'account_id': self.credit_account.id})
+        else:
+            raise except_orm(_(u'警告'), _(u'盘点失败'))
         if self.inventory_id.line_ids:
             for move_id in self.inventory_id.move_ids:
                 product_list.append(move_id.product_id.id)
@@ -88,11 +100,12 @@ class qdodoo_stock_inventory_wizard(models.Model):
                 'product_qty': end_product_dict.get(key_ll, 0),
                 'inventory_id': key_ll[2],
                 'date': fields.Date.today(),
+                'debit_account': self.debit_account.id,
+                'credit_account': self.credit_account.id
             }
             res_obj = report_obj.create(data)
             return_list.append(res_obj.id)
         if return_list:
-            self.inventory_id.write({'inventory_b': True})
             view_model, view_id = self.env['ir.model.data'].get_object_reference('qdodoo_stock_inventory',
                                                                                  'qdodoo_stock_inventory_report2')
             return {
@@ -105,11 +118,6 @@ class qdodoo_stock_inventory_wizard(models.Model):
                 'views': [(view_id, 'tree')],
                 'view_id': [view_id],
             }
+
         else:
             raise except_orm(_(u'警告'), _(u'未找到盘点数据'))
-
-
-class qdodoo_stock_inventory_inherit(models.Model):
-    _inherit = 'stock.inventory'
-
-    inventory_b = fields.Boolean(string=u'生产盘点完成', copy=False)

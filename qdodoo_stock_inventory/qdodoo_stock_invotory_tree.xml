@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_stock_inventory_report3" model="ir.ui.view">
+            <field name="name">生产库存盘点报表</field>
+            <field name="model">qdodoo.stock.inventory.report2</field>
+            <field name="arch" type="xml">
+                <tree string="生产库存盘点报表">
+                    <field name="mo_id"/>
+                    <field name="product_id"/>
+                    <field name="product_qty"/>
+                    <field name="inventory_id"/>
+                    <field name="date"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_stock_inventory_search3" model="ir.ui.view">
+            <field name="name">生产库存盘点报表</field>
+            <field name="model">qdodoo.stock.inventory.report2</field>
+            <field name="arch" type="xml">
+                <search string="生产库存盘点报表">
+                    <field name="product_id"/>
+                    <field name="inventory_id"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_stock_inventory_report3" model="ir.actions.act_window">
+            <field name="name">生产库存盘点报表</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.stock.inventory.report2</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="qdodoo_stock_inventory_report3"/>
+            <field name="search_view_id" ref="qdodoo_stock_inventory_search3"/>
+        </record>
+        <menuitem name="生产盘点结果" action="action_qdodoo_stock_inventory_report3"
+                  id="menu_qdodoo_stock_inventory3"
+                  parent="stock.menu_stock_inventory_control"/>
+    </data>
+</openerp>
