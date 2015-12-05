@@ -216,5 +216,5 @@ class account_move_line_inherit(osv.osv):
         return res
 
     _columns = {
-        "location_name": fields.function(_get_location_name, type="char", string=u'库位',multi='tian')
+        "location_name": fields.function(_get_location_name, type="char", string=u'库位')
     }
