@@ -60,7 +60,8 @@ class qdodoo_stock_in_analytic_wizard2(models.Model):
                 (sm.product_uom_qty * sm.price_unit) as product_amount,
                 po.partner_id as partner_id,
                 pt.uom_po_id as uom_id,
-                ai.date_invoice as date
+                ai.date_invoice as date,
+                po.
             FROM stock_move sm
                 LEFT JOIN purchase_order_line pol on pol.id = sm.purchase_line_id
                 LEFT JOIN purchase_order po on po.id = pol.order_id

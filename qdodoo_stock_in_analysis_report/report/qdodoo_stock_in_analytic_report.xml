@@ -84,15 +84,6 @@
             </field>
         </record>
 
-        <record id="action_qdodoo_stock_in_analytic_report1" model="ir.actions.act_window">
-            <field name="name">入库分析表</field>
-            <field name="res_model">qdodoo.stock.in.analytic.report</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree</field>
-            <field name="view_id" ref="qdodoo_stock_in_analytic_report1"/>
-            <field name="search_view_id" ref="qdodoo_stock_in_analytic_search1"/>
-        </record>
-
         <record id="qdodoo_stock_in_analytic_report2" model="ir.ui.view">
             <field name="name">入库分析表</field>
             <field name="model">qdodoo.stock.in.analytic.report</field>
@@ -134,15 +125,6 @@
             </field>
         </record>
 
-        <record id="action_qdodoo_stock_in_analytic_report2" model="ir.actions.act_window">
-            <field name="name">入库分析表</field>
-            <field name="res_model">qdodoo.stock.in.analytic.report</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree</field>
-            <field name="view_id" ref="qdodoo_stock_in_analytic_report2"/>
-            <field name="search_view_id" ref="qdodoo_stock_in_analytic_search2"/>
-        </record>
-
         <record id="qdodoo_stock_in_analytic_report3" model="ir.ui.view">
             <field name="name">入库分析表</field>
             <field name="model">qdodoo.stock.in.analytic.report</field>
@@ -171,6 +153,42 @@
                     <field name="product_id"/>
                     <field name="company_id"/>
                     <field name="date"/>
+                    <field name="property_supplier_payment_term"/>
+                    <group string="分组按">
+                        <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
+                        <filter string="付款方式" domain="[]" context="{'group_by' : 'property_supplier_payment_term'}"/>
+                        <filter string="供应商" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="公司" domain="[]" context="{'group_by':'company_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_report4" model="ir.ui.view">
+            <field name="name">入库分析表</field>
+            <field name="model">qdodoo.stock.in.analytic.report</field>
+            <field name="arch" type="xml">
+                <tree string="入库分析表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="default_code"/>
+                    <field name="product_qty"/>
+                    <field name="uom_id"/>
+                    <field name="price_unit"/>
+                    <field name="product_amount"/>
+                    <field name="company_id"/>
+                    <field name="location_id"/>
+                    <field name="property_supplier_payment_term"/>
+                </tree>
+            </field>
+        </record>
+        <record id="qdodoo_stock_in_analytic_search4" model="ir.ui.view">
+            <field name="name">入库分析表</field>
+            <field name="model">qdodoo.stock.in.analytic.report</field>
+            <field name="arch" type="xml">
+                <search string="入库分析表">
+                    <field name="partner_id"/>
+                    <field name="product_id"/>
+                    <field name="company_id"/>
                     <field name="property_supplier_payment_term"/>
                     <group string="分组按">
                         <filter string="产品" domain="[]" context="{'group_by' : 'product_id'}"/>
