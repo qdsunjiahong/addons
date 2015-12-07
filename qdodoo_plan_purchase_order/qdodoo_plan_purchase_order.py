@@ -171,11 +171,11 @@ class qdodoo_plan_purchase_order_line(models.Model):
     order_id = fields.Many2one('qdodoo.plan.purchase.order',u'计划转采购单')
     product_id = fields.Many2one('product.product',u'产品',required=True)
     plan_date_jh = fields.Date(u'到货日期(计划)',required=True)
-    plan_date = fields.Date(u'到货日期(采购)',required=True)
+    plan_date = fields.Date(u'到货日期(采购)')
     name = fields.Char(u'备注')
     price_unit = fields.Float(u'单价')
     qty_jh = fields.Float(u'数量(计划)',required=True)
-    qty = fields.Float(u'数量(采购)',required=True)
+    qty = fields.Float(u'数量(采购)')
     uom_id = fields.Many2one('product.uom',u'单位')
     partner_id = fields.Many2one('res.partner',u'供应商')
     state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
@@ -204,10 +204,12 @@ class qdodoo_plan_purchase_order_line(models.Model):
         date_order = datetime.now()
         if product_id:
             product_obj = self.pool.get('product.product').browse(cr, uid, product_id, context=context)
-            # 获取产品对应的供应商和送货周期
+            # 获取产品对应的供应商和送货周期\数量
             purchase_dict = {}
+            purchase_num_dict = {}
             for line in product_obj.seller_ids:
                 purchase_dict[line.name.id] = line.delay
+                purchase_num_dict[line.name.id] = line.min_qty
             if partner_id:
                 pricelist_id = partner_obj.browse(cr, uid, partner_id).property_product_pricelist_purchase.id
                 date_order_str = date_order.strftime(DEFAULT_SERVER_DATE_FORMAT)
@@ -215,6 +217,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
                 res['value']['price_unit'] = price
                 res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
+                res['value']['qty'] = purchase_num_dict.get(partner_id,0)
             else:
                 res['value']['price_unit'] = product_obj.standard_price
             res['value']['name'] = product_obj.product_tmpl_id.name

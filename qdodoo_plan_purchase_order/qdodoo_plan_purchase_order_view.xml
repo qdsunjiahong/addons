@@ -51,11 +51,11 @@
                                     <tree editable="bottom" colors="red:colors=='red'">
                                         <field name="product_id" on_change="onchange_product_id(product_id,partner_id,qty,uom_id)" domain="[('company_id','=',parent.company_id)]"/>
                                         <field name="plan_date_jh"/>
-                                        <field name="plan_date"/>
+                                        <field name="plan_date" attrs="{'required':[('state','!=','draft')]}"/>
                                         <field name="name"/>
                                         <field name="price_unit"/>
                                         <field name="qty_jh" sum="合计"/>
-                                        <field name="qty" sum="合计"/>
+                                        <field name="qty" sum="合计" attrs="{'required':[('state','!=','draft')]}"/>
                                         <field name="uom_id"/>
                                         <field name="state" invisible="True"/>
                                         <field name="colors" invisible="True"/>
