@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_view_move_tree2">
+            <field name="name">调拨单增加会计区间</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_tree"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='state']" position="before">
+                    <field name="period_id"/>
+                </xpath>
+
+            </field>
+        </record>
+        <record model="ir.ui.view" id="qdodoo_view_move_search2">
+            <field name="name">调拨单增加会计区间分组</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_search"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//search[@string='Stock Moves']/group[@string='Group By']/filter[@string='Product']"
+                       position="after">
+                    <filter string="会计区间" domain="[]" context="{'group_by':'period_id'}"/>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>
