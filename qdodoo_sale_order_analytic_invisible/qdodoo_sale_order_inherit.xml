@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_view_order_form_analytic">
+            <field name="name">销售辅助核算项隐藏</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <field name="project_id" position="replace">
+                    <field name="project_id"
+                           context="{'partner_id':partner_invoice_id, 'manager_id': user_id, 'default_pricelist_id':pricelist_id, 'default_name':name, 'default_type': 'contract'}"
+                           groups="sale.group_analytic_accounting"
+                           domain="[('type','in',['normal','contract'])]"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
