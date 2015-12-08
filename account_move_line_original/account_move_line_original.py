@@ -83,3 +83,9 @@ class account_move_line_original(osv.osv):
                 super(account_move_line_original, self).write(cr, uid, obj.id, {'original2':obj.original})
         return True
 
+    def _default_get(self, cr, uid, fields, context=None):
+        res_data = super(account_move_line_original, self)._default_get(cr, uid, fields, context=context)
+        res_data['debit'] = 0.0
+        res_data['credit'] = 0.0
+        return res_data
+
