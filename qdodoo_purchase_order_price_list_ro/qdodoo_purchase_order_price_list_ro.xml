@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_purchase_order_form_price_list">
+            <field name="name">价格表只读</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='pricelist_id']" position="replace">
+                    <field domain="[('type','=','purchase')]" name="pricelist_id"
+                           groups="product.group_purchase_pricelist"
+                           on_change="onchange_pricelist(pricelist_id, context)" invisible="1"/>
+                </xpath>
+                <field name="pricelist_id" position="after">
+                    <field name="pricelist_related" readonly="1"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>
