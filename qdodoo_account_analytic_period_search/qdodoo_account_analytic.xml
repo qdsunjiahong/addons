@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_view_account_analytic_line_filter2">
+            <field name="name">强制会计期间分组</field>
+            <field name="model">account.analytic.line</field>
+            <field name="inherit_id" ref="account.view_account_analytic_line_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@string='Tasks Month']" position="replace">
+                    <filter string="会计期间" domain="[]" context="{'group_by':'period_id2'}"/>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</openerp>
