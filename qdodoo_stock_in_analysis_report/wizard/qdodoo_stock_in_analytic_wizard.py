@@ -50,7 +50,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             pt.uom_po_id as uom_id,
             po.location_id as location_id,
             po.payment_term_id as payment_term_id,
-            ail.company_id as company_id
+            ail.company_id as company_id,
+            ai.date_invoice as date
         """
         sql_from = """
             from account_invoice_line ail
@@ -133,7 +134,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_amount': i[6],
                         'location_id': i[8],
                         'company_id': i[10],
-                        'uom_id': i[7]
+                        'uom_id': i[7],
+                        'date': i[-1]
                     }
                     if i[9]:
                         data1['property_supplier_payment_term'] = i[9]
@@ -249,7 +251,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_amount': i[6],
                         'location_id': i[8],
                         'company_id': i[10],
-                        'uom_id': i[7]
+                        'uom_id': i[7],
+                        'date': i[-1]
                     }
                     if i[9]:
                         data1['property_supplier_payment_term'] = i[9]
@@ -435,7 +438,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                             'product_amount': i[5],
                             'location_id': i[7],
                             'company_id': i[9],
-                            'uom_id': i[6]
+                            'uom_id': i[6],
+                            'date': i[-1]
                         }
                         if i[8]:
                             data1['property_supplier_payment_term'] = i[8]
@@ -594,7 +598,8 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
                         'product_amount': i[5],
                         'location_id': i[7],
                         'company_id': i[9],
-                        'uom_id': i[6]
+                        'uom_id': i[6],
+                        'date': i[-1]
                     }
                     if i[8]:
                         data1['property_supplier_payment_term'] = i[8]

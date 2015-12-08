@@ -168,6 +168,7 @@
             <field name="model">qdodoo.stock.in.analytic.report</field>
             <field name="arch" type="xml">
                 <tree string="入库分析表">
+                    <field name="date"/>
                     <field name="partner_id"/>
                     <field name="product_id"/>
                     <field name="default_code"/>
