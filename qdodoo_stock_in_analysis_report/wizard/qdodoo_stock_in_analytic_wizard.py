@@ -62,7 +62,7 @@ class qdodoo_stock_in_analytic_wizard(models.Model):
             LEFT JOIN purchase_order po ON po.id = pir.purchase_id
         """
         sql_where = """
-        where po.state = 'done' and ai.state != 'cancel'
+        where ai.state != 'cancel'
         """
         sql_domain = []
         model_obj = self.env['ir.model.data']
