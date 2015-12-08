@@ -13,11 +13,14 @@ from openerp.exceptions import except_orm
 class qdodoo_stock_move(models.Model):
     _inherit = 'stock.move'
 
-    def _get_period_id(self):
-        date = fields.Date.today()
-        company_id = self.env['res.users'].browse(self.env.uid).company_id.id
-        period_ids = self.env['account.period'].search(
-            [('company_id', '=', company_id), ('date_start', '<=', date), ('date_stop', '>=', date)])
-        return period_ids[0].id
+    @api.model
+    def create(self, vals):
+        res = super(qdodoo_stock_move, self).create(vals)
+        if res.create_date and res.company_id:
+            period_ids = self.env['account.period'].search(
+                [('company_id', '=', res.company_id.id), ('date_start', '<=', res.create_date[:10]),
+                 ('date_stop', '>=', res.create_date[:10])])
+            res.write({'period_id': period_ids[0].id})
+        return res
 
-    period_id = fields.Many2one('account.period', copy=False, default=_get_period_id)
+    period_id = fields.Many2one('account.period', string=u'会计期间', copy=False)
