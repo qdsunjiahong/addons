@@ -19,3 +19,10 @@ class qdodoo_stock_picking_eric(models.Model):
         if vals.get('acc'):
             vals['date_done'] = self.env['account.period'].browse(vals.get('acc')).date_stop
         return super(qdodoo_stock_picking_eric, self).write(vals)
+
+    def _get_invoice_vals(self, cr, uid, key, inv_type, journal_id, move, context=None):
+        data = super(qdodoo_stock_picking_eric, self)._get_invoice_vals(cr, uid, key, inv_type, journal_id, move,
+                                                                        context=context)
+        if move.picking_id.acc:
+            data['period_id'] = move.picking_id.acc.id
+        return data
