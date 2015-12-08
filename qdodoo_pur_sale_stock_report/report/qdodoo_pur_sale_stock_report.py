@@ -111,7 +111,7 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
                 num_old_dict[move_old_id.product_id.id] = move_old_id.product_uom_qty
         # 查询产品的调拨入库数量
         move_in_dict = {}
-        move_in_ids = move_obj.search(self.cr, self.uid, [('product_id','in',product_lst),('state','=','done'),('date','>=',start_date),('date','<=',end_date),('location_id.usage','=','transit'),('location_dest_id','=',self.location_id)])
+        move_in_ids = move_obj.search(self.cr, self.uid, [('product_id','in',product_lst),('state','=','done'),('date','>=',start_date),('date','<=',end_date),('picking_type_id.code','=','internal'),('location_dest_id','=',self.location_id)])
         for move_in_id in move_obj.browse(self.cr, self.uid, move_in_ids):
             if move_in_id.product_id.id in move_in_dict:
                 move_in_dict[move_in_id.product_id.id] += move_in_id.product_uom_qty
@@ -119,7 +119,7 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
                 move_in_dict[move_in_id.product_id.id] = move_in_id.product_uom_qty
         # 查询产品的调拨出库数量
         move_out_dict = {}
-        move_out_ids = move_obj.search(self.cr, self.uid, [('product_id','in',product_lst),('state','=','done'),('date','>=',start_date),('date','<=',end_date),('location_id','=',self.location_id),('location_dest_id.usage','=','transit')])
+        move_out_ids = move_obj.search(self.cr, self.uid, [('product_id','in',product_lst),('state','=','done'),('date','>=',start_date),('date','<=',end_date),('location_id','=',self.location_id),('picking_type_id.code','=','internal')])
         for move_out_id in move_obj.browse(self.cr, self.uid, move_out_ids):
             if move_out_id.product_id.id in move_out_dict:
                 move_out_dict[move_out_id.product_id.id] += move_out_id.product_uom_qty
@@ -200,6 +200,7 @@ class qdodoo_pur_sale_stock_report(report_sxw.rml_parse):
             val_dict['mrp_num'] = production_dict.get(product_l,0.0) #生产数量
             val_dict['mrp_old_num'] = production_old_dict.get(product_l,0.0) #原料消耗数量
             val_dict['current_balance_num'] = balance_num_new_dict.get(product_l,product_dict.get(product_l,0.0)) #本期结余数量
+
             data.append(val_dict)
         if not data:
             data = [{'start_date':self.start_date,'end_date':self.end_date if self.end_date else now_date,'location_id':self.location_id,'product_name':'',
