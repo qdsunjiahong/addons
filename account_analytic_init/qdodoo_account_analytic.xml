@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_pruchase_price_wizard_form22" model="ir.ui.view">
+            <field name="name">辅助核算项会计期间初始化</field>
+            <field name="model">qdodoo.account.analytic.init</field>
+            <field name="arch" type="xml">
+                <form string="辅助核算项会计期间初始化">
+                    <footer>
+                        <button string="确定" name="action_done" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_purchase_price_wizard22" model="ir.actions.act_window">
+            <field name="name">辅助核算项会计期间初始化</field>
+            <field name="res_model">qdodoo.account.analytic.init</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_pruchase_price_wizard_form22"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" name="辅助核算项会计期间初始化" action="action_qdodoo_purchase_price_wizard22"
+                  id="menu_qdodoo_purchase_price22"
+                  parent="base.next_id_73"/>
+    </data>
+</openerp>
