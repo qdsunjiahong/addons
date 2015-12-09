@@ -25,7 +25,7 @@
                         </div>
                         <div>
                             <label for="company_id" string="公司" attrs="{'invisible':[('search_choice','=',False)]}"/>
-                            <field name="company_id" attrs="{'invisible':[('search_choice','=',False)]}"/>
+                            <field name="company_id" domain="[('parent_id','!=',False)]" attrs="{'invisible':[('search_choice','=',False)]}"/>
                         </div>
                         <div>
                             <label for="date" string="日期" attrs="{'invisible':[('search_choice','!=',3)]}"/>
