@@ -87,26 +87,6 @@ class account_account(osv.osv):
 class account_periodly(osv.osv):
     _name = "account.periodly"
     _description = "科目余额表"
-    # _auto = False
-
-    def _compute_balances(self, cr, uid, ids, field_names, arg=None, context=None,
-                          query='', query_params=()):
-        obj = self.pool.get('res.users').browse(cr, uid, uid)
-        lst_id = []
-        for line in obj.company_ids:
-            lst_id.append(line.id)
-        # all_periodly_lines = self.search(cr, uid, [('company_id','=',obj.company_id.id)], context=context)
-        all_periodly_lines = self.search(cr, uid, [], context=context)
-        all_companies = self.pool.get('res.company').search(cr, uid, [], context=context)
-        all_accounts = self.pool.get('account.account').search(cr, uid, [], context=context)
-        current_sum = dict((company, dict((account, 0.0) for account in all_accounts)) for company in all_companies)
-        res = dict((id, dict((fn, 0.0) for fn in field_names)) for id in all_periodly_lines)
-        for record in self.browse(cr, uid, all_periodly_lines, context=context):
-            if record.company_id.id in lst_id:
-                res[record.id]['starting_balance'] = current_sum[record.company_id.id][record.account_id.id]
-                current_sum[record.company_id.id][record.account_id.id] += record.balance
-                res[record.id]['ending_balance'] = current_sum[record.company_id.id][record.account_id.id]
-        return res
 
     _columns = {
         'fiscalyear_id': fields.many2one('account.fiscalyear', 'Fiscalyear', readonly=True),
@@ -116,9 +96,8 @@ class account_periodly(osv.osv):
         'credit': fields.float('贷方', readonly=True),
         'balance': fields.float('Balance', readonly=True),
         'date': fields.date('Beginning of Period Date', readonly=True),
-        'starting_balance': fields.float(digits_compute=dp.get_precision('Account'),
-                                         string='期初余额'),
-        'ending_balance': fields.float(digits_compute=dp.get_precision('Account'), string='期末余额'),
+        'starting_balance': fields.float(string='期初余额'),
+        'ending_balance': fields.float(string='期末余额'),
         'company_id': fields.many2one('res.company', 'Company', readonly=True),
         'partner_ids': fields.one2many('qdodoo.account.partner.report', 'account_periodly_id', string=u'明细')
     }

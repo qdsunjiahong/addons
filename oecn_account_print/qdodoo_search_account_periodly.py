@@ -43,13 +43,15 @@ class account_periodly_search(models.Model):
                 l.partner_id as partner_id,
                 l.account_id as account_id,
                 l.company_id as company_id,
-                (l.debit-l.credit) as balance
+                (l.debit-l.credit) as balance,
+                p.id as per_id,
+                l.id as id
             from
                 account_move_line l
-                left join account_period p on (l.period_id=p.id)
+                left join account_period p on (p.id=l.period_id)
             where
-                p.date_start < '%s' and l.company_id=%s
-            group by l.partner_id,l.account_id,l.company_id,l.debit,l.credit
+                p.date_stop < '%s' and l.company_id=%s
+            group by l.partner_id,l.account_id,l.company_id,l.debit,l.credit,p.id,l.id
             """ % (per_id.date_start, per_id.company_id.id)
             self.env.cr.execute(sql3)
             res_balance = self.env.cr.fetchall()
@@ -66,46 +68,33 @@ class account_periodly_search(models.Model):
                                                               balance_l[3]
                     if key_balance_partner not in account_list:
                         account_list.append(key_balance_partner)
-        sql = ''
+        sql = """
+            select
+                l.partner_id as partner_id,
+                l.period_id as period_id,
+                l.account_id as account_id,
+                l.company_id as company_id,
+                l.debit as debit,
+                l.credit as credit,
+                (l.debit-l.credit) as balance,
+                l.date as date,
+                l.name as line_name,
+                am.name as move_name,
+                l.id as id
+            from
+                account_move_line l
+                left join account_account a on (a.id=l.account_id)
+                left join account_move am on (am.id=l.move_id)
+            where l.state != 'draft'
+        """
+        group_by = """
+        group by l.name,am.name, l.period_id, l.account_id, l.company_id ,l.debit, l.credit,l.id
+        """
         if per_list and len(per_list) == 1:
-            sql = """
-                select
-                    l.partner_id as partner_id,
-                    l.period_id as period_id,
-                    l.account_id as account_id,
-                    l.company_id as company_id,
-                    l.debit as debit,
-                    l.credit as credit,
-                    (l.debit-l.credit) as balance,
-                    l.name as line_name,
-                    am.name as move_name
-                from
-                    account_move_line l
-                    left join account_account a on (a.id=l.account_id)
-                    left join account_move am on (am.id=l.move_id)
-                where l.state != 'draft' and l.period_id = %s
-                group by l.name,am.name, l.period_id, l.account_id, l.company_id ,l.debit, l.credit,l.id
-            """ % per_list[0]
+            sql = sql + ' and l.period_id = %s' % per_list[0] + group_by
         elif per_list and len(per_list) > 1:
-            sql = """
-                select
-                    l.partner_id as partner_id,
-                    l.period_id as period_id,
-                    l.account_id as account_id,
-                    l.company_id as company_id,
-                    l.debit as debit,
-                    l.credit as credit,
-                    (l.debit-l.credit) as balance,
-                    l.name as line_name,
-                    am.name as move_name
-                from account_move_line l
-                    left join res_partner rp on rp.id = l.partner_id
-                    left join account_move am on (am.id=l.move_id)
-                where l.state != 'draft' and l.period_id in %s
-                group by l.name,am.name, l.period_id, l.account_id, l.company_id ,l.debit, l.credit,l.id
-            """ % (tuple(per_list),)
+            sql = sql + ' and l.period_id in %s' % (tuple(per_list),) + group_by
         self.env.cr.execute(sql)
-        key_list = []  # 总计
         debit_dict = {}
         credit_dict = {}
         # 每个客户的借贷
@@ -114,67 +103,77 @@ class account_periodly_search(models.Model):
         partner_dict_debit = {}
         partner_line_dict = {}
         # 最后循环列表
-        for_list = []
-        for_dict = {}
         for line in self.env.cr.fetchall():
             k_l = line[1:4]
             partner_key = line[:4]  # 客户键值
-            if k_l in key_list:
-                debit_dict[k_l] += line[4]
-                credit_dict[k_l] += line[5]
-            else:
-                debit_dict[k_l] = line[4]
-                credit_dict[k_l] = line[5]
-                key_list.append(k_l)
-            if partner_key in partner_key_list:
-                partner_dict_credit[partner_key] += line[5]
-                partner_dict_debit[partner_key] += line[4]
-                partner_line_dict[partner_key] += [(line[4], line[5], line[6], line[7], line[8])]
-            else:
-                partner_dict_credit[partner_key] = line[5]
-                partner_dict_debit[partner_key] = line[4]
-                partner_line_dict[partner_key] = [(line[4], line[5], line[6], line[7], line[8])]
+            debit_dict[k_l] = debit_dict.get(k_l, 0) + line[4]
+            credit_dict[k_l] = credit_dict.get(k_l, 0) + line[5]
+            partner_dict_debit[partner_key] = partner_dict_debit.get(partner_key, 0) + line[4]
+            partner_dict_credit[partner_key] = partner_dict_credit.get(partner_key, 0) + line[5]
+            partner_line_dict[partner_key] = partner_line_dict.get(partner_key, []) + [
+                (line[4], line[5], line[6], line[7], line[8])]
+
+            if partner_key not in partner_key_list:
                 partner_key_list.append(partner_key)
         return_ids = []
-        for key in list(set(partner_key_list + account_list)):
-            if key[1:] not in for_list:
-                ending_balance = starting_balance_dict.get(key[1:], 0) + debit_dict.get(key[1:], 0) - credit_dict.get(
-                    key[1:], 0)
-                balance = debit_dict.get(key[1:], 0) - credit_dict.get(key[1:], 0)
-                sql_1 = """
-                insert into account_periodly (period_id,starting_balance,ending_balance,account_id,company_id,debit,credit,balance) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) returning id
-                """ % (key[1], starting_balance_dict.get(key[1:], 0), ending_balance, key[2], key[3],
-                       debit_dict.get(key[1:], 0),
-                       credit_dict.get(key[1:], 0), balance)
-                self.env.cr.execute(sql_1)
-                sql_result1 = self.env.cr.fetchall()
-                for_dict[key[1:]] = sql_result1[0][0]
-                for_list.append(key[1:])
-                return_ids.append(sql_result1[0][0])
-            starting_balance_partner = start_partner_dict.get(key, 0)
-            ending_balance_partner = start_partner_dict.get(key, 0) + partner_dict_debit.get(key,
-                                                                                             0) - partner_dict_credit.get(
-                key, 0)
+        # 科目余额表主视图ID
+        account_tree_dict = {}
+        # （会计区间id，科目，公司）
 
-            if key[0]:
-                sql_2 = """
+        #######一级主视图#######
+        for key_account in list(set(starting_balance_dict.keys() + debit_dict.keys() + credit_dict.keys())):
+            # 科目期初
+            account_start = starting_balance_dict.get(key_account, 0)
+            # 科目借方金额
+            account_debit = debit_dict.get(key_account, 0)
+            # 科目贷方金额
+            account_credit = credit_dict.get(key_account, 0)
+            # 科目期末
+            account_end = account_start + account_debit - account_credit
+            sql = """
+                insert into account_periodly (period_id,starting_balance,ending_balance,account_id,company_id,debit,credit) VALUES (%s,%s,%s,%s,%s,%s,%s) returning id
+                """ % (
+                key_account[0], account_start, account_end, key_account[1], key_account[2], account_debit,
+                account_credit)
+            self.env.cr.execute(sql)
+            return_obj = self.env.cr.fetchall()
+            account_tree_dict[key_account] = return_obj[0][0]
+            return_ids.append(return_obj[0][0])
+
+        # 二级客户分组视图创建
+        for key_partner in list(set(partner_key_list + account_list)):
+            # 客户期初金额
+            account_partner_start = start_partner_dict.get(key_partner, 0)
+            # 客户借方金额
+            account_partner_debit = partner_dict_debit.get(key_partner, 0)
+            # 客户贷方金额
+            account_partner_credit = partner_dict_credit.get(key_partner, 0)
+            # 客户期末
+            account_partner_end = account_partner_start + account_partner_debit - account_partner_credit
+            account_periodly_id = account_tree_dict.get(key_partner[1:], False)
+            values = [account_periodly_id, key_partner[0], key_partner[1], key_partner[2], key_partner[3],
+                      account_partner_debit, account_partner_credit, account_partner_start, account_partner_end]
+            if key_partner[0]:
+                sql = """
                 insert into qdodoo_account_partner_report (account_periodly_id,partner_id,period_id,account_id,company_id,debit,credit,start_balance,end_balance) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s) returning id
-                """ % (
-                    for_dict.get(key[1:]), key[0], key[1], key[2], key[3], partner_dict_debit.get(key, 0),
-                    partner_dict_credit.get(key, 0), starting_balance_partner, ending_balance_partner)
+                """ % tuple(values)
             else:
-                sql_2 = """
+                del values[1]
+                sql = """
                 insert into qdodoo_account_partner_report (account_periodly_id,period_id,account_id,company_id,debit,credit,start_balance,end_balance) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) returning id
-                """ % (
-                    for_dict.get(key[1:]), key[1], key[2], key[3], partner_dict_debit.get(key, 0),
-                    partner_dict_credit.get(key, 0), starting_balance_partner, ending_balance_partner)
-            self.env.cr.execute(sql_2)
-            sql_result2 = self.env.cr.fetchall()
-            if partner_line_dict.get(key, False):
-                for par_l in partner_line_dict.get(key):
+                """ % tuple(values)
+            self.env.cr.execute(sql)
+            return_obj2 = self.env.cr.fetchall()
+            ####三级明细视图创建
+            move_lines = partner_line_dict.get(key_partner, [])
+            if move_lines:
+                for move_line in move_lines:
+                    # (借方，贷方，差异，明细说明,凭证号)
+                    values = [move_line[4], move_line[3], return_obj2[0][0], key_partner[1], key_partner[3],
+                              key_partner[2], move_line[0], move_line[1]]
                     sql_line = """
                     insert into qdodoo_account_partner_line (move_name,line_name,report_id,period_id,company_id,account_id,debit,credit) VALUES ('%s','%s',%s,%s,%s,%s,%s,%s)
-                    """ % (par_l[4], par_l[3], sql_result2[0][0], key[1], key[3], key[2], par_l[0], par_l[1])
+                    """ % tuple(values)
                     self.env.cr.execute(sql_line)
         view_model, view_id = self.env['ir.model.data'].get_object_reference('oecn_account_print',
                                                                              'view_account_periodly_tree')
