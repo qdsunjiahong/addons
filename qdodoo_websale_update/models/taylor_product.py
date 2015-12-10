@@ -136,10 +136,11 @@ class qdodoo_sale_order_inherit_tfs(models.Model):
     _inherit = 'sale.order'
 
     all_money = fields.Float(u'合计',compute='_get_all_money')
+    minus_money = fields.Float(u'优惠金额')
 
     def _get_all_money(self):
         num = 0.0
         for line in self.order_line:
             num += line.multiple_number * line.price_unit
-        self.all_money = num
+        self.all_money = num - self.minus_money
 

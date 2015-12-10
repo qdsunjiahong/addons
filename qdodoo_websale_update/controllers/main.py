@@ -572,6 +572,8 @@ class qdodooo_website_update(website_sale):
         cr, uid, context, registry = request.cr, request.uid, request.context, request.registry
         # 得到销售订单
         order = request.website.sale_get_order(context=context)
+        promotion_obj = request.registry['qdodoo.promotion']
+        users_obj = request.registry['res.users']
         # 没有销售订单就返回销售列表
         if not order:
             return request.redirect("/shop")
@@ -636,54 +638,32 @@ class qdodooo_website_update(website_sale):
                 if value > gifts_num[key]:
                     return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
             line_obj.write(cr, uid, line_ids, {'multiple_number':line_obj_ids.product_uom_qty*multiple.get(key)})
-
+        promotion_obj = registry.get('qdodoo.promotion')
+        line_obj = registry.get('sale.order.line')
+        users_obj = registry.get('res.users')
+        product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, line_obj, users_obj)
+        minus_money = 0
+        for key,valus in product_price_dict.items():
+            minus_money += valus
+        sale_order_obj = registry.get('sale.order')
+        sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'minus_money':minus_money})
         return request.redirect("/shop/payment")
 
-    # 貌似是最终付款
-    @http.route('/shop/payment/validate', type='http', auth="public", website=True)
-    def payment_validate(self, transaction_id=None, sale_order_id=None, **post):
-        """ Method that should be called by the server when receiving an update
-        for a transaction. State at this point :
-         - UDPATE ME
-        """
-        # 得到常用的几个字段和值
-        cr, uid, context = request.cr, request.uid, request.context
-        # 初始化email
-        email_act = None
-        # 得到销售对象
-        sale_order_obj = request.registry['sale.order']
-        order_line_obj = request.registry['sale.order.line']
-        promotion_obj = request.registry['qdodoo.promotion']
-        users_obj = request.registry['res.users']
-        # 发票对象
-        invoice_obj = request.registry['account.invoice']
-        # 出库单
-        picking_obj = request.registry['stock.picking']
-
-        # 如果没有销售订单
-        if sale_order_id is None:
-            # 调用方法得到销售订单
-            order = request.website.sale_get_order(context=context)
-        else:
-            # 查询出相应的销售订单
-            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
-            # 还是在判断下 当前订单号 和缓存中的是否一致
-            assert order.id == request.session.get('sale_last_order_id')
-        if not order or not order.amount_total:
-            return request.redirect('/shop')
-        if not order.partner_id.analytic_account_id:
-            raise except_orm(_('Warning!'),_('客户没有设置对应的辅助核算项，请检查客户资料是否正确！'))
+    # 获取满减金额
+    def get_minus_money(self, cr, uid, order, promotion_obj, line_obj, users_obj):
         # 获取{产品：金额} 更新明细中产品的数量
         # 获取{产品分类：金额}
         num_dict = {}
         cage_dict = {}
+        all_money = 0
         for line in order.order_line:
             if line.product_id.categ_id.id in cage_dict:
                 cage_dict[line.product_id.categ_id.id] += line.multiple_number * line.price_unit
             else:
                 cage_dict[line.product_id.categ_id.id] = line.multiple_number * line.price_unit
             num_dict[line.product_id.id] = line.multiple_number * line.price_unit
-            order_line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
+            # 获取总金额
+            all_money += line.multiple_number * line.price_unit
         # 判断是否有对应的满减促销单
         date = datetime.datetime.now().date().strftime('%Y-%m-%d')
         version = ''
@@ -707,23 +687,63 @@ class qdodooo_website_update(website_sale):
                     # 如果有单品
                     if line_key.product_id and line_key.subtract_money and num_dict.get(line_key.product_id.id,0.0) >=line_key.all_money:
                         if line_key.product_items in product_price_dict:
-                            product_price_dict[line_key.product_items] += num_dict.get(line_key.product_id.id,0.0)
+                            product_price_dict[line_key.product_items] += num_dict.get(line_key.product_id.id,0.0) * int(num_dict.get(line_key.product_id.id,0.0) / line_key.all_money)
                         else:
-                            product_price_dict[line_key.product_items] = num_dict.get(line_key.product_id.id,0.0)
+                            product_price_dict[line_key.product_items] = num_dict.get(line_key.product_id.id,0.0) * int(num_dict.get(line_key.product_id.id,0.0) / line_key.all_money)
                     else:
                         # 如果有分类
                         if line_key.category_id and line_key.subtract_money and cage_dict.get(line_key.category_id.id,0.0) >=line_key.all_money:
                             if line_key.product_items in product_price_dict:
-                                product_price_dict[line_key.product_items] += cage_dict.get(line_key.category_id.id,0.0)
+                                product_price_dict[line_key.product_items] += cage_dict.get(line_key.category_id.id,0.0) * int(cage_dict.get(line_key.category_id.id,0.0) / line_key.all_money)
                             else:
-                                product_price_dict[line_key.product_items] = cage_dict.get(line_key.category_id.id,0.0)
+                                product_price_dict[line_key.product_items] = cage_dict.get(line_key.category_id.id,0.0) * int(cage_dict.get(line_key.category_id.id,0.0) / line_key.all_money)
                         else:
                             # 判断总金额
-                            if order.all_money >= line_key.all_money and line_key.subtract_money:
+                            if all_money >= line_key.all_money and line_key.subtract_money:
                                 if line_key.product_items in product_price_dict:
-                                    product_price_dict[line_key.product_items] += line_key.subtract_money
+                                    product_price_dict[line_key.product_items] += line_key.subtract_money * int(all_money / line_key.all_money)
                                 else:
-                                    product_price_dict[line_key.product_items] = line_key.subtract_money
+                                    product_price_dict[line_key.product_items] = line_key.subtract_money * int(all_money / line_key.all_money)
+        return product_price_dict
+    # 貌似是最终付款
+    @http.route('/shop/payment/validate', type='http', auth="public", website=True)
+    def payment_validate(self, transaction_id=None, sale_order_id=None, **post):
+        """ Method that should be called by the server when receiving an update
+        for a transaction. State at this point :
+         - UDPATE ME
+        """
+        # 得到常用的几个字段和值
+        cr, uid, context = request.cr, request.uid, request.context
+        # 初始化email
+        email_act = None
+        # 得到销售对象
+        sale_order_obj = request.registry['sale.order']
+        line_obj = request.registry['sale.order.line']
+        promotion_obj = request.registry['qdodoo.promotion']
+        users_obj = request.registry['res.users']
+        # 发票对象
+        invoice_obj = request.registry['account.invoice']
+        # 出库单
+        picking_obj = request.registry['stock.picking']
+
+        # 如果没有销售订单
+        if sale_order_id is None:
+            # 调用方法得到销售订单
+            order = request.website.sale_get_order(context=context)
+        else:
+            # 查询出相应的销售订单
+            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
+            # 还是在判断下 当前订单号 和缓存中的是否一致
+            assert order.id == request.session.get('sale_last_order_id')
+        if not order or not order.amount_total:
+            return request.redirect('/shop')
+        if not order.partner_id.analytic_account_id:
+            raise except_orm(_('Warning!'),_('客户没有设置对应的辅助核算项，请检查客户资料是否正确！'))
+        promotion_obj = request.registry['qdodoo.promotion']
+        line_obj = request.registry['sale.order.line']
+        users_obj = request.registry['res.users']
+        product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, line_obj, users_obj)
+        minus_money = 0
         for key,valus in product_price_dict.items():
             val = {}
             val['order_id'] = order.id
@@ -733,14 +753,17 @@ class qdodooo_website_update(website_sale):
             val['product_uom'] = key.uom_id.id
             val['price_unit'] = -valus
             val['name'] = key.name
-            order_line_obj.create(cr ,uid, val)
+            line_obj.create(cr ,uid, val)
+            minus_money += valus
+        for line in order.order_line:
+            line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
         user_id = order.partner_id.user_id.id or uid
         section_obj = users_obj.browse(cr, SUPERUSER_ID, user_id)
         section_id = section_obj.default_section_id.id if section_obj.default_section_id else False
         if section_id:
-            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'section_id':section_id,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'minus_money':minus_money,'section_id':section_id,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
         else:
-            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'minus_money':minus_money,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
         order.action_button_confirm()
         # send by email
         # 邮件act为销售订单 生成报价单
@@ -807,6 +830,8 @@ class qdodooo_website_update(website_sale):
         values['multiple'] = multiple
         values['errors'] = sale_order_obj._get_errors(cr, uid, order, context=context)
         values.update(sale_order_obj._get_website_data(cr, uid, order, context))
+
+
 
         # 得到我想要的账号余额
         partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid).partner_id
