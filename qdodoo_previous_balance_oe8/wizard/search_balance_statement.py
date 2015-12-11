@@ -160,7 +160,7 @@ class qdodoo_search_balance_statement(models.Model):
                 move_out_mount[key_out] = move_out_id.product_uom_qty * move_out_id.tfs_price_unit
                 move_out_list.append(key_out)
 
-        product_list_new = list(set(move_in_list + move_out_list))
+        product_list_new = list(set(move_in_list + move_out_list + product_dict.keys() + product_amount_dict.keys()))
         # 循环所有查询出来的数据
         for product_l in product_list_new:
             result = {
