@@ -685,18 +685,20 @@ class qdodooo_website_update(website_sale):
                 # 如果满足品牌
                 if line_key.section_id.id == user_section_id.id or not line_key.section_id:
                     # 如果有单品
-                    if line_key.product_id and line_key.subtract_money and num_dict.get(line_key.product_id.id,0.0) >=line_key.all_money:
-                        if line_key.product_items in product_price_dict:
-                            product_price_dict[line_key.product_items] += num_dict.get(line_key.product_id.id,0.0) * int(num_dict.get(line_key.product_id.id,0.0) / line_key.all_money)
-                        else:
-                            product_price_dict[line_key.product_items] = num_dict.get(line_key.product_id.id,0.0) * int(num_dict.get(line_key.product_id.id,0.0) / line_key.all_money)
+                    if line_key.product_id:
+                        if line_key.subtract_money and num_dict.get(line_key.product_id.id,0.0) >= line_key.all_money:
+                            if line_key.product_items in product_price_dict:
+                                product_price_dict[line_key.product_items] += line_key.subtract_money * int(num_dict.get(line_key.product_id.id,0.0) / line_key.all_money)
+                            else:
+                                product_price_dict[line_key.product_items] = line_key.subtract_money * int(num_dict.get(line_key.product_id.id,0.0) / line_key.all_money)
                     else:
                         # 如果有分类
-                        if line_key.category_id and line_key.subtract_money and cage_dict.get(line_key.category_id.id,0.0) >=line_key.all_money:
-                            if line_key.product_items in product_price_dict:
-                                product_price_dict[line_key.product_items] += cage_dict.get(line_key.category_id.id,0.0) * int(cage_dict.get(line_key.category_id.id,0.0) / line_key.all_money)
-                            else:
-                                product_price_dict[line_key.product_items] = cage_dict.get(line_key.category_id.id,0.0) * int(cage_dict.get(line_key.category_id.id,0.0) / line_key.all_money)
+                        if line_key.category_id:
+                            if line_key.subtract_money and cage_dict.get(line_key.category_id.id,0.0) >=line_key.all_money:
+                                if line_key.product_items in product_price_dict:
+                                    product_price_dict[line_key.product_items] += line_key.subtract_money * int(cage_dict.get(line_key.category_id.id,0.0) / line_key.all_money)
+                                else:
+                                    product_price_dict[line_key.product_items] = line_key.subtract_money * int(cage_dict.get(line_key.category_id.id,0.0) / line_key.all_money)
                         else:
                             # 判断总金额
                             if all_money >= line_key.all_money and line_key.subtract_money:
@@ -704,6 +706,7 @@ class qdodooo_website_update(website_sale):
                                     product_price_dict[line_key.product_items] += line_key.subtract_money * int(all_money / line_key.all_money)
                                 else:
                                     product_price_dict[line_key.product_items] = line_key.subtract_money * int(all_money / line_key.all_money)
+
         return product_price_dict
     # 貌似是最终付款
     @http.route('/shop/payment/validate', type='http', auth="public", website=True)
