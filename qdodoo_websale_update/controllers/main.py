@@ -747,19 +747,18 @@ class qdodooo_website_update(website_sale):
         users_obj = request.registry['res.users']
         product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, line_obj, users_obj)
         minus_money = 0
+        for line in order.order_line:
+            line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
         for key,valus in product_price_dict.items():
             val = {}
             val['order_id'] = order.id
             val['product_id'] = key.id
-            val['product_id'] = key.id
-            val['product_uom_qty'] = 1
+            val['product_uom_qty'] = 1.0
             val['product_uom'] = key.uom_id.id
             val['price_unit'] = -valus
             val['name'] = key.name
             line_obj.create(cr ,uid, val)
             minus_money += valus
-        for line in order.order_line:
-            line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
         user_id = order.partner_id.user_id.id or uid
         section_obj = users_obj.browse(cr, SUPERUSER_ID, user_id)
         section_id = section_obj.default_section_id.id if section_obj.default_section_id else False
