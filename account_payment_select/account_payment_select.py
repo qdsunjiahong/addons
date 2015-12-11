@@ -80,6 +80,7 @@ class account_payment_select(osv.osv):
         search_due_date = data.duedate
         domain = [('partner_id', '=', payment_id.payment_supplier.id), ('reconcile_id', '=', False),
                   ('log_is_two', '=', False), ('account_id.type', '=', 'payable'),
+                  ('company_id', '=', payment_id.company_id.id),
                   ('account_id.reconcile', '=', True)]  # ('credit', '>', 0),
         domain = domain + ['|', ('date_maturity', '<=', search_due_date), ('date_maturity', '=', False)]
         line_ids = line_obj.search(cr, uid, domain, context=context)
@@ -159,7 +160,8 @@ class account_move_line_inherit(osv.osv):
     _columns = {
         'log_is_two': fields.boolean(u'是否是第二次选择'),
         'amount_to_pay': fields.function(_amount_residual,
-            type='float', string='Amount to pay', fnct_search=account_move_line._to_pay_search),
+                                         type='float', string='Amount to pay',
+                                         fnct_search=account_move_line._to_pay_search),
     }
     _default = {
         'log_is_two': False,
