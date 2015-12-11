@@ -24,12 +24,24 @@ class qdodoo_mrp_materials(models.Model):
 
     qdodoo_period = fields.Many2one('account.period', u'强制会计区间')
 
+class qdodoo_account_move_tfs(models.Model):
+    _inherit = 'account.move'
+
+    move_tfs = fields.Many2one('stock.move',u'转移单',copy=False)
 
 class qdodoo_stock_move_tfs(models.Model):
     _inherit = 'stock.move'
 
     qdodoo_period = fields.Many2one('account.period', u'强制会计区间')
 
+    def action_done(self, cr, uid, ids, context=None):
+        res_id = super(qdodoo_stock_move_tfs, self).action_done(cr, uid, ids, context=context)
+        move_obj = self.pool.get('account.move')
+        for line_id in self.browse(cr, uid, ids):
+            move_ids = move_obj.search(cr, uid, [('move_tfs','=',line_id.id)])
+            for move_id in move_ids:
+                move_obj.write(cr, uid, move_id, {'date':line_id.date})
+        return res_id
 
 class qdodoo_stock_quant_tfs(models.Model):
     _inherit = 'stock.quant'
@@ -54,4 +66,5 @@ class qdodoo_stock_quant_tfs(models.Model):
                                       'line_id': move_lines,
                                       'period_id': move.period_id.id or period_id,
                                       'date': move.date,
+                                      'move_tfs': move.id,
                                       'ref': move.picking_id.name}, context=context)
