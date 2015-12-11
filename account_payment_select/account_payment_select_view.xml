@@ -20,6 +20,13 @@
                 <xpath expr="/form/sheet/field[@name='line_ids']/tree/field[@name='amount']" position="after">
                     <field name="origin"/>
                 </xpath>
+                <field name="move_line_id" position="replace">
+                    <field name="move_line_id"
+                           on_change="onchange_move_line(move_line_id, False, currency, company_currency)"
+                           domain="[('reconcile_id', '=', False),('account_id.reconcile', '=', True),
+                  ('log_is_two', '=', False), ('account_id.type', '=', 'payable'),('company_id','=',parent.company_id),('partner_id','=',parent.payment_supplier),('reconcile_id','=', False), ('account_id.reconcile', '=', True)]"/>
+                </field>
+
             </field>
         </record>
         <!--tree视图显示库位-->
@@ -33,6 +40,5 @@
                 </field>
             </field>
         </record>
-
     </data>
 </openerp>
