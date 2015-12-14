@@ -111,7 +111,7 @@ class account_periodly_search(models.Model):
             partner_dict_debit[partner_key] = partner_dict_debit.get(partner_key, 0) + line[4]
             partner_dict_credit[partner_key] = partner_dict_credit.get(partner_key, 0) + line[5]
             partner_line_dict[partner_key] = partner_line_dict.get(partner_key, []) + [
-                (line[4], line[5], line[6], line[7], line[8])]
+                (line[4], line[5], line[6], line[8], line[9])]
 
             if partner_key not in partner_key_list:
                 partner_key_list.append(partner_key)
