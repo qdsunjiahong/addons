@@ -52,7 +52,7 @@
 
                 <xpath expr="//button[@string='Reverse Transfer']" position="after">
                     <button name="%(qdodoo_return_stock_demand_action)d" string="需求反向" type="action"
-                            groups="base.group_user" attrs="{'invisible':['|',('demand_bool','=',True),('state','=','done')]}"/>
+                            groups="base.group_user" attrs="{'invisible':['|',('demand_bool','=',True),('state','!=','done')]}"/>
                 </xpath>
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="demand_bool" invisible="1"/>
