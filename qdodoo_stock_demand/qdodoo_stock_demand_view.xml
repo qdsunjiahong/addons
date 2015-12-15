@@ -28,7 +28,8 @@
                                 <field name="location_id2"/>
                                 <!--<field name="rule_id"/>-->
                                 <!--<field name="bom_id"/>-->
-                                <field name="route_ids" widget="many2many_tags" domain="[('supplied_wh_id','=',location_id)]"/>
+                                <!--<field name="route_ids" widget="many2many_tags" domain="[('supplied_wh_id','=',location_id)]" invisible="1"/>-->
+                                <field name="route_id" domain="[('supplied_wh_id','=',location_id)]"/>
                                 <field name="group_id"/>
                                 <field name="company_id"/>
                                 <field name="origin"/>

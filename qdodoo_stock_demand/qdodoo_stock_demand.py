@@ -31,11 +31,11 @@ class qdodoo_stock_demand(models.Model):
     _name = 'qdodoo.stock.demand'  # 模型名称
     _description = 'tet.Template.line'  # 模型描述
 
-    name = fields.Char(u'转换单')
+    name = fields.Char(u'转换单', copy=False)
     partner_id = fields.Many2one('res.partner', string=u'客户')
-    create_datetime = fields.Datetime(string=u'创建日期')
-    date_planed = fields.Datetime(string=u'计划日期', required=True)
-    location_id = fields.Many2one('stock.warehouse', string=u'仓库',required=True)
+    create_datetime = fields.Datetime(string=u'创建日期', copy=False)
+    date_planed = fields.Datetime(string=u'计划日期', required=True, copy=False)
+    location_id = fields.Many2one('stock.warehouse', string=u'仓库', required=True)
     location_id2 = fields.Many2one('stock.location', string=u'需求库位')
     rule_id = fields.Many2one('procurement.rule', 'Rule', track_visibility='onchange')
     origin = fields.Char(u'源单据')
@@ -44,14 +44,16 @@ class qdodoo_stock_demand(models.Model):
     priority_new = fields.Selection(PROCUREMENT_PRIORITIES, u'优先级', required=True, select=True, )
     route_ids = fields.Many2many('stock.location.route', 'stock_location_route_demand', 'procurement_id',
                                  'route_id',
-                                 'Preferred Routes',required=True)
-    group_id = fields.Many2one('procurement.group', string=u'采购组',required=True)
-    company_id = fields.Many2one('res.company', string=u'公司')
+                                 'Preferred Routes', readonly=True)
+    route_id = fields.Many2one('stock.location.route', string=u'路线', copy=False, required=True)
+    group_id = fields.Many2one('procurement.group', string=u'采购组', required=True)
+    company_id = fields.Many2one('res.company', string=u'公司', copy=False)
     state = fields.Selection([('draft', u'草稿'),
                               ('done', u'完成'),
-                              ], u'状态')
+                              ], u'状态', copy=False)
     qdodoo_stock_product_ids = fields.One2many('qdodoo.stock.product', 'qdodoo_stock_demand_id', u'产品明细')
     import_file = fields.Binary(string="导入的Excel文件")
+    demand_id = fields.Many2one('qdodoo.stock.demand', string=u'源需求转换单', copy=False)
 
     _defaults = {
         'create_datetime': datetime.now(),
@@ -63,6 +65,7 @@ class qdodoo_stock_demand(models.Model):
                                                                                                  'qdodoo.stock.demand',
                                                                                                  context=c),
     }
+
     def btn_import_data(self, cr, uid, ids, context=None):
         wiz = self.browse(cr, uid, ids[0])
         if wiz.import_file:
@@ -80,20 +83,21 @@ class qdodoo_stock_demand(models.Model):
                 # 获取产品编号
                 default_code = product_info.cell(obj, 0).value
                 if not default_code:
-                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品编号不能为空')%obj)
+                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品编号不能为空') % obj)
                 # 获取产品数量
                 product_qty = product_info.cell(obj, 3).value
                 if not product_qty:
-                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品数量不能为空')%obj)
+                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品数量不能为空') % obj)
                 # 获取公司id
                 company_name = product_info.cell(obj, 2).value
                 if not company_name:
-                    raise osv.except_osv(_(u'提示'), _(u'第%s行，公司不能为空')%obj)
-                company = company_obj.search(cr, uid, [('name','=',company_name)])
+                    raise osv.except_osv(_(u'提示'), _(u'第%s行，公司不能为空') % obj)
+                company = company_obj.search(cr, uid, [('name', '=', company_name)])
                 # 查询系统中对应的产品id
-                product_id = product_obj.search(cr, uid, [('default_code','=',default_code),('company_id','=',company)])
+                product_id = product_obj.search(cr, uid,
+                                                [('default_code', '=', default_code), ('company_id', '=', company)])
                 if not product_id:
-                    raise osv.except_osv(_(u'提示'), _(u'本公司没有编号为%s的产品')%default_code)
+                    raise osv.except_osv(_(u'提示'), _(u'本公司没有编号为%s的产品') % default_code)
                 else:
                     product = product_obj.browse(cr, uid, product_id[0])
                     val['product_id'] = product.id
@@ -104,7 +108,7 @@ class qdodoo_stock_demand(models.Model):
                 lst.append(val)
             for res in lst:
                 qdodoo_obj.create(cr, uid, res)
-            self.write(cr, uid, wiz.id, {'import_file':''})
+            self.write(cr, uid, wiz.id, {'import_file': ''})
         else:
             raise osv.except_osv(_(u'提示'), _(u'请先上传模板'))
 
@@ -115,8 +119,8 @@ class qdodoo_stock_demand(models.Model):
         return {}
 
     def create(self, cr, uid, vals, context=None):
-        if vals.get('name', '/') == '/':
-            vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'qdodoo.stock.demand') or '/'
+        # if vals.get('name', '/') == '/':
+        vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'qdodoo.stock.demand') or '/'
         context = dict(context or {}, mail_create_nolog=True)
         order = super(qdodoo_stock_demand, self).create(cr, uid, vals, context=context)
         return order
@@ -127,6 +131,7 @@ class qdodoo_stock_demand(models.Model):
         praper_obj = self.pool.get('procurement.order')
         inv_obj = self.browse(cr, uid, ids[0], context=context)
         line_new = self.browse(cr, uid, ids[0], context=context)
+        return_list = []
         for line in line_new.qdodoo_stock_product_ids:
             values = {
                 'stock_demand_number': inv_obj.name,
@@ -150,15 +155,15 @@ class qdodoo_stock_demand(models.Model):
                 'order_id_new': line_new.id,
             }
             res = praper_obj.create(cr, uid, values, context=context)
+            return_list.append(res)
             list_ids = [res]
-            if inv_obj.route_ids:
-                for i in inv_obj.route_ids:
-                    sql = """insert INTO stock_location_route_procurement (procurement_id, route_id) VALUES (%s,%s)""" % (
-                        res, i.id)
-                    cr.execute(sql)
-            a = self.pool.get('procurement.order').run(cr, uid, list_ids, context=context)
+            if inv_obj.route_id:
+                sql = """insert INTO stock_location_route_procurement (procurement_id, route_id) VALUES (%s,%s)""" % (
+                    res, inv_obj.route_id.id)
+                cr.execute(sql)
+            self.pool.get('procurement.order').run(cr, uid, list_ids, context=context)
         inv_obj.write({'state': 'done'})
-        return True
+
 
 class qdodoo_stock_product(models.Model):
     _name = 'qdodoo.stock.product'
@@ -168,7 +173,6 @@ class qdodoo_stock_product(models.Model):
     name = fields.Char(u'备注')
     uom_id = fields.Many2one('product.uom', string=u'单位', required=True)
     qdodoo_stock_demand_id = fields.Many2one('qdodoo.stock.demand', string=u'需求单')
-
 
     def onchange_product_id(self, cr, uid, ids, product_id, context=None):
         res = {}

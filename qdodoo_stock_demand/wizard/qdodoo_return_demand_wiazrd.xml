@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="view_stock_return_picking_form2" model="ir.ui.view">
+            <field name="name">需求反向</field>
+            <field name="model">stock.return.picking</field>
+            <field name="arch" type="xml">
+                <form string="需求反向">
+                    <group string="Provide the quantities of the returned products.">
+                        <field name="move_dest_exists" invisible="1"/>
+                        <div attrs="{'invisible': [('move_dest_exists', '=', False)]}" class="oe_grey" colspan="4">
+                            <p>This picking appears to be chained with another operation. Later, if you receive the
+                                goods you are returning now, make sure to
+                                <b>reverse</b>
+                                the returned picking in order to avoid logistic rules to be applied again (which would
+                                create duplicated operations)
+                            </p>
+                        </div>
+                        <field name="product_return_moves" colspan="4">
+                            <tree editable="top">
+                                <field name="product_id"/>
+                                <field name="lot_id" domain="[('product_id', '=', product_id)]"
+                                       context="{'default_product_id': product_id}"/>
+                                <field name="quantity"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button name="create_returns2" string="反转" type="object" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="qdodoo_return_stock_demand_action" model="ir.actions.act_window">
+            <field name="name">需求反向</field>
+            <field name="res_model">stock.return.picking</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_stock_return_picking_form2"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+
+        <record model="ir.ui.view" id="qdodoo_return_stock_demand_button">
+            <field name="name">需求反向</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//button[@string='Reverse Transfer']" position="after">
+                    <button name="%(qdodoo_return_stock_demand_action)d" string="需求反向" type="action"
+                            groups="base.group_user" attrs="{'invisible':['|',('demand_bool','=',True),('state','=','done')]}"/>
+                </xpath>
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="demand_bool" invisible="1"/>
+                </xpath>
+
+
+            </field>
+        </record>
+
+    </data>
+</openerp>
