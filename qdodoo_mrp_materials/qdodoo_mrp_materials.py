@@ -39,8 +39,12 @@ class qdodoo_stock_move_tfs(models.Model):
         move_obj = self.pool.get('account.move')
         for line_id in self.browse(cr, uid, ids):
             move_ids = move_obj.search(cr, uid, [('move_tfs','=',line_id.id)])
+            if line_id.picking_id.acc:
+                line_date = line_id.picking_id.acc.date_stop
+            else:
+                line_date = line_id.date
             for move_id in move_ids:
-                move_obj.write(cr, uid, move_id, {'date':line_id.date})
+                move_obj.write(cr, uid, move_id, {'date':line_date})
         return res_id
 
 class qdodoo_stock_quant_tfs(models.Model):
