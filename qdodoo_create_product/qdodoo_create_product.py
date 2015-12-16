@@ -9,7 +9,6 @@ class qdodoo_product_template(models.Model):
 
     @api.model
     def create(self, vals):
-        print vals,"opopopop"
         res = super(qdodoo_product_template, self).create(vals)
         company_id = vals.get('company_id', False)
         if company_id:
