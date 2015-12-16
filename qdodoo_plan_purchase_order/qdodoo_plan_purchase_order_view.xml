@@ -11,9 +11,15 @@
                                 class="oe_highlight"/>
                         <button name="btn_confirmed" type="object" states="sent" string="确认"
                                 class="oe_highlight"/>
+                        <button name="btn_cancel_draft" type="object" states="sent" string="退回"
+                                class="oe_highlight"/>
                         <button name="btn_approve" type="object" states="apply" string="审批"
                                 class="oe_highlight"/>
+                        <button name="btn_cancel_confirmed" type="object" states="apply" string="退回"
+                                class="oe_highlight"/>
                         <button name="btn_confirmed_done" type="object" states="confirmed" string="转换采购单"
+                                class="oe_highlight"/>
+                        <button name="btn_cancel_approve" type="object" states="confirmed" string="退回"
                                 class="oe_highlight"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,sent,apply,confirmed,done"
                                statusbar_colors="{'draft':'red', 'done':'blue'}"/>
@@ -50,16 +56,16 @@
                                 <field name="order_line">
                                     <tree editable="bottom" colors="red:colors=='red'">
                                         <field name="product_id" on_change="onchange_product_id(product_id,partner_id,qty,uom_id)" domain="[('company_id','=',parent.company_id)]"/>
-                                        <field name="plan_date_jh"/>
-                                        <field name="plan_date" attrs="{'required':[('state','!=','draft')]}"/>
-                                        <field name="name"/>
-                                        <field name="price_unit"/>
                                         <field name="qty_jh" sum="合计"/>
                                         <field name="qty" sum="合计" attrs="{'required':[('state','!=','draft')]}"/>
+                                        <field name="plan_date_jh"/>
+                                        <field name="plan_date" attrs="{'required':[('state','!=','draft')]}"/>
+                                        <field name="price_unit"/>
                                         <field name="uom_id"/>
                                         <field name="state" invisible="True"/>
                                         <field name="colors" invisible="True"/>
                                         <field name="partner_id" attrs="{'required':[('state','!=','draft')]}" on_change="onchange_product_id(product_id,partner_id,qty,uom_id)"/>
+                                        <field name="name"/>
                                     </tree>
                                 </field>
                             </page>

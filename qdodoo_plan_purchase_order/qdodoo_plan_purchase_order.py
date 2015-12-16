@@ -42,6 +42,18 @@ class qdodoo_plan_purchase_order(models.Model):
         'company_id': lambda self, cr, uid, ids:self.pool.get('res.users').browse(cr, uid, uid).company_id.id,
     }
 
+    # 退回
+    def btn_cancel_confirmed(self, cr, uid, ids, context=None):
+        return self.write(cr, uid, ids, {'state':'sent'})
+
+    # 退回
+    def btn_cancel_draft(self, cr, uid, ids, context=None):
+        return self.write(cr, uid, ids, {'state':'draft'})
+
+    # 退回
+    def btn_cancel_approve(self, cr, uid, ids, context=None):
+        return self.write(cr, uid, ids, {'state':'apply'})
+
     # 导入方法
     def btn_import_data(self, cr, uid, ids, context=None):
         wiz = self.browse(cr, uid, ids[0])
@@ -211,13 +223,15 @@ class qdodoo_plan_purchase_order_line(models.Model):
                 purchase_dict[line.name.id] = line.delay
                 purchase_num_dict[line.name.id] = line.min_qty
             if partner_id:
+                if ids:
+                    obj = self.browse(cr, uid, ids[0])
                 pricelist_id = partner_obj.browse(cr, uid, partner_id).property_product_pricelist_purchase.id
                 date_order_str = date_order.strftime(DEFAULT_SERVER_DATE_FORMAT)
                 price = product_pricelist.price_get(cr, uid, [pricelist_id],
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
                 res['value']['price_unit'] = price
                 res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
-                res['value']['qty'] = purchase_num_dict.get(partner_id,0)
+                res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(partner_id) else obj.qty_jh
             else:
                 res['value']['price_unit'] = product_obj.standard_price
             res['value']['name'] = product_obj.product_tmpl_id.name
