@@ -7,7 +7,10 @@
             <field name="arch" type="xml">
                 <form string="科目导入" version="7.0">
                     <group>
-                       <field name="excel_file"  string="产品导入文件"/>
+                       <field name="excel_file"  string="科目导入"/>
+                    </group>
+                    <group>
+                        <a href="/qdodoo_account_import/static/科目导入模板.xls">点此进行模板下载</a>
                     </group>
                     <footer>
                         <button string="查询" name="action_import" type="object" class="oe_highlight"/>
