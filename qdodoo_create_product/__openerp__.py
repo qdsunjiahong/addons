@@ -14,8 +14,9 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'product','stock'],  # 依赖模块
+    'depends': ['base', 'product', 'stock'],  # 依赖模块
     'data': [
+        'qdodoo_product_set.xml'
         # ...
     ],  # 更新XML,CSV
     'js': [

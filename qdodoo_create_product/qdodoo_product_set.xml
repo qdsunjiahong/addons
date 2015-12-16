@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_wrong_product_search" model="ir.ui.view">
+            <field name="name">错误产品查询</field>
+            <field name="model">qdodoo.product.set</field>
+            <field name="arch" type="xml">
+                <form string="错误产品查询" version="7.0">
+                    <footer>
+                        <button string="查询" name="action_search" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="qdodoo_wrong_product_action" model="ir.actions.act_window">
+            <field name="name">错误产品查询</field>
+            <field name="res_model">qdodoo.product.set</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_wrong_product_search"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" action="qdodoo_wrong_product_action"
+                  id="menu_qdodoo_wrong_product"
+                  parent="base.menu_product"/>
+
+    </data>
+</openerp>
