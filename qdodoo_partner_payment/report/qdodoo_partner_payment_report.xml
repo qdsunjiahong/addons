@@ -11,6 +11,7 @@
                     <field name="amount"/>
                     <field name="paid_amount"/>
                     <field name="unpaid_amount"/>
+                    <field name="property_supplier_payment_term"/>
                 </tree>
             </field>
         </record>

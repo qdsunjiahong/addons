@@ -20,3 +20,4 @@ class qdodoo_partner_payment_report(models.Model):
     amount = fields.Float(digits=(16, 4), string=u'总金额')
     paid_amount = fields.Float(digits=(16, 4), string=u'已付金额')
     unpaid_amount = fields.Float(digits=(16, 4), string=u'未付金额')
+    property_supplier_payment_term = fields.Many2one('account.payment.term', string=u'付款条款')

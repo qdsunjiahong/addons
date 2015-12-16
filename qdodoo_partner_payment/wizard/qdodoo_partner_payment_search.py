@@ -29,7 +29,7 @@ class qdodoo_partner_payment_wizard(models.Model):
         year_name = self.year.name
         month = self.month
         date = self.date
-        partner_ids=self.partner_ids
+        partner_ids = self.partner_ids
         if not year_name and not month and not date:
             raise except_orm(_(u'警告'), _(u'查询条件不能为空'))
         report_obj = self.env['qdodoo.partner.payment.report']
@@ -43,6 +43,10 @@ class qdodoo_partner_payment_wizard(models.Model):
         partner_list_res = []
         partner_amount_total = {}
         partner_residual = {}
+        partner_ids = self.env['res.partner'].search([])
+        partner_dict_payment = {}
+        for partner_id in partner_ids:
+            partner_dict_payment[partner_id.id] = partner_id.property_supplier_payment_term.id
         sql = """
             select
                 ai.partner_id as partner_id,
@@ -94,6 +98,7 @@ class qdodoo_partner_payment_wizard(models.Model):
                 for partner_l in partner_list_res:
                     data = {
                         'partner_id': partner_l,
+                        'property_supplier_payment_term': partner_dict_payment.get(partner_l, False),
                         'date': date_char,
                         'amount': partner_amount_total.get(partner_l, 0),
                         'paid_amount': partner_amount_total.get(partner_l, 0) - partner_residual.get(partner_l, 0),
