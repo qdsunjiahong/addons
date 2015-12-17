@@ -45,14 +45,19 @@ class qdodoo_account_import(models.Model):
             for row in range(2, sh.nrows):
                 row_n = row + 1
                 data = {}
-                print row_n,1111111
-                print sh.cell(row, 0).value
-                code = str(int(sh.cell(row, 0).value)) if sh.cell(row, 0).value else False
-                name = sh.cell(row, 1).value or False
-                account_type = sh.cell(row, 2).value or False
-                user_type = sh.cell(row, 3).value or False
-                company_name = sh.cell(row, 4).value or False
-                parent_account = sh.cell(row, 5).value and str(int(sh.cell(row, 5).value)) or False
+                try:
+                    code = str(int(sh.cell(row, 0).value)) if sh.cell(row, 0).value else str(0)
+                    name = sh.cell(row, 1).value or False
+                    account_type = sh.cell(row, 2).value or False
+                    user_type = sh.cell(row, 3).value or False
+                    company_name = sh.cell(row, 4).value or False
+                    parent_account = sh.cell(row, 5).value
+                except:
+                    raise except_orm(_(u'警告'), _(u'第%s行有错误') % row_n)
+                if parent_account == '':
+                    parent_account = False
+                else:
+                    parent_account = str(int(parent_account))
                 if not code:
                     raise except_orm(_(u'警告'), _(u'第%s行科目代码为空') % row_n)
                 data['code'] = code

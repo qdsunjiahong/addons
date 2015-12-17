@@ -13,7 +13,7 @@
                         <a href="/qdodoo_account_import/static/科目导入模板.xls">点此进行模板下载</a>
                     </group>
                     <footer>
-                        <button string="查询" name="action_import" type="object" class="oe_highlight"/>
+                        <button string="导入" name="action_import" type="object" class="oe_highlight"/>
                         or
                         <button string="取消" class="oe_link" special="cancel"/>
                     </footer>
