@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_stock_move_perido_init" model="ir.ui.view">
+            <field name="name">库存调拨会计区间初始化</field>
+            <field name="model">qdodoo.stock.move.period.init</field>
+            <field name="arch" type="xml">
+                <form string="库存调拨会计区间初始化">
+                    <footer>
+                        <button string="确定" name="action_done" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_stock_move_perido_init" model="ir.actions.act_window">
+            <field name="name">库存调拨会计区间初始化</field>
+            <field name="res_model">qdodoo.stock.move.period.init</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_stock_move_perido_init"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" name="库存调拨会计区间初始化" action="action_qdodoo_stock_move_perido_init"
+                  id="menu_stock_move_period_init"
+                  parent="base.next_id_73"/>
+    </data>
+</openerp>
