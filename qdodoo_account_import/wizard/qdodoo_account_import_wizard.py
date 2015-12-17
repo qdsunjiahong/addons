@@ -43,43 +43,46 @@ class qdodoo_account_import(models.Model):
         account_dict = {}
         for sh in sheets:
             for row in range(2, sh.nrows):
+                row_n = row + 1
                 data = {}
-                code = sh.cell(row, 0).value and str(sh.cell(row, 0).value) or False
+                print row_n,1111111
+                print sh.cell(row, 0).value
+                code = str(int(sh.cell(row, 0).value)) if sh.cell(row, 0).value else False
                 name = sh.cell(row, 1).value or False
                 account_type = sh.cell(row, 2).value or False
                 user_type = sh.cell(row, 3).value or False
                 company_name = sh.cell(row, 4).value or False
-                parent_account = sh.cell(row, 5).value and str(sh.cell(row, 5).value) or False
-                # 一级科目
+                parent_account = sh.cell(row, 5).value and str(int(sh.cell(row, 5).value)) or False
                 if not code:
-                    raise except_orm(_(u'警告'), _(u'第%s行科目代码为空') % row)
+                    raise except_orm(_(u'警告'), _(u'第%s行科目代码为空') % row_n)
                 data['code'] = code
                 if not name:
-                    raise except_orm(_(u'警告'), _(u'第%s行科目名称为空') % row)
+                    raise except_orm(_(u'警告'), _(u'第%s行科目名称为空') % row_n)
                 data['name'] = name
                 if not account_type:
-                    raise except_orm(_(u'警告'), _(u'第%s行内部类型为空') % row)
+                    raise except_orm(_(u'警告'), _(u'第%s行内部类型为空') % row_n)
                 data['type'] = account_type
                 if not user_type:
-                    raise except_orm(_(u'警告'), _(u'第%s行类型为空') % row)
+                    raise except_orm(_(u'警告'), _(u'第%s行类型为空') % row_n)
                 if not account_type_dict.get(user_type, False):
-                    raise except_orm(_(u'警告'), _(u'第%s行类型填写有误') % row)
+                    raise except_orm(_(u'警告'), _(u'第%s行类型填写有误') % row_n)
                 data['user_type'] = account_type_dict.get(user_type)
                 if not company_name:
-                    raise except_orm(_(u'警告'), _(u'第%s行公司为空') % row)
+                    raise except_orm(_(u'警告'), _(u'第%s行公司为空') % row_n)
                 if not company_dict.get(company_name, False):
-                    raise except_orm(_(u'警告'), _(u'第%s行公司填写有误') % row)
-                data['company_id'] = company_dict.get(company_name)
+                    raise except_orm(_(u'警告'), _(u'第%s行公司填写有误') % row_n)
+                company_id_l = company_dict.get(company_name)
+                data['company_id'] = company_id_l
                 if (code, company_dict.get(company_name)) in account_company_list:
-                    raise except_orm(_(u'警告'), _(u'第%s行上级科目已存在') % row)
+                    raise except_orm(_(u'警告'), _(u'第%s行上级科目已存在') % row_n)
                 if parent_account:
-                    parent_id = account_dict.get(parent_account, False)
+                    parent_id = account_dict.get((parent_account, company_id_l), False)
                     if not parent_id:
-                        raise except_orm(_(u'警告'), _(u'第%s行上级科目填写有误') % row)
+                        raise except_orm(_(u'警告'), _(u'第%s行上级科目填写有误') % row_n)
                     data['parent_id'] = parent_id
                 crete_obj = account_obj.create(data)
                 res_id = crete_obj.id
-                account_dict[code] = res_id
+                account_dict[(code, company_id_l)] = res_id
                 return_list.append(res_id)
         if return_list:
             tree_model, tree_id = data_obj.get_object_reference('account', 'view_account_list')
