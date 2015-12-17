@@ -164,7 +164,11 @@ class qdodoo_stock_picking_inherit(models.Model):
                     vals['fiscal_position'] = supplier.property_account_position and supplier.property_account_position.id or False
                     for location in obj.move_lines:
                         location_id = location.location_id.id
-                        location_dest_id = location.location_dest_id.id
+                        if location.move_dest_id:
+                            location_dest_id = location.move_dest_id.location_dest_id.id
+                            break
+                        else:
+                            location_dest_id = location.location_dest_id.id
                     vals['all_volume'] = obj.shipper.all_volume
                     vals['location_id'] = location_dest_id
                     vals['origin'] = obj.origin
