@@ -26,7 +26,7 @@
                         </field>
                     </group>
                     <footer>
-                        <button name="create_returns2" string="反转" type="object" class="oe_highlight"/>
+                        <button name="create_demand_returns2" string="反转" type="object" class="oe_highlight"/>
                         or
                         <button string="Cancel" class="oe_link" special="cancel"/>
                     </footer>

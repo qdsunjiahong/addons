@@ -35,6 +35,7 @@
                                 <field name="origin"/>
                                 <field name="priority_new"/>
                                 <field name="purchase_id"/>
+                                <field name="demand_id"/>
                             </group>
                         </group>
                         <notebook>

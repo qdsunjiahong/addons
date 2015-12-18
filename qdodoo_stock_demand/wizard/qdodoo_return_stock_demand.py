@@ -17,7 +17,7 @@ class qdodoo_stock_return_picking(models.Model):
     _inherit = 'stock.return.picking'
 
     @api.multi
-    def create_returns2(self):
+    def create_demand_returns2(self):
         context = self._context or {}
         record_id = context and context.get('active_id', False) or False
         picking_obj = self.env['stock.picking']
@@ -34,39 +34,58 @@ class qdodoo_stock_return_picking(models.Model):
             inter_location_id = []
             if not demand_id:
                 raise except_orm(_(u'警告'), _(u'只能操作通过需求转换单来的单据'))
+            route_id = demand_id.route_id
             for rule_l in demand_id.route_id.pull_ids:
                 if rule_l.picking_type_id.code == 'outgoing':
                     # 逆推目的库位
                     location_id = rule_l.location_src_id.id
                     location_dest_id.append(location_id)
                     inter_location_id.append(rule_l.location_id.id)
-            #### 逆推路线#####
-            # 源库位
-            location_src_id = picking_id.move_lines[0].location_dest_id.id
-            rule_id1 = procurement_obj.search(
-                [('location_src_id', '=', location_src_id), ('location_id', '=', inter_location_id[0]),
-                 ('action', '=', 'move'), ('route_id', '!=', False)])
-            ware_id_src = self.return_location_view_id(picking_id.move_lines[0].location_dest_id)
-            # 目的仓库的入库类型
-            location_view_id = self.return_location_view_id(self.env['stock.location'].browse(location_dest_id[0]))
+
             ware_obj = self.env['stock.warehouse']
+            # # 目的仓库的入库类型
+            location_view_id = self.return_location_view_id(self.env['stock.location'].browse(location_dest_id[0]))
             ware_id = ware_obj.search([('view_location_id', '=', location_view_id)])
-            cash_location = ware_id.wh_input_stock_loc_id.id
-            rule_id2 = procurement_obj.search(
-                [('location_src_id', '=', inter_location_id[0]), ('location_id', '=', cash_location),
-                 ('action', '=', 'move'), ('route_id', '!=', False)])
-            if not rule_id1:
-                raise except_orm(_(u'警告'), _(u'操作有误'))
-            if not rule_id2:
-                raise except_orm(_(u'警告'), _(u'操作有误'))
-            route_list1 = [x.route_id.id for x in rule_id1]
-            route_list2 = [y.route_id.id for y in rule_id2]
+            route_list1 = []
+            route_list2 = []
+            if ware_id.reception_steps == 'one_step':
+                pull_id1 = route_id.pull_ids[0]
+                pull_id2 = route_id.pull_ids[1]
+                domain1 = [('location_src_id', '=', pull_id1.location_id.id),
+                           ('location_id', '=', pull_id1.location_src_id.id),
+                           ('action', '=', 'move'), ('route_id', '!=', False)]
+                domain2 = [('location_src_id', '=', pull_id2.location_id.id),
+                           ('location_id', '=', pull_id2.location_src_id.id),
+                           ('action', '=', 'move'), ('route_id', '!=', False)]
+                rule_ids1 = procurement_obj.search(domain1)
+                for rule_id1 in rule_ids1:
+                    route_list1.append(rule_id1.route_id.id)
+                rule_ids2 = procurement_obj.search(domain2)
+                for rule_id2 in rule_ids2:
+                    route_list2.append(rule_id2.route_id.id)
+
+            else:
+                # #### 逆推路线#####
+                # # 源库位
+                location_src_id = picking_id.move_lines[0].location_dest_id.id
+                domain = [('location_src_id', '=', location_src_id), ('location_id', '=', inter_location_id[0]),
+                          ('action', '=', 'move'), ('route_id', '!=', False)]
+                rule_id1 = procurement_obj.search(domain)
+                ware_id_src = self.return_location_view_id(picking_id.move_lines[0].location_dest_id)
+                ware_id2 = ware_obj.search([('view_location_id', '=', ware_id_src)])
+                cash_location = ware_id.wh_input_stock_loc_id.id
+                rule_id2 = procurement_obj.search(
+                    [('location_src_id', '=', inter_location_id[0]), ('location_id', '=', cash_location),
+                     ('action', '=', 'move'), ('route_id', '!=', False)])
+
+                route_list1 = [x.route_id.id for x in rule_id1]
+                route_list2 = [y.route_id.id for y in rule_id2]
             route_list = []
             for i in route_list1:
                 if i in route_list2:
                     route_list.append(i)
             if not route_list:
-                raise except_orm(_(u'警告'), _(u'路线%s>>%s未设置，请先到仓库进行设置') % (ware_id_src, ware_id))
+                raise except_orm(_(u'警告'), _(u'路线%s>>%s未设置，请先到仓库进行设置') % (ware_id2.name, ware_id.name))
             elif len(route_list) > 1:
                 raise except_orm(_(u'警告'), _(u'数据有误'))
 
