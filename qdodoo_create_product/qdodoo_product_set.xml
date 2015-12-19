@@ -27,5 +27,38 @@
                   id="menu_qdodoo_wrong_product"
                   parent="base.menu_product"/>
 
+        <record id="qdodoo_product_onchange_form" model="ir.ui.view">
+            <field name="name">产品数据修改</field>
+            <field name="model">qdodoo.product.onchange</field>
+            <field name="arch" type="xml">
+                <form string="产品数据修改">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="import_file" />
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="修改" name="action_search" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="qdodoo_product_onchange_action" model="ir.actions.act_window">
+            <field name="name">产品数据修改</field>
+            <field name="res_model">qdodoo.product.onchange</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_product_onchange_form"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem name="产品数据修改" action="qdodoo_product_onchange_action"
+                  id="menu_qdodoo_product_onchange"
+                  parent="base.menu_product"/>
+
+
     </data>
 </openerp>
