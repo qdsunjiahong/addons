@@ -935,9 +935,17 @@ class qdodooo_website_update(website_sale):
     @http.route(['/shop/user/info'], type='http', auth="public", website=True)
     def user_info_promotion(self, **post):
         cr, uid, context = request.cr, request.uid, request.context
+        if uid == 3:
+            return request.redirect("/web/login")
         values = {}
+        # 获取所有的活动
         promotion_obj = request.registry.get('qdodoo.promotion')
-        values['promotion'] = promotion_obj.browse(cr, uid, promotion_obj.search(cr, uid, []))
+        promotion_ids = promotion_obj.search(cr, uid, [])
+        values['promotion'] = promotion_obj.browse(cr, uid, promotion_ids)
+        # 获取当前登录人已参加的活动
+        promotion_use_obj = request.registry.get('qdodoo.user.promotion')
+        promotion_use_ids = promotion_use_obj.search(cr, uid, [('user','=',uid),('promotion','in',promotion_ids)])
+        values['promotion_users'] = promotion_use_obj.browse(cr, uid, promotion_use_ids)
         return request.website.render("qdodoo_websale_update.promotion",values)
 
     # 0获取优惠失败，请联系管理员；1该优惠您已经报名；2报名成功

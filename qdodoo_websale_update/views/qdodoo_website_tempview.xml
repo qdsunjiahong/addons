@@ -560,88 +560,100 @@
             </xpath>
         </template>
 
-        <template id="qdodoo_websale_update.promotion" name="报名">&lt;!DOCTYPE html&gt;
-            <html>
-                <head>
-                    <t t-call-assets="web.assets_common"/>
-                    <t t-call-assets="web.assets_backend"/>
-                    <meta charset="UTF-8"/>
-                    <title>报名</title>
-                    <script type="text/javascript">
-                        function get_value(){
-                            var check = document.getElementById("promotion");
-                            if (typeof(check.value)=="undefined"){
-                                alert('请选择优惠方式！');
-                            }
-                            $.ajax({
-                                async : false,
-                                type: "POST",
-                                url: "/shop/user/info/data_new",
-                                data: "promotion_id="+check.value
-                                }).done(function(msg){
-                                        if (msg){
-                                            var r=confirm("报名成功!");
-                                            if (msg == '0'){
-                                                alert('获取优惠失败，请联系管理员！');
-                                            }
-                                            if (msg == '1'){
-                                                alert('该优惠您已经报名！');
-                                            }
-                                            if (msg == '2'){
-                                                document.getElementById("demo");
-                                                $("#conform_promotion").submit();
-                                            }
-                                        }
-                                        else{
-                                            alert('报名失败，请稍后重试或联系管理员！')
-                                        }
-                                    }).fail(function(xmlHttpRequest,statusText,errorThrown) {
+        <template id="qdodoo_websale_update.promotion" name="促销报名">
+            <t t-call-assets="web.assets_common" t-css="false"/>
+            <t t-call-assets="website.assets_frontend" t-css="false"/>
+            <script type="text/javascript">
+                function get_value(){
+                    var check = document.getElementById("promotion");
+                    if (typeof(check.value)=="undefined"){
+                        alert('请选择优惠方式！');
+                    }
+                    $.ajax({
+                        async : false,
+                        type: "POST",
+                        url: "/shop/user/info/data_new",
+                        data: "promotion_id="+check.value
+                        }).done(function(msg){
+                                if (msg){
 
-                                        });
-                        }
-                    </script>
-                </head>
-                <body>
-                    <div class="modal fade" id="example" tabindex="-1"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"  >
-                        <div class="modal-dialog">
-                              <div class="modal-content">
-                                 <div class="modal-header">
-                                    <h4 class="modal-title" id="myModalLabel">
-                                       报名成功
-                                    </h4>
-                                 </div>
-                                 <div class="modal-footer">
-                                    <form id="conform_promotion" method="post" action="/shop">
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-default"
-                                                    data-dismiss="modal">确认
-                                            </button>
-                                        </div>
-                                    </form>
-                                 </div>
-                              </div>
+                                    if (msg == '0'){
+                                        alert('获取优惠失败，请联系管理员！');
+                                    }
+                                    if (msg == '1'){
+                                        alert('该优惠您已经报名！');
+                                    }
+                                    if (msg == '2'){
+                                        var r=confirm("报名成功!");
+                                        $("#conform_promotion").submit();
+                                    }
+                                }
+                                else{
+                                    alert('报名失败，请稍后重试或联系管理员！')
+                                }
+                            }).fail(function(xmlHttpRequest,statusText,errorThrown) {
+
+                                });
+                }
+            </script>
+            <t t-call="website.layout">
+              <div id="wrap">
+                <div class="oe_structure"/>
+                <div class="container">
+                    <h1>促销报名</h1>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="oe_structure">
+                                <div>
+                                    <p>如想享受促销优惠活动，需先报名。</p>
+                                </div>
+                            </div>
+                            <div style="text-align:center;margin:0 auto;">
+                                <h2 style="text-align:left;">选择促销</h2>
+                                <select id="promotion" name="promotion" class="form-control">
+                                  <t t-foreach="promotion or []" t-as="promotion">
+                                      <option t-att-value="promotion.id"><t t-esc="promotion.name"/></option>
+                                  </t>
+                                </select>
+                                <div class="ljzf_div">
+                                     <button type="button" class="btn btn-danger"
+                                            onclick="get_value()">报名
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="example" tabindex="-1"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"  >
+                                <div class="modal-dialog">
+                                      <div class="modal-content">
+                                         <div class="modal-header">
+                                            <h4 class="modal-title" id="myModalLabel">
+                                               报名成功
+                                            </h4>
+                                         </div>
+                                         <div class="modal-footer">
+                                            <form id="conform_promotion" method="post" action="/shop">
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default"
+                                                            data-dismiss="modal">确认
+                                                    </button>
+                                                </div>
+                                            </form>
+                                         </div>
+                                      </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb32">
+                            <h2 style="text-align:left;">已报名的活动</h2>
+                            <t t-foreach="promotion_users" t-as="promotion_user">
+                                <t t-esc="promotion_user.promotion.name"/>
+                            </t>
                         </div>
                     </div>
-
-                    <div style="text-align:center;margin:0 auto;">
-                        <h2 style="text-align:left;">选择促销报名</h2>
-                        <!--<label class="control-label">促销活动</label>-->
-                        <select id="promotion" name="promotion" class="form-control">
-                          <t t-foreach="promotion or []" t-as="promotion">
-                              <option t-att-value="promotion.id"><t t-esc="promotion.name"/></option>
-                          </t>
-                        </select>
-                        <div class="ljzf_div">
-                             <button type="button" class="btn btn-danger"
-                                    onclick="get_value()">报名
-                            </button>
-                            <p id="demo"></p>
-                        </div>
-                    </div>
-                </body>
-            </html>
+                </div>
+                <div class="oe_structure"/>
+              </div>
+            </t>
         </template>
-
 
     </data>
 </openerp>
