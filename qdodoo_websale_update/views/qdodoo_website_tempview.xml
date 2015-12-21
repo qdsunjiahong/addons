@@ -1,42 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
-        <!--继承模板 选则性添加模板视图  添加新的 选项-->
-        <!--
-        <template id="products_bat_to_cart" inherit_id="website_sale.products_item" active="False" customize_show="True" name="Bat to Cart">
-          <xpath expr="//div[@class='product_price']" position="after">
-             <div class="css_quantity input-group oe_website_spinner">
-                    <span class="input-group-addon">
-                        <a t-attf-href="#" class="mb8 js_add_cart_json">
-                            <i class="fa fa-minus"></i>
-                        </a>
-                    </span>
-                    <input type="text" class="js_quantity form-control" data-min="1" t-att-name="product.id" value="1"/>
-                    <span class="input-group-addon">
-                        <a t-attf-href="#" class="mb8 float_left js_add_cart_json">
-                            <i class="fa fa-plus"></i>
-                        </a>
-                    </span>
-             </div>
-              </xpath>
-        </template>
-    -->
-        <!--继承模板 选则性添加模板视图  添加新的 选项-->
-        <!--
-             <template id="products_bat_add_button" inherit_id="website_sale.products" active="False" customize_show="True" name="Bat add button">
-              <xpath expr="//div[@class='row']" position="inside">
-                  <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">批量添加本页商品</a>
-                  </xpath>
-            </template>
-          -->
-        <!--导入css样式魔板-->
-        <!--
-        <template id="inherit_web_shop" inherit_id="website.assets_frontend" name="Shop">
-          <xpath expr="." position="inside">
-              <link rel="taylor_css" herf="/qdodoo_websale_update/static/src/css/taylor_style.css"/>
-          </xpath>
-        </template>
-        -->
         <!--替换产品显示样式-->
         <template id="products_list_taylor_style" inherit_id="website_sale.products" active="False"
                   customize_show="True" name="Taylor list">
@@ -141,7 +105,7 @@
                             </t>
                         </tbody>
                     </table>
-                    <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">批量添加本页商品
+                    <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">加入购物车
                     </a>
                 </form>
             </xpath>
@@ -531,6 +495,17 @@
 
         <template id="qdodoo_websale_update_total" inherit_id="website_sale.total">
             <xpath expr="//tr[@id='order_total']" position="replace">
+
+                <tr width="100" id="minus_money">
+                    <th><h3>优惠金额: </h3></th>
+                    <th class="text-right">
+                      <h3><span t-field="website_sale_order.minus_money" style="white-space: nowrap;" t-field-options='{
+                          "widget": "monetary",
+                          "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                        }'/></h3>
+                    </th>
+                </tr>
+
                 <tr width="100" style="border-top: 1px solid #000" id="order_total">
                     <th><h3>Total: </h3></th>
                     <th class="text-right">
@@ -540,6 +515,19 @@
                         }'/></h3>
                     </th>
                 </tr>
+
+            </xpath>
+        </template>
+
+        <template id="qdodoo_websale_update_confirmation" inherit_id="website_sale.confirmation">
+            <xpath expr="//div[@class='col-md-3 col-md-offset-1 text-muted']" position="before">
+                <h4 style="color:red;">账户余额为：</h4>
+                <t t-if="not order.partner_id.credit or order.partner_id.credit >= 0">
+                    <input type="text" name="show_yue" value="0" readonly="True" style="color:red;"/>
+                </t>
+                <t t-if="order.partner_id.credit and order.partner_id.credit &lt; 0">
+                    <input type="text" name="show_yue" t-att-value="abs(order.partner_id.credit)" readonly="True"/>
+                </t>
             </xpath>
         </template>
 
@@ -554,6 +542,104 @@
                     </div>
                 </div>
             </t>
+        </template>
+
+        <template id="qdodoo_websale_update_potential_customers" inherit_id="website.contactus">
+
+            <xpath expr="//div[@class='row']" position="after">
+                <div>
+                    <form id="user_info" t-attf-action="/shop/user/info" method="POST">
+                        <h4>
+                            <p>促销报名</p>
+                        </h4>
+                        <br/>
+                        <button type="submit" width="100px" class="btn btn-primary pull-left mb32 a-submit"
+                        t-att-class="submit_class" onclick="get_value()">报名 </button>
+                    </form>
+                </div>
+            </xpath>
+        </template>
+
+        <template id="qdodoo_websale_update.promotion" name="报名">&lt;!DOCTYPE html&gt;
+            <html>
+                <head>
+                    <t t-call-assets="web.assets_common"/>
+                    <t t-call-assets="web.assets_backend"/>
+                    <meta charset="UTF-8"/>
+                    <title>报名</title>
+                    <script type="text/javascript">
+                        function get_value(){
+                            var check = document.getElementById("promotion");
+                            if (typeof(check.value)=="undefined"){
+                                alert('请选择优惠方式！');
+                            }
+                            $.ajax({
+                                async : false,
+                                type: "POST",
+                                url: "/shop/user/info/data_new",
+                                data: "promotion_id="+check.value
+                                }).done(function(msg){
+                                        if (msg){
+                                            var r=confirm("报名成功!");
+                                            if (msg == '0'){
+                                                alert('获取优惠失败，请联系管理员！');
+                                            }
+                                            if (msg == '1'){
+                                                alert('该优惠您已经报名！');
+                                            }
+                                            if (msg == '2'){
+                                                document.getElementById("demo");
+                                                $("#conform_promotion").submit();
+                                            }
+                                        }
+                                        else{
+                                            alert('报名失败，请稍后重试或联系管理员！')
+                                        }
+                                    }).fail(function(xmlHttpRequest,statusText,errorThrown) {
+
+                                        });
+                        }
+                    </script>
+                </head>
+                <body>
+                    <div class="modal fade" id="example" tabindex="-1"  role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"  >
+                        <div class="modal-dialog">
+                              <div class="modal-content">
+                                 <div class="modal-header">
+                                    <h4 class="modal-title" id="myModalLabel">
+                                       报名成功
+                                    </h4>
+                                 </div>
+                                 <div class="modal-footer">
+                                    <form id="conform_promotion" method="post" action="/shop">
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default"
+                                                    data-dismiss="modal">确认
+                                            </button>
+                                        </div>
+                                    </form>
+                                 </div>
+                              </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center;margin:0 auto;">
+                        <h2 style="text-align:left;">选择促销报名</h2>
+                        <!--<label class="control-label">促销活动</label>-->
+                        <select id="promotion" name="promotion" class="form-control">
+                          <t t-foreach="promotion or []" t-as="promotion">
+                              <option t-att-value="promotion.id"><t t-esc="promotion.name"/></option>
+                          </t>
+                        </select>
+                        <div class="ljzf_div">
+                             <button type="button" class="btn btn-danger"
+                                    onclick="get_value()">报名
+                            </button>
+                            <p id="demo"></p>
+                        </div>
+                    </div>
+                </body>
+            </html>
         </template>
 
 

@@ -641,7 +641,8 @@ class qdodooo_website_update(website_sale):
         promotion_obj = registry.get('qdodoo.promotion')
         line_obj = registry.get('sale.order.line')
         users_obj = registry.get('res.users')
-        product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, line_obj, users_obj)
+        promotion_user = registry.get('qdodoo.user.promotion')
+        product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, promotion_user, users_obj)
         minus_money = 0
         for key,valus in product_price_dict.items():
             minus_money += valus
@@ -649,8 +650,43 @@ class qdodooo_website_update(website_sale):
         sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'minus_money':minus_money})
         return request.redirect("/shop/payment")
 
+    # 获取满赠产品数量
+    def get_minus_gift(self, cr, uid, order, promotion_obj, promotion_user, users_obj):
+        # 获取对应的{产品:数量}
+        num_dict = {}
+        for line in order.order_line:
+            if line.product_id.id in num_dict:
+                num_dict[line.product_id.id] += line.multiple_number
+            else:
+                num_dict[line.product_id.id] = line.multiple_number
+        # 判断是否有对应的满赠促销单
+        date = datetime.datetime.now().date().strftime('%Y-%m-%d')
+        version = ''
+        promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','gift'),('company_id','=',users_obj.browse(cr, SUPERUSER_ID, uid).company_id.id)])
+        if promotion_id:
+            promotion_user_ids = promotion_user.search(cr, uid, [('user','=',uid),('promotion','=',promotion_id[0])])
+            if not promotion_user_ids:
+                return {}
+            # 判断是否有满足时间条件的版本
+            for line in promotion_obj.browse(cr, uid, promotion_id[0]).version_gift_id:
+                if (line.date_start <= date or not line.date_start) and (line.date_end >= date or not line.date_end):
+                    version = line
+        # 获取当前登录人的销售团队
+        user_section_id = users_obj.browse(cr, SUPERUSER_ID, uid).default_section_id
+        if not user_section_id:
+            raise except_orm(_('Warning!'),_('当前登录人未设置销售团队！'))
+        # 如果存在满足时间段的版本
+        product_num_dict = {}
+        if version:
+            # 判断满足条件的条目
+            for line_key in version.items_id:
+                # 如果满足品牌
+                if line_key.section_id.id == user_section_id.id or not line_key.section_id:
+                    product_num_dict[line_key.product_items] = (line_key.id,line_key.product_items_num,line_key.subtract_money * int(num_dict.get(line_key.product_id.id,0.0) / line_key.all_money))
+        return product_num_dict
+
     # 获取满减金额
-    def get_minus_money(self, cr, uid, order, promotion_obj, line_obj, users_obj):
+    def get_minus_money(self, cr, uid, order, promotion_obj, promotion_user, users_obj):
         # 获取{产品：金额} 更新明细中产品的数量
         # 获取{产品分类：金额}
         num_dict = {}
@@ -669,6 +705,9 @@ class qdodooo_website_update(website_sale):
         version = ''
         promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','reduction'),('company_id','=',users_obj.browse(cr, SUPERUSER_ID, uid).company_id.id)])
         if promotion_id:
+            promotion_user_ids = promotion_user.search(cr, uid, [('user','=',uid),('promotion','=',promotion_id[0])])
+            if not promotion_user_ids:
+                return {}
             # 判断是否有满足时间条件的版本
             for line in promotion_obj.browse(cr, uid, promotion_id[0]).version_id:
                 if (line.date_start <= date or not line.date_start) and (line.date_end >= date or not line.date_end):
@@ -721,6 +760,7 @@ class qdodooo_website_update(website_sale):
         email_act = None
         # 得到销售对象
         sale_order_obj = request.registry['sale.order']
+        gift_obj = request.registry['qdodoo.promotion.version.gift.items']
         line_obj = request.registry['sale.order.line']
         promotion_obj = request.registry['qdodoo.promotion']
         users_obj = request.registry['res.users']
@@ -745,20 +785,39 @@ class qdodooo_website_update(website_sale):
         promotion_obj = request.registry['qdodoo.promotion']
         line_obj = request.registry['sale.order.line']
         users_obj = request.registry['res.users']
-        product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, line_obj, users_obj)
+        promotion_user = request.registry['qdodoo.user.promotion']
+        # 获取满减金额
+        product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, promotion_user, users_obj)
+        # 获取满赠数量
+        product_num_dict = self.get_minus_gift(cr, uid, order, promotion_obj, promotion_user, users_obj)
         minus_money = 0
         for line in order.order_line:
             line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
         for key,valus in product_price_dict.items():
-            val = {}
-            val['order_id'] = order.id
-            val['product_id'] = key.id
-            val['product_uom_qty'] = 1.0
-            val['product_uom'] = key.uom_id.id
-            val['price_unit'] = -valus
-            val['name'] = key.name
-            line_obj.create(cr ,uid, val)
-            minus_money += valus
+            if valus > 0:
+                val = {}
+                val['order_id'] = order.id
+                val['product_id'] = key.id
+                val['product_uom_qty'] = 1.0
+                val['product_uom'] = key.uom_id.id
+                val['price_unit'] = -valus
+                val['name'] = key.name
+                line_obj.create(cr ,uid, val)
+                minus_money += valus
+        for key,valus in product_num_dict.items():
+            if valus[1] > 0 and valus[2] > 0:
+                val = {}
+                val['order_id'] = order.id
+                val['product_id'] = key.id
+                if valus[1] < valus[2]:
+                    val['product_uom_qty'] = valus[1]
+                else:
+                    val['product_uom_qty'] = valus[2]
+                val['product_uom'] = key.uom_id.id
+                val['price_unit'] = 0
+                val['name'] = key.name
+                line_obj.create(cr ,uid, val)
+                gift_obj.write(cr, 1, valus[0], {'product_items_num':gift_obj.browse(cr, uid, valus[0]).product_items_num - val['product_uom_qty']})
         user_id = order.partner_id.user_id.id or uid
         section_obj = users_obj.browse(cr, SUPERUSER_ID, user_id)
         section_id = section_obj.default_section_id.id if section_obj.default_section_id else False
@@ -787,6 +846,18 @@ class qdodooo_website_update(website_sale):
         request.website.sale_reset(context=context)
 
         return request.redirect('/shop/confirmation')
+
+    @http.route(['/shop/confirmation'], type='http', auth="public", website=True)
+    def payment_confirmation(self, **post):
+        cr, uid, context = request.cr, request.uid, request.context
+
+        sale_order_id = request.session.get('sale_last_order_id')
+        if sale_order_id:
+            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
+        else:
+            return request.redirect('/shop')
+
+        return request.website.render("website_sale.confirmation", {'order': order})
 
     @http.route(['/shop/payment'], type='http', auth="public", website=True)
     def payment(self, **post):
@@ -860,3 +931,25 @@ class qdodooo_website_update(website_sale):
                     },
                     context=render_ctx)
         return request.website.render("website_sale.payment", values)
+
+    @http.route(['/shop/user/info'], type='http', auth="public", website=True)
+    def user_info_promotion(self, **post):
+        cr, uid, context = request.cr, request.uid, request.context
+        values = {}
+        promotion_obj = request.registry.get('qdodoo.promotion')
+        values['promotion'] = promotion_obj.browse(cr, uid, promotion_obj.search(cr, uid, []))
+        return request.website.render("qdodoo_websale_update.promotion",values)
+
+    # 0获取优惠失败，请联系管理员；1该优惠您已经报名；2报名成功
+    @http.route(['/shop/user/info/data_new'], type='http', auth="public", website=True)
+    def data_new(self, **post):
+        cr, uid, context = request.cr, request.uid, request.context
+        promotion_obj = request.registry.get('qdodoo.user.promotion')
+        if not post.get('promotion_id'):
+            return '0'
+        promotion_ids = promotion_obj.search(cr, uid, [('user','=',uid),('promotion','=',int(post.get('promotion_id')))])
+        if promotion_ids:
+            return '1'
+        else:
+            promotion_obj.create(cr, 1, {'user':uid,'promotion':int(post.get('promotion_id'))})
+            return '2'
