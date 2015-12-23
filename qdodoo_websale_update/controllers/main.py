@@ -607,7 +607,8 @@ class qdodooo_website_update(website_sale):
         template_lst = []
         product = {}
         for line in order.order_line:
-            template_lst.append(line.product_id.product_tmpl_id.id)
+            if line.product_id.product_tmpl_id.is_gifts:
+                template_lst.append(line.product_id.product_tmpl_id.id)
             template_dict[line.product_id.product_tmpl_id.id] = line.product_uom_qty
             product[line.product_id.product_tmpl_id.id] = line.product_id.id
         # 获取产品和赠品之间的关系
@@ -631,13 +632,13 @@ class qdodooo_website_update(website_sale):
         multiple=request.session.get('taylor_session')
         # 判断赠品的数量是否超过
         for key, value in template_dict.items():
-            line_ids = line_obj.search(cr, uid, [('product_id','=',product.get(key)),('order_id','=',order.id)])
-            line_obj_ids = line_obj.browse(cr, uid, line_ids[0])
+            line_ids = line_obj.search(cr, 1, [('product_id','=',product.get(key)),('order_id','=',order.id)])
+            line_obj_ids = line_obj.browse(cr, 1, line_ids[0])
             if key in gifts_num:
-                line_obj.write(cr, uid, line_ids, {'price_unit':0.0})
+                line_obj.write(cr, 1, line_ids, {'price_unit':0.0})
                 if value > gifts_num[key]:
                     return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
-            line_obj.write(cr, uid, line_ids, {'multiple_number':line_obj_ids.product_uom_qty*multiple.get(key)})
+            line_obj.write(cr, 1, line_ids, {'multiple_number':line_obj_ids.product_uom_qty*multiple.get(key)})
         promotion_obj = registry.get('qdodoo.promotion')
         line_obj = registry.get('sale.order.line')
         users_obj = registry.get('res.users')
@@ -792,7 +793,7 @@ class qdodooo_website_update(website_sale):
         product_num_dict = self.get_minus_gift(cr, uid, order, promotion_obj, promotion_user, users_obj)
         minus_money = 0
         for line in order.order_line:
-            line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
+            line_obj.write(cr, 1, line.id, {'product_uom_qty':line.multiple_number})
         for key,valus in product_price_dict.items():
             if valus > 0:
                 val = {}
@@ -816,7 +817,7 @@ class qdodooo_website_update(website_sale):
                 val['product_uom'] = key.uom_id.id
                 val['price_unit'] = 0
                 val['name'] = key.name
-                line_obj.create(cr ,uid, val)
+                line_obj.create(cr ,1, val)
                 gift_obj.write(cr, 1, valus[0], {'product_items_num':gift_obj.browse(cr, uid, valus[0]).product_items_num - val['product_uom_qty']})
         user_id = order.partner_id.user_id.id or uid
         section_obj = users_obj.browse(cr, SUPERUSER_ID, user_id)
