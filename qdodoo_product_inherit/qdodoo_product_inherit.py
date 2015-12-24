@@ -32,7 +32,7 @@ class qdodoo_product_template_inherit(models.Model):
         valus['is_create'] = True
         res_id = super(qdodoo_product_template_inherit, self).create(cr, uid, valus, context=context)
         # 如果存在所属公司
-        company_ids = valus.get('company_ids_tfs')[0][2]
+        company_ids = valus.get('company_ids_tfs') and valus.get('company_ids_tfs')[0][2] or []
         company_id = valus.get('company_id')
         if company_id in company_ids:
             company_ids.remove(company_id)
