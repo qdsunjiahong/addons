@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_tree_qdodoo_supplier_attachment_report" model="ir.ui.view">
+            <field name="name">qdodoo.supplier.attachment.report.tree</field>
+            <field name="model">qdodoo.supplier.attachment.report</field>
+            <field name="arch" type="xml">
+                <tree create="false">
+                    <field name="partner_id"/>
+                    <field name="name"/>
+                    <field name="num"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="state"/>
+                    <field name="user_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_search_qdodoo_supplier_attachment_report" model="ir.ui.view">
+            <field name="name">qdodoo.supplier.attachment.report.search</field>
+            <field name="model">qdodoo.supplier.attachment.report</field>
+            <field name="arch" type="xml">
+                <search>
+                    <group expand="0" string="分组...">
+                        <filter string="供应商" icon="terp-personal" domain="[]" context="{'group_by':'partner_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+    </data>
+</openerp>
