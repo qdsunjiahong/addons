@@ -35,7 +35,7 @@ class qdodoo_supplier_attachment_search(models.Model):
             raise osv.except_osv(_('错误'),_('开始日期不能大于结束日期！'))
         attachment_obj = self.pool.get('ir.attachment')
         supplier_obj = self.pool.get('qdodoo.supplier.attachment.report')
-        domain = [('attachment_endtime','>=',context.get('date_start')),('attachment_endtime','<=',context.get('date_end'))]
+        domain = [('create_date','>=',context.get('date_start')),('create_date','<=',context.get('date_end'))]
         if context.get('partner_id')[0][2]:
             domain += [('partner_id','in',context.get('partner_id')[0][2])]
         else:
