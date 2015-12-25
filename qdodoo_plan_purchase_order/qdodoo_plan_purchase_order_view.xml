@@ -40,6 +40,7 @@
                             <group>
                                 <field name="location_name" domain="[('company_id','=',company_id)]" on_change="change_location_id(location_name)"/>
                                 <field name="location_id"/>
+                                <field name="origin"/>
                             </group>
                         </group>
                         <notebook>
@@ -66,6 +67,7 @@
                                         <field name="colors" invisible="True"/>
                                         <field name="partner_id" attrs="{'required':[('state','!=','draft')]}" on_change="onchange_product_id(product_id,partner_id,qty,uom_id)"/>
                                         <field name="name"/>
+                                        <field name="is_cancel"/>
                                     </tree>
                                 </field>
                             </page>

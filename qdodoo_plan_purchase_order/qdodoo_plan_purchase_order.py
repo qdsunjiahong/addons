@@ -34,6 +34,7 @@ class qdodoo_plan_purchase_order(models.Model):
     order_line = fields.One2many('qdodoo.plan.purchase.order.line', 'order_id', u'产品明细',required=True)
     import_file = fields.Binary(string="导入的Excel文件")
     state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
+    origin = fields.Many2one('qdodoo.plan.purchase.order',u'源单据')
 
     _defaults = {
         'minimum_planned_date': datetime.now().date(),
@@ -44,15 +45,69 @@ class qdodoo_plan_purchase_order(models.Model):
 
     # 退回
     def btn_cancel_confirmed(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'state':'sent'})
+        line_lst = []
+        log = 0
+        all_line_lst = []
+        for line in self.browse(cr, uid, ids[0]).order_line:
+            all_line_lst.append(line.id)
+            if line.is_cancel:
+                line_lst.append(line.id)
+            else:
+                log += 1
+        plan_line = self.pool.get('qdodoo.plan.purchase.order.line')
+        if log:
+            res_id = self.copy(cr, uid, ids[0],{'state':'sent','origin':ids[0]})
+            for line_id in line_lst:
+                plan_line.copy(cr, uid, line_id,{'order_id':res_id,'is_cancel':False})
+            plan_line.unlink(cr, uid, line_lst)
+            return True
+        else:
+            plan_line.write(cr, uid, all_line_lst, {'is_cancel':False})
+            return self.write(cr, uid, ids, {'state':'sent'})
 
     # 退回
     def btn_cancel_draft(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'state':'draft'})
+        line_lst = []
+        log = 0
+        all_line_lst = []
+        for line in self.browse(cr, uid, ids[0]).order_line:
+            all_line_lst.append(line.id)
+            if line.is_cancel:
+                line_lst.append(line.id)
+            else:
+                log += 1
+        plan_line = self.pool.get('qdodoo.plan.purchase.order.line')
+        if log:
+            res_id = self.copy(cr, uid, ids[0],{'state':'draft','origin':ids[0]})
+            for line_id in line_lst:
+                plan_line.copy(cr, uid, line_id,{'order_id':res_id,'is_cancel':False})
+            plan_line.unlink(cr, uid, line_lst)
+            return True
+        else:
+            plan_line.write(cr, uid, all_line_lst, {'is_cancel':False})
+            return self.write(cr, uid, ids, {'state':'draft'})
 
     # 退回
     def btn_cancel_approve(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'state':'apply'})
+        line_lst = []
+        log = 0
+        all_line_lst = []
+        for line in self.browse(cr, uid, ids[0]).order_line:
+            all_line_lst.append(line.id)
+            if line.is_cancel:
+                line_lst.append(line.id)
+            else:
+                log += 1
+        plan_line = self.pool.get('qdodoo.plan.purchase.order.line')
+        if log:
+            res_id = self.copy(cr, uid, ids[0],{'state':'apply','origin':ids[0]})
+            for line_id in line_lst:
+                plan_line.copy(cr, uid, line_id,{'order_id':res_id,'is_cancel':False})
+            plan_line.unlink(cr, uid, line_lst)
+            return True
+        else:
+            plan_line.write(cr, uid, all_line_lst, {'is_cancel':False})
+            return self.write(cr, uid, ids, {'state':'apply'})
 
     # 导入方法
     def btn_import_data(self, cr, uid, ids, context=None):
@@ -192,6 +247,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
     partner_id = fields.Many2one('res.partner',u'供应商')
     state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
     colors = fields.Char(string=u'颜色', compute='_get_colors')
+    is_cancel = fields.Boolean(u'需要回退')
 
     # 获取颜色
     def _get_colors(self):
@@ -242,6 +298,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
 
     _defaults = {
         'state':'draft',
+        'is_cancel':False,
     }
 
 
