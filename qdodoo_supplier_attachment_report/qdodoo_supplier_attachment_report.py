@@ -29,3 +29,4 @@ class qdodoo_supplier_attachment_report(models.Model):
     date_end = fields.Date(u'结束时间')
     state = fields.Char(u'状态')
     user_id = fields.Many2one('res.users',u'责任人')
+    overdue = fields.Selection([('yes',u'已过期'),('no',u'未过期')],u'是否过期')

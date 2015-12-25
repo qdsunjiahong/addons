@@ -14,6 +14,7 @@
                     <field name="date_end"/>
                     <field name="state"/>
                     <field name="user_id"/>
+                    <field name="overdue"/>
                 </tree>
             </field>
         </record>
@@ -23,8 +24,13 @@
             <field name="model">qdodoo.supplier.attachment.report</field>
             <field name="arch" type="xml">
                 <search>
+                    <field name="name"/>
+                    <field name="user_id"/>
+                    <filter help="未过期" icon="terp-personal+" domain="[('overdue', '=', 'no')]"/>
+                    <filter help="已过期" icon="terp-personal+" domain="[('overdue', '=', 'yes')]"/>
                     <group expand="0" string="分组...">
                         <filter string="供应商" icon="terp-personal" domain="[]" context="{'group_by':'partner_id'}"/>
+                        <filter string="责任人" icon="terp-personal" domain="[]" context="{'group_by':'user_id'}"/>
                     </group>
                 </search>
             </field>

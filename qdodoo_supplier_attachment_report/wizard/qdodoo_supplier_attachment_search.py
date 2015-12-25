@@ -35,17 +35,22 @@ class qdodoo_supplier_attachment_search(models.Model):
             raise osv.except_osv(_('错误'),_('开始日期不能大于结束日期！'))
         attachment_obj = self.pool.get('ir.attachment')
         supplier_obj = self.pool.get('qdodoo.supplier.attachment.report')
-        domain = [('create_date','>=',context.get('date_start')),('create_date','<=',context.get('date_end'))]
+        domain = [('create_date','>=',context.get('date_start')),('create_date','<=',context.get('date_end')),('res_model','=',False)]
         if context.get('partner_id')[0][2]:
             domain += [('partner_id','in',context.get('partner_id')[0][2])]
         else:
             domain += [('partner_id','!=',False)]
         attachment_ids = attachment_obj.search(cr, uid, domain)
         for line in attachment_obj.browse(cr, uid, attachment_ids):
+            if datetime.now().date().strftime('%Y-%m-%d') > line.attachment_endtime:
+                overdue = 'yes'
+            else:
+                overdue = 'no'
             res = supplier_obj.create(cr, uid, {'partner_id':line.partner_id.id,
                                                 'name':line.id,'num':1,
                                                 'date_start':line.attachment_starttime,
                                                 'date_end':line.attachment_endtime,
+                                                'overdue':overdue,
                                                 'user_id':line.user_id.id})
             res_id.append(res)
         mod_obj = self.pool.get('ir.model.data')
