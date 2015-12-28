@@ -24,6 +24,12 @@ class qdodoo_purchase_sale_order(models.Model):
 
     location_name = fields.Many2one('stock.warehouse',u'仓库')
     is_internal_company = fields.Boolean(u'是否是内部公司')
+    mail_users = fields.Many2one('res.users',u'发件人')
+
+    def wkf_send_rfq(self, cr, uid, ids, context=None):
+        res = super(qdodoo_purchase_sale_order, self).wkf_send_rfq(cr, uid, ids, context=context)
+        self.write(cr, uid, ids, {'mail_users':uid})
+        return res
 
     def action_picking_create(self, cr, uid, ids, context=None):
         for order in self.browse(cr, uid, ids):
@@ -58,26 +64,6 @@ class qdodoo_purchase_sale_order(models.Model):
             'payment_term_id': supplier.property_supplier_payment_term.id or False,
             }}
 
-    # 赋值产品到所有的公司
-    # def copy_product_company(self, cr, uid):
-    #     template_obj = self.pool.get('product.template')
-    #     company_obj = self.pool.get('res.company')
-    #     template_ids = template_obj.search(cr, uid, [])
-    #     num = 0
-    #     for line in template_obj.browse(cr ,uid, template_ids):
-    #         num += 1
-    #         company_ids = company_obj.search(cr, uid, [])
-    #         company_ids.remove(line.company_id.id)
-    #         name = line.name
-    #         default_code = line.default_code
-    #         if default_code:
-    #             res_ids = template_obj.search(cr, uid, [('default_code','=',default_code)])
-    #             if res_ids.remove(line.id):
-    #                 for res_id in template_obj.browse(cr ,uid, res_ids):
-    #                     company_ids.remove(res_id.company_id.id)
-    #         for company_id in company_ids:
-    #             template_obj.copy(cr, uid, line.id, {'name':name,'default_code':default_code,'company_id':company_id})
-    #     return True
 
     def copy_product_company(self, cr, uid):
         template_obj = self.pool.get('product.template')
@@ -168,3 +154,9 @@ class qdodoo_sale_order_inherit(models.Model):
     _inherit = 'sale.order'    # 继承
 
     location_id_note = fields.Char(u'目的仓库备注')
+    mail_users = fields.Many2one('res.users',u'发件人')
+
+    def action_quotation_send(self, cr, uid, ids, context=None):
+        res = super(qdodoo_sale_order_inherit, self).action_quotation_send(cr, uid, ids, context=context)
+        self.write(cr, uid, ids, {'mail_users':uid})
+        return res
