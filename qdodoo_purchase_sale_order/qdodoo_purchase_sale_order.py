@@ -82,8 +82,9 @@ class qdodoo_purchase_sale_order(models.Model):
     def copy_product_company(self, cr, uid):
         template_obj = self.pool.get('product.template')
         template_ids = template_obj.search(cr, uid, [('company_id','=',1)])
-        for line in template_ids:
-            template_obj.copy(cr, uid, line, {'company_id':4})
+        for line in template_obj.browse(cr, uid, template_ids):
+            res_id = template_obj.copy(cr, uid, line.id, {'company_id':4})
+            template_obj.write(cr, uid, res_id, {'name':line.name,'default_code':line.default_code})
         return True
 
 
