@@ -23,8 +23,7 @@
             <field name="arch" type="xml">
 
                 <xpath expr="//field[@name='name']" position="after">
-                    <field name="is_create" invisible="True"/>
-                    <field name="company_ids_tfs" placeholder="所属公司..." widget="many2many_tags" attrs="{'invisible':[('is_create','=',True)]}"/>
+                    <field name="company_ids_tfs" placeholder="所属公司..." widget="many2many_tags"/>
                 </xpath>
 
             </field>
