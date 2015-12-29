@@ -62,7 +62,7 @@ class rain_product_import(osv.osv):
                 sh_category = sh_category.strip()
                 for category_obj in category_objs:
                     if category_obj.complete_name == sh_category:
-                        sh_category_id = category_obj.id
+                        args['categ_id'] = category_obj.id
                         break
                 else:
                     raise osv.except_osv("导入出错:", _(u'产品分类:' + sh_category + u',请在分类中添加该产品分类;行号:%d' % (rownum + 1)))
