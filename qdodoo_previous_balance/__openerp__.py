@@ -7,7 +7,7 @@
 ###########################################################################################
 
 {
-    'name' : 'Qdodoo Previous Balance',    #模块名称
+    'name' : 'Qdodoo 定期保存数据',    #模块名称
     'version' : '1.0',    #版本
     'category' : 'Technology',    #分类
     'author' : 'qdodoo Technology',    #作者
@@ -43,7 +43,8 @@
     'installable': True,    #是否可安装
     'auto_install': False,    #是否自动安装
     'description' : """
-    存储物品明细账前期结余的数据
+    1：每天物品明细账前期结余的数据
+    2：每月保存科目余额表数据
     """,
 }
 
