@@ -71,4 +71,4 @@ class qdodoo_stock_move(models.Model):
                     new_std_price = ((amount_unit * product_avail) - (move.price_unit * move.product_qty)) / (product_avail - move.product_qty)
                 tmpl_dict[prod_tmpl_id] += move.product_qty
                 # Write the standard price, as SUPERUSER_ID because a warehouse manager may not have the right to write on products
-                product_obj.write(cr, SUPERUSER_ID, [product.id], {'standard_price': new_std_price}, context=context)
+                product_obj.write(cr, uid, [product.id], {'standard_price': new_std_price}, context=context)
