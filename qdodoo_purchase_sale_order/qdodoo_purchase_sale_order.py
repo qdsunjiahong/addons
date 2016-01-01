@@ -85,7 +85,7 @@ class qdodoo_purchase_sale_order(models.Model):
         # 获取数据字典{客户id：公司id}
         dict_partner_company = {}
         dict_partner_company_name = {}
-        for lines in company_obj.browse(cr, uid, company_obj.search(cr, uid, [])):
+        for lines in company_obj.browse(cr, 1, company_obj.search(cr, 1, [])):
             dict_partner_company[lines.partner_id.id] = lines.id
             dict_partner_company_name[lines.partner_id.id] = lines.name
         for obj in self.browse(cr, uid, ids):
@@ -122,21 +122,21 @@ class qdodoo_purchase_sale_order(models.Model):
                 sale_note = sale_obj.get_salenote(cr, uid, ids, part.id, context=context)
                 if sale_note:
                     val.update({'note': sale_note})
-                res_id = sale_obj.create(cr, uid, val)
+                res_id = sale_obj.create(cr, 1, val)
                 for line in obj.order_line:
-                    product_ids = product_obj.search(cr, uid, [('default_code', '=', line.product_id.default_code), (
+                    product_ids = product_obj.search(cr, 1, [('default_code', '=', line.product_id.default_code), (
                         'company_id', '=', dict_partner_company.get(obj.partner_id.id, ''))])
                     if not product_ids:
                         raise except_osv(_('警告!'), _('%s没有设置%s数据!') % (
                             dict_partner_company_name.get(obj.partner_id.id, ''), line.product_id.name))
                     product_obj_obj = product_obj.browse(cr, uid, product_ids[0])
-                    sale_line_obj.create(cr, uid, {
+                    sale_line_obj.create(cr, 1, {
                         'order_id': res_id,
                         'product_id': product_obj_obj.id,
                         'product_uom_qty': line.product_qty,
                         'price_unit': line.price_unit,
                     })
-                sale_obj.action_button_confirm(cr, uid, [res_id])
+                sale_obj.action_button_confirm(cr, 1, [res_id])
         return True
 
 class qdodoo_res_partner_inherit(models.Model):
