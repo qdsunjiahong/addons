@@ -34,7 +34,7 @@ class qdodoo_cron_saleorder(osv.Model):
     def start_update_month(self, cr, uid, yearsday=False, context=None):
         if not yearsday:
             # 得到上个月的日期
-            yearsday = str((datetime.datetime.now() + datetime.timedelta(days=-26)).year) + '-' + str((datetime.datetime.now() + datetime.timedelta(days=-26)).month)
+            yearsday = str((datetime.datetime.now() + datetime.timedelta(days=-1)).year) + '-' + str((datetime.datetime.now() + datetime.timedelta(days=-1)).month)
         if not context:
             context = {}
         # yearsday = '2015-8'
