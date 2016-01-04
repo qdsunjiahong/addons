@@ -53,7 +53,7 @@ class qdodoo_stock_move(models.Model):
             valuation_amount = context.get('force_valuation_amount')
         else:
             if move.product_id.cost_method == 'average':
-                valuation_amount = cost if move.location_id.usage != 'internal' and move.location_dest_id.usage == 'internal' else move.product_id.standard_price
+                valuation_amount = cost if ((move.location_id.usage != 'internal' and move.location_dest_id.usage == 'internal') or (move.location_id.usage == 'internal' and move.location_dest_id.usage == 'supplier')) else move.product_id.standard_price
             else:
                 valuation_amount = cost if move.product_id.cost_method == 'real' else move.product_id.standard_price
         valuation_amount = currency_obj.round(cr, uid, move.company_id.currency_id, valuation_amount * qty)
