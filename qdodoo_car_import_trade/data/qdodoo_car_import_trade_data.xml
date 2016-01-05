@@ -6,19 +6,14 @@
             <field name='description'></field>
         </record>
 
-        <record id="ir_cron_qdodoo_car_purchase_type" model="qdodoo.car.purchase.type">
-            <field name='name'>整车委托进口</field>
-            <field name='description'></field>
-        </record>
-
-        <record id="ir_cron_qdodoo_payment_type_0" model="qdodoo.payment.type">
-            <field name='name'>TT IN ADVANCE</field>
-            <field name='description'></field>
-        </record>
-        <record id="ir_cron_qdodoo_payment_type_1" model="qdodoo.payment.type">
-            <field name='name'>TT AT SIGHT</field>
-            <field name='description'></field>
-        </record>
+        <!--<record id="ir_cron_qdodoo_payment_type_0" model="qdodoo.payment.type">-->
+            <!--<field name='name'>TT IN ADVANCE</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
+        <!--<record id="ir_cron_qdodoo_payment_type_1" model="qdodoo.payment.type">-->
+                <!--<field name='name'>TT AT SIGHT</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
         <record id="ir_cron_qdodoo_payment_type_2" model="qdodoo.payment.type">
             <field name='name'>TT + L/C</field>
             <field name='description'></field>
@@ -27,30 +22,30 @@
             <field name='name'>L/C AT SIGHT</field>
             <field name='description'></field>
         </record>
-        <record id="ir_cron_qdodoo_payment_type_4" model="qdodoo.payment.type">
-            <field name='name'>L/C 30 DAYS</field>
-            <field name='description'></field>
-        </record>
-        <record id="ir_cron_qdodoo_payment_type_5" model="qdodoo.payment.type">
-            <field name='name'>L/C 60 DAYS</field>
-            <field name='description'></field>
-        </record>
-        <record id="ir_cron_qdodoo_payment_type_6" model="qdodoo.payment.type">
-            <field name='name'>L/C 90 DAYS</field>
-            <field name='description'></field>
-        </record>
-        <record id="ir_cron_qdodoo_payment_type_7" model="qdodoo.payment.type">
-            <field name='name'>L/C + 30天押汇</field>
-            <field name='description'></field>
-        </record>
-        <record id="ir_cron_qdodoo_payment_type_8" model="qdodoo.payment.type">
-            <field name='name'>L/C + 60天押汇</field>
-            <field name='description'></field>
-        </record>
-        <record id="ir_cron_qdodoo_payment_type_9" model="qdodoo.payment.type">
-            <field name='name'>L/C + 90天押汇</field>
-            <field name='description'></field>
-        </record>
+        <!--<record id="ir_cron_qdodoo_payment_type_4" model="qdodoo.payment.type">-->
+            <!--<field name='name'>L/C 30 DAYS</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
+        <!--<record id="ir_cron_qdodoo_payment_type_5" model="qdodoo.payment.type">-->
+            <!--<field name='name'>L/C 60 DAYS</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
+        <!--<record id="ir_cron_qdodoo_payment_type_6" model="qdodoo.payment.type">-->
+            <!--<field name='name'>L/C 90 DAYS</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
+        <!--<record id="ir_cron_qdodoo_payment_type_7" model="qdodoo.payment.type">-->
+            <!--<field name='name'>L/C + 30天押汇</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
+        <!--<record id="ir_cron_qdodoo_payment_type_8" model="qdodoo.payment.type">-->
+            <!--<field name='name'>L/C + 60天押汇</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
+        <!--<record id="ir_cron_qdodoo_payment_type_9" model="qdodoo.payment.type">-->
+            <!--<field name='name'>L/C + 90天押汇</field>-->
+            <!--<field name='description'></field>-->
+        <!--</record>-->
 
         <record id="ir_cron_qdodoo_payment_line_0" model="qdodoo.payment.line">
             <field name='name'>FOB</field>
@@ -69,6 +64,11 @@
             <field name='description'></field>
         </record>
         <record id="ir_cron_account_analytic_account" model="account.analytic.account">
+            <field name='name'>整车进口</field>
+            <field name='type'>view</field>
+            <field name='code'>01</field>
+        </record>
+        <record id="ir_cron_account_analytic_account_new" model="account.analytic.account">
             <field name='name'>进口合同</field>
             <field name='type'>view</field>
             <field name='code'>01</field>

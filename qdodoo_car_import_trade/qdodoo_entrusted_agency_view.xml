@@ -6,7 +6,7 @@
             <field name="name">qdodoo.entrusted.agency.form</field>
             <field name="model">qdodoo.entrusted.agency</field>
             <field name="arch" type="xml">
-                <form string="委托代理">
+                <form string="委托协议" create="false">
                     <header>
                         <field name="is_payment" invisible="True"/>
                         <button name="wkf_send_rfq" states="draft,formulate" string="电邮" context="{'agency_id':True}" type="object" class="oe_highlight"/>
@@ -14,17 +14,14 @@
                         <button name="print_quotation" string="打印" type="object" states="draft,formulate" class="oe_highlight" groups="base.group_user"/>
                         <button name="print_quotation" string="重新打印" type="object" states="confirmed,signed" class="oe_highlight" groups="base.group_user"/>
                         <button name="btn_message" string="短信" type="object" states="draft,formulate" class="oe_highlight" groups="base.group_user"/>
+                        <button name="btn_confirmed" string="委托确认" type="object" states="draft,confirmed" class="oe_highlight" groups="base.group_user"/>
                         <button name="btn_message" string="重发短信" type="object" states="confirmed,signed" class="oe_highlight" groups="base.group_user"/>
                         <button name="purchase_confirm" string="收到反馈" states="confirmed" type="object"/>
                         <button name="confirm_contract" string="确认协议" states="signed" type="object"/>
-                        <!--<button name="btn_read_bill_lading" string="结算" states="import" type="object"/>-->
-                        <button name="btn_in_ship" string="入库" states="import" type="object"/>
-                        <button name="btn_redeem" string="赎车" states="import" type="object"/>
                         <button name="btn_confirmed_sent" string="驳回" states="formulate,signed" type="object"/>
-                        <button name="btn_payment_message" string="付款通知" states="margin" type="object"/>
-                        <button name="btn_rejected" string="驳回" attrs="{'invisible':['|',('is_payment','=',True),('state','!=','margin')]}" type="object"/>
+                        <button name="btn_payment_message" string="付款申请" states="margin" type="object"/>
                         <button name="action_cancel" states="draft,confirmed" string="取消" type="object" />
-                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,formulate,signed,margin,import,done" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirm_contract":"red"}' readonly="1"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,signed,margin,import,done" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirm_contract":"red"}' readonly="1"/>
                     </header>
                     <sheet>
                         <div class="oe_title">
@@ -34,55 +31,71 @@
                             </h1>
                         </div>
                         <div class="oe_right oe_button_box" name="buttons">
-                            <button name="btn_read_payment_order" icon="gtk-execute"  string="保证金" type="object"/>
-                            <button name="btn_read_entrusted_agency" icon="gtk-execute"  string="赎车" type="object"/>
-                            <button name="btn_read_bill_lading" icon="gtk-execute"  string="结算" type="object"/>
+                            <button name="btn_read_payment_order" icon="gtk-execute" string="账务" type="object"/>
+                            <button name="btn_read_contract" icon="gtk-execute"  string="进口合同" type="object"/>
                         </div>
                         <group>
                             <group>
-                                <field name="contract_id" readonly="True" on_change="onchange_contract_id(contract_id)"/>
+                                <field name="customer_id" invisible="True"/>
+                                <field name="import_contract_number" readonly="True" />
                                 <field name="partner_id" readonly="True" on_change="onchange_partner_id(partner_id, context)"/>
-                                <field name="agent_id" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
-                                <field name="agent_declaration_id" attrs="{'required':[('state','not in',('draft','confirmed'))],'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
-                                <field name="agent_ciq_id" attrs="{'required':[('state','not in',('draft','confirmed'))],'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
-                                <field name="open_date" attrs="{'readonly':[('state','not in',('draft','confirmed'))],'required':True}"/>
-                                <field name="shipment_date" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
-                                <field name="deposit_rate"  attrs="{'required':[('state','=','formulate')],'readonly':[('state','not in',('draft','confirmed','formulate'))],'invisible':[('state','in',('draft','confirmed'))]}"/>
-                                <field name="agency_fee"  attrs="{'required':[('state','=','formulate')],'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
-                                <field name="agency_date"  attrs="{'required':[('state','=','formulate')],'readonly':[('state','not in',('draft','confirmed','formulate'))],'invisible':[('state','in',('draft','confirmed'))]}"/>
-                                <field name="file_name" invisible="True"/>
-                                <field name="contract_note" filename="file_name" attrs="{'invisible':[('state','in',('draft','confirmed','formulate'))],'readonly':[('state','not in',('draft','confirmed','formulate','signed'))]}"/>
-                            </group>
+                                <field name="agent_id" on_change="onchange_agent_pricelist(agent_id)" attrs="{'readonly':[('state','!=','draft')],'required':[('margin_log','=',False)],'invisible':[('margin_log','=',True)]}"/>
+                                <field name="deposit_rate"  readonly="True"/>
+                                <field name="deposit_margin"  readonly="True"/>
+                                <field name="new_pay"  readonly="True"/>
+                                <field name="margin_own" attrs="{'readonly':[('state','!=','draft')],'invisible':[('new_pay','=',False)]}"/>
+                                <field name="deposit_margin_customer" attrs="{'required':[('margin_own','!=',False)],'readonly':[('state','!=','draft')],'invisible':[('margin_own','=',False)]}"/>
+                                <field name="margin_log" readonly="True"/>
+                                <field name="agent_template" domain="[('partner_id','=',agent_id)]" attrs="{'invisible':[('margin_log','=',True)],'required':[('margin_log','!=',True)],'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
+                                <field name="pricelist_id" attrs="{'invisible':[('margin_log','=',True)],'required':[('margin_log','!=',True)],'readonly':[('state','!=','draft')]}"/>
+                                <field name="margin_rate" on_change="onchange_money(margin_rate,agency_num)" attrs="{'invisible':[('margin_log','=',True)],'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
+                                <field name="margin_rate_money" attrs="{'invisible':[('margin_log','=',True)],'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
+                                <field name="currency_id" readonly="True"/>
+                                </group>
                             <group>
+                                <field name="receive_id" attrs="{'invisible':[('state','in',('draft','confirmed','formulate','signed'))],'readonly':True}"/>
+                                <field name="purchase_type" readonly="True"/>
                                 <field name="date" readonly="True"/>
+                                <field name="agency_date" attrs="{'invisible':[('state','in',('draft','confirmed','formulate'))],'readonly':[('state','in',('margin','import','done','cancel'))]}"/>
                                 <field name="in_port" readonly="True"/>
                                 <field name="out_port" readonly="True"/>
-                                <field name="partial_shipment" readonly="True"/>
-                                <field name="trans_shipment" readonly="True"/>
-                                <field name="payment_type" attrs="{'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
+                                <!--<field name="partial_shipment" readonly="True"/>-->
+                                <!--<field name="trans_shipment" readonly="True"/>-->
+                                <field name="payment_type" attrs="{'readonly':[('state','!=','draft')],'invisible':[('margin_log','=',True)],'required':[('margin_log','=',False)]}"/>
                                 <field name="payment_line" readonly="True"/>
-                                <field name="pricelist_id" readonly="True"/>
-                                <field name="insurance_type" attrs="{'readonly':[('state','not in',('draft','confirmed'))]}"/>
-                                <field name="documentary_month" attrs="{'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
-                                <field name="documentary_year" attrs="{'readonly':[('state','not in',('draft','confirmed','formulate'))]}"/>
+                                <field name="open_date" attrs="{'readonly':[('state','not in',('draft','confirmed'))],'invisible':[('margin_log','=',True)],'required':[('margin_log','=',False)]}"/>
+                                <field name="shipment_date" readonly="True"/>
+                                <field name="insurance_type" attrs="{'readonly':[('state','not in',('draft','confirmed'))],'invisible':[('margin_log','=',True)],'required':[('margin_log','=',False)]}"/>
+                                <!--<field name="out_contract_text" attrs="{'invisible':[('state','=','draft')],'readonly':[('state','!=','draft')]}"/>-->
+                                <field name="file_name" invisible="True"/>
+                                <field name="contract_note" filename="file_name" attrs="{'invisible':[('state','in',('draft','confirmed','formulate'))],'readonly':[('state','not in',('draft','confirmed','formulate','signed'))]}"/>
+                                <field name="agency_number" attrs="{'required':[('state','=','signed')],'readonly':[('state','!=','signed')],'invisible':[('state','in',('draft','confirmed','formulate'))]}"/>
                             </group>
                         </group>
                         <label string="货物明细"/>
-                        <field name="order_line" readonly="True">
-                            <tree string="货物明细" editable="bottom">
-                                <field name="product_id" on_change="onchange_product_id(parent.pricelist_id,product_id,0,False,parent.partner_id, parent.date,False,date_planned,False,False,parent.state,context)"/>
-                                <field name="name"/>
+                        <field name="order_line">
+                            <tree string="货物明细" editable="bottom" create='false'>
+                                <field name="product_id" readonly="True" on_change="onchange_product_id(parent.pricelist_id,product_id,0,False,parent.partner_id, parent.date,False,date_planned,False,False,parent.state,context)"/>
+                                <field name="name" readonly="True"/>
                                 <field name="date_planned" invisible="True"/>
                                 <field name="company_id" invisible="True" groups="base.group_multi_company" options="{'no_create': True}"/>
                                 <field name="account_analytic_id" invisible="True" groups="purchase.group_analytic_accounting" domain="[('type','not in',('view','template'))]"/>
-                                <field name="product_qty" on_change="onchange_product_id(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id,parent.date,False,date_planned,name,False,parent.state,context)"/>
-                                <field name="product_uom" groups="product.group_uom" on_change="onchange_product_uom(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id, parent.date,False,date_planned,name,False,parent.state,context)"/>
-                                <field name="price_unit"/>
+                                <field name="product_qty" readonly="True" on_change="onchange_product_id(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id,parent.date,False,date_planned,name,False,parent.state,context)"/>
+                                <field name="product_uom" readonly="True" groups="product.group_uom" on_change="onchange_product_uom(parent.pricelist_id,product_id,product_qty,product_uom,parent.partner_id, parent.date,False,date_planned,name,False,parent.state,context)"/>
+                                <field name="price_unit" readonly="True"/>
+                                <field name="product_amount" readonly="True"/>
                                 <field name="taxes_id" invisible="True" widget="many2many_tags" domain="[('parent_id','=',False),('type_tax_use','!=','sale')]"/>
                                 <field name="price_subtotal" invisible="True"/>
+                                <field name="agency_fee" attrs="{'required':[('state','!=','draft')],'readonly':[('state','=','done')]}"/>
+                                <field name="agency_amount" readonly="True"/>
                                 <field name="state" invisible="1"/>
                             </tree>
                         </field>
+                        <group class="oe_subtotal_footer oe_right">
+                            <field name="all_sum" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="payment_old" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="agency_num" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
                         <div class="oe_clear"/>
                         <field name="notes" class="oe_inline" placeholder="特别要求....."/>
                     </sheet>
@@ -98,16 +111,31 @@
             <field name="model">qdodoo.entrusted.agency</field>
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <tree string="委托代理">
+                <tree string="委托代理" create="false">
+                    <field name="import_contract_number"/>
                     <field name="name"/>
-                    <field name="date"/>
-                    <field name="partial_shipment"/>
                     <field name="contract_id"/>
+                    <field name="agency_number"/>
+                    <field name="date"/>
+                    <field name="partner_id"/>
+                    <field name="agent_id"/>
                     <field name="car_number"/>
                     <field name="state"/>
                 </tree>
             </field>
         </record>
+
+        <record id="view_search_qdodoo_entrusted_agency" model="ir.ui.view">
+            <field name="name">qdodoo.entrusted.agency.search</field>
+            <field name="model">qdodoo.entrusted.agency</field>
+            <field name="arch" type="xml">
+                <search string="名称">
+                    <field name="name"/>
+                    <field name="agency_number"/>
+                </search>
+            </field>
+        </record>
+
         <record id="action_qdodoo_entrusted_agency" model="ir.actions.act_window">
             <field name="name">委托代理</field>
             <field name="type">ir.actions.act_window</field>
@@ -115,10 +143,108 @@
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>
+            <field name="search_view_id" ref="view_search_qdodoo_entrusted_agency"/>
         </record>
+        <menuitem name="委托协议" id="menu_qdodoo_entrusted_agency_type" parent="purchase.menu_procurement_management" sequence="45"/>
+        <menuitem name="全部" id="menu_qdodoo_entrusted_agency" parent="menu_qdodoo_entrusted_agency_type"
+                  action="action_qdodoo_entrusted_agency" sequence="1"/>
 
-        <menuitem name="委托协议" id="menu_qdodoo_entrusted_agency" parent="menu_qdodoo_car_contract"
-                  action="action_qdodoo_entrusted_agency" sequence="3"/>
+        <record id="action_qdodoo_entrusted_agency_draft" model="ir.actions.act_window">
+            <field name="name">委托代理</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.entrusted.agency</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','in',('draft','formulate','confirmed'))]</field>
+            <field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>
+            <field name="search_view_id" ref="view_search_qdodoo_entrusted_agency"/>
+        </record>
+        <menuitem name="草稿" id="menu_qdodoo_entrusted_agency_draft" parent="menu_qdodoo_entrusted_agency_type"
+                  action="action_qdodoo_entrusted_agency_draft" sequence="2"/>
+        <!--<record id="action_qdodoo_entrusted_agency_confirmed" model="ir.actions.act_window">-->
+            <!--<field name="name">委托代理</field>-->
+            <!--<field name="type">ir.actions.act_window</field>-->
+            <!--<field name="res_model">qdodoo.entrusted.agency</field>-->
+            <!--<field name="view_type">form</field>-->
+            <!--<field name="view_mode">tree,form</field>-->
+            <!--<field name="domain">[('state','=','confirmed')]</field>-->
+            <!--<field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>-->
+        <!--</record>-->
+        <!--<menuitem name="委托确认" id="menu_qdodoo_entrusted_agency_confirmed" parent="menu_qdodoo_entrusted_agency_type"-->
+                  <!--action="action_qdodoo_entrusted_agency_confirmed" sequence="3"/>-->
+        <!--<record id="action_qdodoo_entrusted_agency_formulate" model="ir.actions.act_window">-->
+            <!--<field name="name">委托代理</field>-->
+            <!--<field name="type">ir.actions.act_window</field>-->
+            <!--<field name="res_model">qdodoo.entrusted.agency</field>-->
+            <!--<field name="view_type">form</field>-->
+            <!--<field name="view_mode">tree,form</field>-->
+            <!--<field name="domain">[('state','=','formulate')]</field>-->
+            <!--<field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>-->
+        <!--</record>-->
+        <!--<menuitem name="协议拟定" id="menu_qdodoo_entrusted_agency_formulate" parent="menu_qdodoo_entrusted_agency_type"-->
+                  <!--action="action_qdodoo_entrusted_agency_formulate" sequence="4"/>-->
+        <record id="action_qdodoo_entrusted_agency_signed" model="ir.actions.act_window">
+            <field name="name">委托代理</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.entrusted.agency</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','=','signed')]</field>
+            <field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>
+            <field name="search_view_id" ref="view_search_qdodoo_entrusted_agency"/>
+        </record>
+        <menuitem name="协议会签" id="menu_qdodoo_entrusted_agency_signed" parent="menu_qdodoo_entrusted_agency_type"
+                  action="action_qdodoo_entrusted_agency_signed" sequence="5"/>
+        <record id="action_qdodoo_entrusted_agency_margin" model="ir.actions.act_window">
+            <field name="name">委托代理</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.entrusted.agency</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','=','margin')]</field>
+            <field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>
+            <field name="search_view_id" ref="view_search_qdodoo_entrusted_agency"/>
+        </record>
+        <menuitem name="预付款" id="menu_qdodoo_entrusted_agency_margin" parent="menu_qdodoo_entrusted_agency_type"
+                  action="action_qdodoo_entrusted_agency_margin" sequence="6"/>
+        <menuitem name="委托协议" id="menu_qdodoo_payment_order_need_entrusted" parent="menu_qdodoo_payment_order_need" sequence="3"
+                action="action_qdodoo_entrusted_agency_margin"/>
+        <record id="action_qdodoo_entrusted_agency_import" model="ir.actions.act_window">
+            <field name="name">委托代理</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.entrusted.agency</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','=','import')]</field>
+            <field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>
+            <field name="search_view_id" ref="view_search_qdodoo_entrusted_agency"/>
+        </record>
+        <menuitem name="协议执行" id="menu_qdodoo_entrusted_agency_import" parent="menu_qdodoo_entrusted_agency_type"
+                  action="action_qdodoo_entrusted_agency_import" sequence="7"/>
+        <record id="action_qdodoo_entrusted_agency_done" model="ir.actions.act_window">
+            <field name="name">委托代理</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.entrusted.agency</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','=','done')]</field>
+            <field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>
+            <field name="search_view_id" ref="view_search_qdodoo_entrusted_agency"/>
+        </record>
+        <menuitem name="完成" id="menu_qdodoo_entrusted_agency_done" parent="menu_qdodoo_entrusted_agency_type"
+                  action="action_qdodoo_entrusted_agency_done" sequence="8"/>
+        <record id="action_qdodoo_entrusted_agency_cancel" model="ir.actions.act_window">
+            <field name="name">委托代理</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.entrusted.agency</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state','=','cancel')]</field>
+            <field name="view_id" ref="view_tree_qdodoo_entrusted_agency"/>
+            <field name="search_view_id" ref="view_search_qdodoo_entrusted_agency"/>
+        </record>
+        <menuitem name="已取消" id="menu_qdodoo_entrusted_agency_cancel" parent="menu_qdodoo_entrusted_agency_type"
+                  action="action_qdodoo_entrusted_agency_cancel" sequence="9"/>
 
     </data>
 </openerp>

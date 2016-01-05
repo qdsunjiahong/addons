@@ -16,6 +16,7 @@
     'images' : [],    #模块图片
     'depends' : ['base','mail','purchase','account_payment','product','account_voucher','report'],    #依赖模块
     'data': [
+        'qdodoo_car_operations_view.xml',
         'qdodoo_car_archives_view.xml',
         'views/report_qdodoo_car_import.xml',
         'views/report_qdodoo_entrusted_agency.xml',
@@ -26,20 +27,14 @@
         'qdodoo_car_import_trade_sequence.xml',
         'qdodoo_car_import_trade_workflow.xml',
         'qdodoo_entrusted_agency_view.xml',
-        'qdodoo_car_operations_view.xml',
         'qdodoo_account_payment_workflow.xml',
-
-
         # ...
     ],    #更新XML,CSV
     'js': [
         # 'static/src/js/account_move_reconciliation.js',
         # ...
     ],    #javascript
-    'qweb' : [
-        # "static/src/xml/account_move_reconciliation.xml",
-        # ...
-    ],
+    'qweb': ['static/src/xml/*.xml'],
     'css':[
         # 'static/src/css/account_move_reconciliation.css',
         # ...

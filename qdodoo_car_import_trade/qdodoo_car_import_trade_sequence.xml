@@ -2,16 +2,29 @@
 <openerp>
     <data noupdate="0">
         <record id="seq_type_qdodoo_car_in_contract" model="ir.sequence.type">
-            <field name="name">进口合同</field>
+            <field name="name">整车采购</field>
             <field name="code">qdodoo.car.in.contract</field>
         </record>
         <record id="seq_qdodoo_car_in_contract" model="ir.sequence">
-            <field name="name">进口合同</field>
+            <field name="name">整车采购</field>
             <field name="code">qdodoo.car.in.contract</field>
+            <field name="prefix">CG</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_type_qdodoo_car_in_contract_new" model="ir.sequence.type">
+            <field name="name">进口合同</field>
+            <field name="code">qdodoo.car.in.contract.new</field>
+        </record>
+        <record id="seq_qdodoo_car_in_contract_new" model="ir.sequence">
+            <field name="name">进口合同</field>
+            <field name="code">qdodoo.car.in.contract.new</field>
             <field name="prefix">JK</field>
             <field name="padding">5</field>
             <field name="company_id" eval="False"/>
         </record>
+
         <record id="seq_type_qdodoo_entrusted_agency" model="ir.sequence.type">
             <field name="name">委托代理</field>
             <field name="code">qdodoo.entrusted.agency</field>
@@ -57,11 +70,11 @@
             <field name="company_id" eval="False"/>
         </record>
         <record id="seq_type_qdodoo_payment_order" model="ir.sequence.type">
-            <field name="name">付款通知单</field>
+            <field name="name">付款申请单</field>
             <field name="code">qdodoo.payment.order</field>
         </record>
         <record id="seq_qdodoo_payment_order" model="ir.sequence">
-            <field name="name">付款通知单</field>
+            <field name="name">付款申请单</field>
             <field name="code">qdodoo.payment.order</field>
             <field name="prefix">TZ</field>
             <field name="padding">5</field>

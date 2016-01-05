@@ -5,7 +5,7 @@
             <field name="name">qdodoo.car.archives.form</field>
             <field name="model">qdodoo.car.archives</field>
             <field name="arch" type="xml">
-                <form string="车辆档案">
+                <form string="车辆资料">
                     <sheet>
                         <group>
                             <group>
@@ -18,7 +18,7 @@
                                 <field name="out_port"/>
                                 <field name="in_port"/>
                                 <field name="redeem_apply_number"/>
-                                <!--<field name="settlement_number"/>-->
+                                <field name="location_id"/>
                             </group>
                             <group>
                                 <field name="agency_id"/>
@@ -30,6 +30,8 @@
                                 <field name="settlement_price"/>
                                 <field name="import_cost"/>
                                 <field name="car_cif"/>
+                                <field name="is_sale"/>
+                                <field name="sale_order"/>
                             </group>
                         </group>
                     </sheet>
@@ -41,7 +43,7 @@
             <field name="model">qdodoo.car.archives</field>
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <tree string="车辆档案">
+                <tree string="车辆资料">
                     <field name="name"/>
                     <field name="car_model"/>
                     <field name="out_port"/>
@@ -51,7 +53,7 @@
             </field>
         </record>
         <record id="action_qdodoo_car_archives" model="ir.actions.act_window">
-            <field name="name">车辆档案</field>
+            <field name="name">车辆资料</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">qdodoo.car.archives</field>
             <field name="view_type">form</field>
@@ -69,8 +71,8 @@
         <menuitem name="基础数据" id="menu_qdodoo_car_basic_data" parent="menu_qdodoo_car_import_trade"
                   sequence="4"/>
 
-        <menuitem name="车辆档案" id="menu_qdodoo_car_archives" parent="menu_qdodoo_car_basic_data"
-                  action="action_qdodoo_car_archives" sequence="1"/>
+        <menuitem name="车辆资料" id="menu_qdodoo_car_archives" parent="purchase.menu_procurement_management_product"
+                  action="action_qdodoo_car_archives" sequence="11"/>
 
         <record id="view_form_qdodoo_car_type" model="ir.ui.view">
             <field name="name">qdodoo.car.type.form</field>
@@ -107,47 +109,48 @@
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_tree_qdodoo_car_type"/>
         </record>
-        <menuitem name="产品品类" id="menu_qdodoo_car_type" parent="menu_qdodoo_car_basic_data"
-                  action="action_qdodoo_car_type" sequence="2"/>
+        <menuitem name="车辆进口" id="menu_qdodoo_car_basic" parent="purchase.menu_purchase_config_purchase" sequence="52"/>
+        <menuitem name="产品品类" id="menu_qdodoo_car_type" parent="menu_qdodoo_car_basic"
+                  action="action_qdodoo_car_type" sequence="1"/>
 
-        <record id="view_form_qdodoo_car_purchase_type" model="ir.ui.view">
-            <field name="name">qdodoo.car.purchase.type.form</field>
-            <field name="model">qdodoo.car.purchase.type</field>
-            <field name="arch" type="xml">
-                <form string="采购渠道">
-                    <sheet>
-                        <group>
-                            <group>
-                                <field name="name"/>
-                                <field name="description"/>
-                            </group>
-                        </group>
-                    </sheet>
-                </form>
-            </field>
-        </record>
-        <record id="view_tree_qdodoo_car_purchase_type" model="ir.ui.view">
-            <field name="name">qdodoo.car.purchase.type.tree</field>
-            <field name="model">qdodoo.car.purchase.type</field>
-            <field name="priority">1</field>
-            <field name="arch" type="xml">
-                <tree string="采购渠道">
-                    <field name="name"/>
-                    <field name="description"/>
-                </tree>
-            </field>
-        </record>
-        <record id="action_qdodoo_car_purchase_type" model="ir.actions.act_window">
-            <field name="name">采购渠道</field>
-            <field name="type">ir.actions.act_window</field>
-            <field name="res_model">qdodoo.car.purchase.type</field>
-            <field name="view_type">form</field>
-            <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="view_tree_qdodoo_car_purchase_type"/>
-        </record>
+        <!--<record id="view_form_qdodoo_car_purchase_type" model="ir.ui.view">-->
+            <!--<field name="name">qdodoo.car.purchase.type.form</field>-->
+            <!--<field name="model">qdodoo.car.purchase.type</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<form string="采购渠道">-->
+                    <!--<sheet>-->
+                        <!--<group>-->
+                            <!--<group>-->
+                                <!--<field name="name"/>-->
+                                <!--<field name="description"/>-->
+                            <!--</group>-->
+                        <!--</group>-->
+                    <!--</sheet>-->
+                <!--</form>-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="view_tree_qdodoo_car_purchase_type" model="ir.ui.view">-->
+            <!--<field name="name">qdodoo.car.purchase.type.tree</field>-->
+            <!--<field name="model">qdodoo.car.purchase.type</field>-->
+            <!--<field name="priority">1</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<tree string="采购渠道">-->
+                    <!--<field name="name"/>-->
+                    <!--<field name="description"/>-->
+                <!--</tree>-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="action_qdodoo_car_purchase_type" model="ir.actions.act_window">-->
+            <!--<field name="name">采购渠道</field>-->
+            <!--<field name="type">ir.actions.act_window</field>-->
+            <!--<field name="res_model">qdodoo.car.purchase.type</field>-->
+            <!--<field name="view_type">form</field>-->
+            <!--<field name="view_mode">tree,form</field>-->
+            <!--<field name="view_id" ref="view_tree_qdodoo_car_purchase_type"/>-->
+        <!--</record>-->
 
-        <menuitem name="采购渠道" id="menu_qdodoo_car_purchase_type" parent="menu_qdodoo_car_basic_data"
-                  action="action_qdodoo_car_purchase_type" sequence="3"/>
+        <!--<menuitem name="采购渠道" id="menu_qdodoo_car_purchase_type" parent="menu_qdodoo_car_basic_data"-->
+                  <!--action="action_qdodoo_car_purchase_type" sequence="3"/>-->
 
         <record id="view_form_qdodoo_shipment_port" model="ir.ui.view">
             <field name="name">qdodoo.shipment.port.form</field>
@@ -189,8 +192,8 @@
             <field name="view_id" ref="view_tree_qdodoo_shipment_port"/>
         </record>
 
-        <menuitem name="港口信息" id="menu_qdodoo_shipment_port" parent="menu_qdodoo_car_basic_data"
-                  action="action_qdodoo_shipment_port" sequence="4"/>
+        <menuitem name="港口信息" id="menu_qdodoo_shipment_port" parent="menu_qdodoo_car_basic"
+                  action="action_qdodoo_shipment_port" sequence="2"/>
 
         <record id="view_form_qdodoo_contract_template" model="ir.ui.view">
             <field name="name">qdodoo.contract.template.form</field>
@@ -201,7 +204,7 @@
                         <group>
                             <group>
                                 <field name="name"/>
-                                <field name="description"/>
+                                <!--<field name="description"/>-->
                             </group>
                             <group>
                                 <field name="partner_id"/>
@@ -231,8 +234,8 @@
             <field name="view_id" ref="view_tree_qdodoo_contract_template"/>
         </record>
 
-        <menuitem name="合同模板" id="menu_qdodoo_contract_template" parent="menu_qdodoo_car_basic_data"
-                  action="action_qdodoo_contract_template" sequence="5"/>
+        <menuitem name="合同模板" id="menu_qdodoo_contract_template" parent="menu_qdodoo_car_basic"
+                  action="action_qdodoo_contract_template" sequence="3"/>
 
         <record id="view_form_qdodoo_payment_type" model="ir.ui.view">
             <field name="name">qdodoo.payment.type.form</field>
@@ -270,8 +273,8 @@
             <field name="view_id" ref="view_tree_qdodoo_payment_type"/>
         </record>
 
-        <menuitem name="付款方式" id="menu_qdodoo_payment_type" parent="menu_qdodoo_car_basic_data"
-                  action="action_qdodoo_payment_type" sequence="6"/>
+        <menuitem name="付款方式" id="menu_qdodoo_payment_type" parent="menu_qdodoo_car_basic"
+                  action="action_qdodoo_payment_type" sequence="4"/>
 
         <record id="view_form_qdodoo_payment_line" model="ir.ui.view">
             <field name="name">qdodoo.payment.line.form</field>
@@ -309,8 +312,8 @@
             <field name="view_id" ref="view_tree_qdodoo_payment_line"/>
         </record>
 
-        <menuitem name="价格条款" id="menu_qdodoo_payment_line" parent="menu_qdodoo_car_basic_data"
-                  action="action_qdodoo_payment_line" sequence="6"/>
+        <menuitem name="价格条款" id="menu_qdodoo_payment_line" parent="menu_qdodoo_car_basic"
+                  action="action_qdodoo_payment_line" sequence="5"/>
 
     </data>
 </openerp>
