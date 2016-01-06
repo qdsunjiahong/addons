@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+		<data>
+				<record model="ir.ui.view" id="supplier_import_form_view">
+						<field name="name">supplier.import.view</field>
+						<field name="model">supplier.import</field>
+						<field name="type">form</field>
+						<field name="arch" type="xml">
+								<form string="Import Supplier" version="7.0">
+										<group>
+												<field name="xls"/>
+												<field name="customer"/>
+										</group>
+										<group>
+												<h4>轻松一点，导入无忧</h4>
+										</group>
+										<group>
+												<button name="btn_import" type="object" string=":) click me to start importing" class="oe_highlight"/>
+											<a href="/supplier_import/static/供应商信息导入模板.xls">点此进行模板下载</a>
+										</group>
+								</form>
+						</field>
+				</record>
+
+				<record model="ir.actions.act_window" id="action_supplier_import">
+						<field name="name">Supplier Import</field>
+						<field name="res_model">supplier.import</field>
+						<field name="type">ir.actions.act_window</field>
+						<field name="view_mode">form</field>
+						<field name="view_id" ref="supplier_import_form_view"/>
+						<field name="context">{}</field>
+						<field name="target">new</field>
+				</record>
+
+				<menuitem id="menu_supplier_import" name="Supplier Import" action="action_supplier_import" parent="purchase.menu_procurement_management" />
+
+				<record model="ir.ui.view" id="xj_customer_form_view">
+						<field name="name">xj customer form view</field>
+						<field name="model">res.partner</field>
+						<field name="inherit_id" ref="base.view_partner_form"/>
+						<field name="arch" type="xml">
+								<field name="function" position="after">
+										<field name="contact"/>
+								</field>
+						</field>
+				</record>
+		</data>
+</openerp>
