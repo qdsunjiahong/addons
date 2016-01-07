@@ -145,8 +145,8 @@ class qdodoo_plan_purchase_order(models.Model):
                 val['product_id'] = product.id
                 val['price_unit'] = product.standard_price
                 val['name'] = product.name
-                val['plan_date'] = plan_date
-                val['qty'] = product_qty
+                val['plan_date_jh'] = plan_date
+                val['qty_jh'] = product_qty
                 val['uom_id'] = product.uom_id.id
                 val['order_id'] = wiz.id
                 lst.append(val)
