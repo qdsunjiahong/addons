@@ -196,7 +196,7 @@ class qdodoo_plan_purchase_order(models.Model):
         partner_obj = self.pool.get('res.partner')
         purchase_line_obj = self.pool.get('purchase.order.line')
         for obj in self.browse(cr, uid, ids):
-            # 循环处理产品明细
+            # 循环处理产品明细{(日期,供应商):[(产品,数量,单价,备注,单位id)]}
             purchase_id = {}
             for line in obj.order_line:
                 # 组织采购订单数据
@@ -206,10 +206,16 @@ class qdodoo_plan_purchase_order(models.Model):
                     all = purchase_id[(line.plan_date,line.partner_id.id)][:]
                     for key in all:
                         if line.product_id.id == key[0]:
-                            purchase_id[(line.plan_date,line.partner_id.id)].append((key[0], key[1]+line.qty,key[2],key[3],key[4]))
+                            if line.qty_jh > line.qty:
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((key[0], key[1]+line.qty_jh,key[2],key[3],key[4]))
+                            else:
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((key[0], key[1]+line.qty,key[2],key[3],key[4]))
                             purchase_id[(line.plan_date,line.partner_id.id)].remove(key)
                         else:
-                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
+                            if line.qty_jh > line.qty:
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id))
+                            else:
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
                 else:
                     purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
             # 创建采购单
