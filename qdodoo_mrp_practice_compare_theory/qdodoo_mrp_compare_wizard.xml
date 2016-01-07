@@ -9,6 +9,7 @@
                     <sheet>
                         <group col="4" colspan="4">
                             <field name="product_id"/>
+                            <field name="location_id"/>
                             <field name="product_number"/>
                             <field name="product_number2"/>
                             <field name="product_amount"/>
@@ -17,6 +18,7 @@
                             <field name="product_price2"/>
                             <field name="amount_compare"/>
                             <field name="unit_compare"/>
+                            <field name="rate"/>
                         </group>
                         <notebook>
                             <page string="报表明细">
@@ -32,6 +34,8 @@
                                         <field name="product_price2"/>
                                         <field name="amount_compare"/>
                                         <field name="unit_compare"/>
+                                        <field name="analytic_account"/>
+                                        <field name="rate"/>
                                     </tree>
                                 </field>
                             </page>
@@ -56,6 +60,8 @@
                     <field name="product_price2"/>
                     <field name="amount_compare"/>
                     <field name="unit_compare"/>
+                    <field name="location_id"/>
+                    <field name="rate"/>
                     <!--<field name="price_save"/>-->
                     <!--<field name="amount_difference_rate"/>-->
                 </tree>

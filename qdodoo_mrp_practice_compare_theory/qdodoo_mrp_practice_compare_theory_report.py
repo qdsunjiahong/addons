@@ -22,6 +22,8 @@ class qdodoo_mrp_practice_compare_theory(models.Model):
     product_price2 = fields.Float(string=u'理论单价')
     amount_compare = fields.Float(string=u'节约金额')
     unit_compare = fields.Float(string=u'单份节约金额')
+    rate=fields.Char(string=u'金额差异率')
+    location_id=fields.Many2one('stock.location',string=u'库位')
     line_ids = fields.One2many('mrp.practice.compare.theory.line', 'compare_id', string=u'明细')
 
 
@@ -38,4 +40,6 @@ class qdodoo_mrp_practice_compare_theory_line(models.Model):
     product_price2 = fields.Float(string=u'理论单价')
     amount_compare = fields.Float(string=u'节约金额')
     unit_compare = fields.Float(string=u'单份节约金额')
+    rate=fields.Char(string=u'金额差异率')
+    analytic_account=fields.Many2one('account.analytic.account',string=u'辅助核算项')
     compare_id = fields.Many2one('qdodoo.mrp.practice.compare.theory')
