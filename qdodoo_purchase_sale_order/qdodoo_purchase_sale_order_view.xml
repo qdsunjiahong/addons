@@ -34,6 +34,16 @@
             <field name="model">purchase.order</field>
             <field name="inherit_id" ref="purchase.purchase_order_form"/>
             <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="replace">
+                    <field name="partner_id" on_change="onchange_partner_id2(partner_id, company_id,context)"
+                           context="{'search_default_supplier':1, 'default_supplier':1, 'default_customer':0}"
+                           domain="[('supplier','=',True)]"/>
+                </xpath>
+
+                <xpath expr="//field[@name='company_id']" position="replace">
+                    <field name="company_id" on_change="onchange_partner_id2(partner_id, company_id,context)"
+                           groups="base.group_multi_company" options="{'no_create': True}"/>
+                </xpath>
 
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="is_internal_company" invisible="True"/>
@@ -42,7 +52,10 @@
                 </xpath>
 
                 <xpath expr="//field[@name='picking_type_id']" position="replace">
-                    <field name="picking_type_id"  on_change="onchange_picking_type_id(picking_type_id, context)" domain="[('code','=','incoming'),('warehouse_id.company_id.id','=',company_id)]" options="{'no_create': True}" context="{'special_shortened_wh_name': True}" groups="stock.group_locations"/>
+                    <field name="picking_type_id" on_change="onchange_picking_type_id(picking_type_id, context)"
+                           domain="[('code','=','incoming'),('warehouse_id.company_id.id','=',company_id)]"
+                           options="{'no_create': True}" context="{'special_shortened_wh_name': True}"
+                           groups="stock.group_locations"/>
                 </xpath>
 
                 <xpath expr="//field[@name='order_line']" position="replace">

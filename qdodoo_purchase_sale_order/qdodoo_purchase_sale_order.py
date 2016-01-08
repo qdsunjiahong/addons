@@ -16,19 +16,20 @@ from openerp import SUPERUSER_ID
 
 _logger = logging.getLogger(__name__)
 
+
 class qdodoo_purchase_sale_order(models.Model):
     """
         多公司根据采购单触发销售单
     """
-    _inherit = 'purchase.order'    # 继承
+    _inherit = 'purchase.order'  # 继承
 
-    location_name = fields.Many2one('stock.warehouse',u'仓库')
+    location_name = fields.Many2one('stock.warehouse', u'仓库')
     is_internal_company = fields.Boolean(u'是否是内部公司')
-    mail_users = fields.Many2one('res.users',u'发件人')
+    mail_users = fields.Many2one('res.users', u'发件人')
 
     def wkf_send_rfq(self, cr, uid, ids, context=None):
         res = super(qdodoo_purchase_sale_order, self).wkf_send_rfq(cr, uid, ids, context=context)
-        self.write(cr, uid, ids, {'mail_users':uid})
+        self.write(cr, uid, ids, {'mail_users': uid})
         return res
 
     def action_picking_create(self, cr, uid, ids, context=None):
@@ -43,36 +44,37 @@ class qdodoo_purchase_sale_order(models.Model):
             picking_id = self.pool.get('stock.picking').create(cr, uid, picking_vals, context=context)
             self._create_stock_moves(cr, uid, order, order.order_line, picking_id, context=context)
 
-    def onchange_partner_id(self, cr, uid, ids, partner_id, context=None):
+    def onchange_partner_id2(self, cr, uid, ids, partner_id, company, context=None):
         partner = self.pool.get('res.partner')
         if not partner_id:
             return {'value': {
                 'fiscal_position': False,
                 'payment_term_id': False,
-                }}
+            }}
 
         company_id = self.pool.get('res.users')._get_company(cr, uid, context=context)
+        user_ids = self.pool.get('res.users').search(cr, uid, [('company_id', '=', company)])
+        if user_ids:
+            uid = user_ids[0]
         if not company_id:
             raise except_osv(_('Error!'), _('There is no default company for the current user!'))
         fp = self.pool['account.fiscal.position'].get_fiscal_position(cr, uid, company_id, partner_id, context=context)
         supplier_address = partner.address_get(cr, uid, [partner_id], ['default'], context=context)
         supplier = partner.browse(cr, uid, partner_id, context=context)
         return {'value': {
-            'is_internal_company':supplier.is_internal_company,
+            'is_internal_company': supplier.is_internal_company,
             'pricelist_id': supplier.property_product_pricelist_purchase.id,
             'fiscal_position': fp or supplier.property_account_position and supplier.property_account_position.id,
             'payment_term_id': supplier.property_supplier_payment_term.id or False,
-            }}
-
+        }}
 
     def copy_product_company(self, cr, uid):
         template_obj = self.pool.get('product.template')
-        template_ids = template_obj.search(cr, uid, [('company_id','=',1)])
+        template_ids = template_obj.search(cr, uid, [('company_id', '=', 1)])
         for line in template_obj.browse(cr, uid, template_ids):
-            res_id = template_obj.copy(cr, uid, line.id, {'company_id':4})
-            template_obj.write(cr, uid, res_id, {'name':line.name,'default_code':line.default_code})
+            res_id = template_obj.copy(cr, uid, line.id, {'company_id': 4})
+            template_obj.write(cr, uid, res_id, {'name': line.name, 'default_code': line.default_code})
         return True
-
 
     def wkf_confirm_order(self, cr, uid, ids, context=None):
         super(qdodoo_purchase_sale_order, self).wkf_confirm_order(cr, uid, ids, context=context)
@@ -139,24 +141,26 @@ class qdodoo_purchase_sale_order(models.Model):
                 sale_obj.action_button_confirm(cr, 1, [res_id])
         return True
 
+
 class qdodoo_res_partner_inherit(models.Model):
     """
         业务伙伴增加是否是内部公司
     """
-    _inherit = 'res.partner'    # 继承
+    _inherit = 'res.partner'  # 继承
 
     is_internal_company = fields.Boolean(u'是否是内部公司')
+
 
 class qdodoo_sale_order_inherit(models.Model):
     """
         销售单中增加目的仓库的备注
     """
-    _inherit = 'sale.order'    # 继承
+    _inherit = 'sale.order'  # 继承
 
     location_id_note = fields.Char(u'目的仓库备注')
-    mail_users = fields.Many2one('res.users',u'发件人')
+    mail_users = fields.Many2one('res.users', u'发件人')
 
     def action_quotation_send(self, cr, uid, ids, context=None):
         res = super(qdodoo_sale_order_inherit, self).action_quotation_send(cr, uid, ids, context=context)
-        self.write(cr, uid, ids, {'mail_users':uid})
+        self.write(cr, uid, ids, {'mail_users': uid})
         return res
