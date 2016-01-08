@@ -217,7 +217,10 @@ class qdodoo_plan_purchase_order(models.Model):
                             else:
                                 purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
                 else:
-                    purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
+                    if line.qty_jh > line.qty:
+                        purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id)]
+                    else:
+                        purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
             # 创建采购单
             for key_line,value_line in purchase_id.items():
                 picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('warehouse_id','=',obj.location_name.id),('default_location_dest_id','=',obj.location_id.id)])
