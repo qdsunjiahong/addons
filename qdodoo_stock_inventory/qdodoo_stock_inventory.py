@@ -5,6 +5,14 @@
 #    Copyright (C) 2015 qdodoo Technology CO.,LTD. (<http://www.qdodoo.com/>).
 #
 ###########################################################################################
-import wizard
-import report
-import qdodoo_stock_inventory
+
+from openerp import models, fields
+
+
+class qdodoo_stock_inventory_inherit(models.Model):
+    _inherit = 'stock.inventory'
+
+    def _get_user_id(self):
+        return self.env['res.users'].browse(self.env.uid).id
+
+    user_id2 = fields.Many2one('res.users', string=u'操作人', default=_get_user_id)
