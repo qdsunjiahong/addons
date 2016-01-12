@@ -30,7 +30,7 @@ class qdodoo_account_move_line(models.Model):
                     # 获取关联的销售订单
                     sale_ids = sale_obj.search(cr, uid, [('name','=',line.origin)])
                     if sale_ids:
-                        obj = sale_obj.browse(cr, 1, sale_ids[0])
+                        obj = sale_obj.browse(cr, uid, sale_ids[0])
                         valus['sale_team_id'] = obj.section_id.id if obj.section_id else (obj.user_id.default_section_id.id if obj.user_id.default_section_id else '')
         return super(qdodoo_account_move_line, self).create(cr, uid, valus, context=context)
 
@@ -53,7 +53,7 @@ class qdodoo_stock_move(models.Model):
             valuation_amount = context.get('force_valuation_amount')
         else:
             if move.product_id.cost_method == 'average':
-                valuation_amount = cost if ((move.location_id.usage != 'internal' and move.location_dest_id.usage == 'internal') or (move.location_id.usage == 'internal' and move.location_dest_id.usage == 'supplier')) else move.product_id.standard_price
+                valuation_amount = cost if move.location_id.usage != 'internal' and move.location_dest_id.usage == 'internal' else move.product_id.standard_price
             else:
                 valuation_amount = cost if move.product_id.cost_method == 'real' else move.product_id.standard_price
         valuation_amount = currency_obj.round(cr, uid, move.company_id.currency_id, valuation_amount * qty)

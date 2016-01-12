@@ -84,6 +84,7 @@
                                   string="Journal Items">
                                 <field name="invoice"/>
                                 <field name="name"/>
+                                <field name="product_id"/>
                                 <field name="partner_id"
                                        domain="['|', ('parent_id', '=', False), ('is_company', '=', True)]"
                                        on_change="onchange_partner_id(False, partner_id, account_id, debit, credit, parent.date, parent.journal_id, context)"/>
