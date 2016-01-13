@@ -7,4 +7,4 @@
 ###########################################################################################
 import wizard
 import report
-import qdodoo_stock_inventory
+

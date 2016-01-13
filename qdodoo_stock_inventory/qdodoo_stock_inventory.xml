@@ -1,18 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <openerp>
     <data>
-        <record model="ir.ui.view" id="view_inventory_form2">
-            <field name="name">增加操作人</field>
-            <field name="model">stock.inventory</field>
-            <field name="inherit_id" ref="stock.view_inventory_form"/>
-            <field name="arch" type="xml">
-
-                <xpath expr="//field[@name='filter']" position="after">
-                    <field name="user_id2" invisible="1"/>
-                </xpath>
-
-            </field>
-        </record>
         <record model="ir.ui.view" id="view_inventory_tree2">
             <field name="name">增加操作人</field>
             <field name="model">stock.inventory</field>
@@ -20,7 +8,7 @@
             <field name="arch" type="xml">
 
                 <xpath expr="//field[@name='date']" position="after">
-                    <field name="user_id2"/>
+                    <field name="create_uid"/>
                 </xpath>
 
             </field>
