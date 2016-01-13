@@ -35,6 +35,7 @@ class qdodoo_plan_purchase_order(models.Model):
     import_file = fields.Binary(string="导入的Excel文件")
     state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
     origin = fields.Many2one('qdodoo.plan.purchase.order',u'源单据')
+    notes = fields.Text(u'备注')
 
     _defaults = {
         'minimum_planned_date': datetime.now().date(),
@@ -204,18 +205,22 @@ class qdodoo_plan_purchase_order(models.Model):
                 if (line.plan_date,line.partner_id.id) in purchase_id:
                     # 如果存在重复的产品
                     all = purchase_id[(line.plan_date,line.partner_id.id)][:]
+                    log = False
                     for key in all:
                         if line.product_id.id == key[0]:
-                            if line.qty_jh > line.qty:
-                                purchase_id[(line.plan_date,line.partner_id.id)].append((key[0], key[1]+line.qty_jh,key[2],key[3],key[4]))
-                            else:
-                                purchase_id[(line.plan_date,line.partner_id.id)].append((key[0], key[1]+line.qty,key[2],key[3],key[4]))
+                            log = True
+                            key_new = key
                             purchase_id[(line.plan_date,line.partner_id.id)].remove(key)
-                        else:
                             if line.qty_jh > line.qty:
-                                purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id))
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty_jh,key_new[2],key_new[3],key_new[4]))
                             else:
-                                purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty,key_new[2],key_new[3],key_new[4]))
+                            break
+                    if not log:
+                        if line.qty_jh > line.qty:
+                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id))
+                        else:
+                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
                 else:
                     if line.qty_jh > line.qty:
                         purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id)]
@@ -227,7 +232,7 @@ class qdodoo_plan_purchase_order(models.Model):
                 picking_type_id = picking_type_ids[0] if picking_type_ids else ''
                 res_id = purchase_obj.create(cr, uid, {'pricelist_id':partner_obj.browse(cr, uid, key_line[1]).property_product_pricelist_purchase.id,'plan_id':obj.id,'partner_id':key_line[1],'location_name':obj.location_name.id,
                                               'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id,
-                                              'location_id':obj.location_id.id,'minimum_planned_date':obj.minimum_planned_date,
+                                              'location_id':obj.location_id.id,'minimum_planned_date':obj.minimum_planned_date,'deal_date':key_line[0],
                                               })
                 # 创建采购订单明细
                 for line_va in value_line:
@@ -309,5 +314,3 @@ class qdodoo_plan_purchase_order_line(models.Model):
         'state':'draft',
         'is_cancel':False,
     }
-
-

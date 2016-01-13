@@ -36,6 +36,7 @@
                                 <field name="create_date_new"/>
                                 <field name="minimum_planned_date"/>
                                 <field name="company_id"/>
+                                <field name="notes"/>
                             </group>
                             <group>
                                 <field name="location_name" domain="[('company_id','=',company_id)]" on_change="change_location_id(location_name)"/>
@@ -100,5 +101,18 @@
         </record>
         <menuitem name="计划转采购" id="menu_qdodoo_plan_purchase_order" parent="stock.menu_stock_sched"
                   action="action_qdodoo_plan_purchase_order" sequence="11"/>
+
+        <record model="ir.ui.view" id="purchase_order_form_inherit">
+            <field name="name">purchase.order.form.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='journal_id']" position="after">
+                    <field name="plan_id" readonly="True"/>
+                </xpath>
+
+            </field>
+        </record>
     </data>
 </openerp>
