@@ -24,6 +24,7 @@ class qdodoo_plan_purchase_order(models.Model):
     _name = 'qdodoo.plan.purchase.order'    # 模型名称
     _description = 'qdodoo.plan.purchase.order'    # 模型描述
     _order = 'id desc'
+    _inherit = ['mail.thread']
 
     name = fields.Char(u'单号',copy=False)
     location_name = fields.Many2one('stock.warehouse',u'仓库', required=True)
@@ -33,7 +34,7 @@ class qdodoo_plan_purchase_order(models.Model):
     location_id = fields.Many2one('stock.location',u'入库库位')
     order_line = fields.One2many('qdodoo.plan.purchase.order.line', 'order_id', u'产品明细',required=True)
     import_file = fields.Binary(string="导入的Excel文件")
-    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
+    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态',track_visibility='onchange')
     origin = fields.Many2one('qdodoo.plan.purchase.order',u'源单据')
     notes = fields.Text(u'备注')
 
@@ -226,6 +227,7 @@ class qdodoo_plan_purchase_order(models.Model):
                         purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id)]
                     else:
                         purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
+            notes = ''
             # 创建采购单
             for key_line,value_line in purchase_id.items():
                 picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('warehouse_id','=',obj.location_name.id),('default_location_dest_id','=',obj.location_id.id)])
@@ -234,12 +236,13 @@ class qdodoo_plan_purchase_order(models.Model):
                                               'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id,
                                               'location_id':obj.location_id.id,'minimum_planned_date':obj.minimum_planned_date,'deal_date':key_line[0],
                                               })
+                notes = notes + purchase_obj.browse(cr, uid, res_id).name + ';'
                 # 创建采购订单明细
                 for line_va in value_line:
                     purchase_line_obj.create(cr, uid, {'name':line_va[3],'order_id':res_id,'product_id':line_va[0],'date_planned':key_line[0],
                                                        'company_id':obj.company_id.id,'product_qty':line_va[1],'product_uom':line_va[4],
                                                        'price_unit':line_va[2]})
-        return self.write(cr, uid, ids, {'state':'done'})
+        return self.write(cr, uid, ids, {'state':'done','notes':notes})
 
 class qdodoo_purchase_order_tfs(models.Model):
     _inherit = 'purchase.order'
