@@ -26,6 +26,9 @@
                         var fld_o_location_id = Report.FieldByName("o_location_id");
                         var fld_o_analytic_plan = Report.FieldByName("o_analytic_plan");
                         var fld_o_product_id = Report.FieldByName("o_product_id");
+                        var fld_o_inventory = Report.FieldByName("o_inventory");
+                        var fld_o_share_num = Report.FieldByName("o_share_num");
+                        var fld_o_share_num_actual = Report.FieldByName("o_share_num_actual");
                         var fld_o_actual_money = Report.FieldByName("o_actual_money");
                         var fld_o_actual_consumption_num = Report.FieldByName("o_actual_consumption_num");
                         var fld_o_actual_price = Report.FieldByName("o_actual_price");
@@ -58,6 +61,9 @@
                         fld_o_location_id.Value = Rows[i].cells['o_location_id'].innerText;
                         fld_o_analytic_plan.Value = Rows[i].cells['o_analytic_plan'].innerText;
                         fld_o_product_id.Value = Rows[i].cells['o_product_id'].innerText;
+                        fld_o_inventory.Value = Rows[i].cells['o_inventory'].innerText;
+                        fld_o_share_num.Value = Rows[i].cells['o_share_num'].innerText;
+                        fld_o_share_num_actual.Value = Rows[i].cells['o_share_num_actual'].innerText;
                         fld_o_actual_money.Value = Rows[i].cells['o_actual_money'].innerText;
                         fld_o_actual_consumption_num.Value = Rows[i].cells['o_actual_consumption_num'].innerText;
                         fld_o_actual_price.Value = Rows[i].cells['o_actual_price'].innerText;
@@ -83,6 +89,9 @@
                         fld_o_location_id.Value = Rows[i].cells['o_location_id'].textContent;
                         fld_o_analytic_plan.Value = Rows[i].cells['o_analytic_plan'].textContent;
                         fld_o_product_id.Value = Rows[i].cells['o_product_id'].textContent;
+                        fld_o_inventory.Value = Rows[i].cells['o_inventory'].textContent;
+                        fld_o_share_num.Value = Rows[i].cells['o_share_num'].textContent;
+                        fld_o_share_num_actual.Value = Rows[i].cells['o_share_num_actual'].textContent;
                         fld_o_actual_money.Value = Rows[i].cells['o_actual_money'].textContent;
                         fld_o_actual_consumption_num.Value = Rows[i].cells['o_actual_consumption_num'].textContent;
                         fld_o_actual_price.Value = Rows[i].cells['o_actual_price'].textContent;
@@ -118,6 +127,9 @@
                                 <td id="o_location_id"><span t-esc="o.get('location_id')"/></td>
                                 <td id="o_analytic_plan"><span t-esc="o.get('analytic_plan')"/></td>
                                 <td id="o_product_id"><span t-esc="o.get('product_id')"/></td>
+                                <td id="o_inventory"><span t-esc="o.get('inventory')"/></td>
+                                <td id="o_share_num"><span t-esc="o.get('share_num')"/></td>
+                                <td id="o_share_num_actual"><span t-esc="o.get('share_num_actual')"/></td>
                                 <td id="o_actual_money"><span t-esc="o.get('actual_money')"/></td>
                                 <td id="o_actual_consumption_num"><span t-esc="o.get('actual_consumption_num')"/></td>
                                 <td id="o_actual_price"><span t-esc="o.get('actual_price')"/></td>
