@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <template id="qdodoo_account_move_report_document">
+            <t t-call="report.external_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <p t-if="o.name">
+                                <strong>编号:</strong>
+                                <span t-field="o.name"/>
+                            </p>
+                            <p t-if="o.journal_id">
+                                <strong>凭证簿:</strong>
+                                <span t-field="o.journal_id.name"/>
+                            </p>
+                            <p t-if="o.period_id">
+                                <strong>会计期间:</strong>
+                                <span t-field="o.period_id.name"/>
+                            </p>
+                        </div>
+                        <div class="col-xs-5 col-xs-offset-1">
+                            <p t-if="o.ref">
+                                <strong>关联单号:</strong>
+                                <span t-field="o.ref"/>
+                            </p>
+                            <p t-if="o.date">
+                                <strong>日期:</strong>
+                                <span t-field="o.date"/>
+                            </p>
+                            <p t-if="o.company_id">
+                                <strong>公司:</strong>
+                                <span t-field="o.company_id.name"/>
+                            </p>
+                        </div>
+                    </div>
+                    <h1>分录明细</h1>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th class="text-left">
+                                    <strong>开发票:</strong>
+                                </th>
+                                <th class="text-center">
+                                    <strong>名称:</strong>
+                                </th>
+                                <th class="text-right">
+                                    <strong>业务伙伴:</strong>
+                                </th>
+                                <th class="text-right">
+                                    <strong>科目:</strong>
+                                </th>
+                                <th class="text-right">
+                                    <strong>借方:</strong>
+                                </th>
+
+                                <th class="text-right">
+                                    <strong>贷方:</strong>
+                                </th>
+                                <th class="text-right">
+                                    <strong>辅助核算项:</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.line_id" t-as="line">
+                                <td class="text-left">
+                                    <span t-field="line.invoice"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-field="line.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.partner_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.account_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.debit"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.credit"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.analytic_account_id"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </template>
+        <template id="qdodoo_account_move_report">
+            <t t-call="report.html_container">
+                <t t-foreach="doc_ids" t-as="doc_id">
+                    <t t-raw="translate_doc(doc_id, doc_model, 'partner_id.lang', 'qdodoo_account_move_report.qdodoo_account_move_report_document')"/>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</openerp>
