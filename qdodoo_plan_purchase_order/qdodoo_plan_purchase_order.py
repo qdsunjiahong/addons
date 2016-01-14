@@ -36,7 +36,9 @@ class qdodoo_plan_purchase_order(models.Model):
     import_file = fields.Binary(string="导入的Excel文件")
     state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态',track_visibility='onchange')
     origin = fields.Many2one('qdodoo.plan.purchase.order',u'源单据')
-    notes = fields.Text(u'备注')
+    notes = fields.Text(u'采购单号')
+    notes_new = fields.Text(u'备注')
+
 
     _defaults = {
         'minimum_planned_date': datetime.now().date(),
@@ -233,7 +235,7 @@ class qdodoo_plan_purchase_order(models.Model):
                 picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('warehouse_id','=',obj.location_name.id),('default_location_dest_id','=',obj.location_id.id)])
                 picking_type_id = picking_type_ids[0] if picking_type_ids else ''
                 res_id = purchase_obj.create(cr, uid, {'pricelist_id':partner_obj.browse(cr, uid, key_line[1]).property_product_pricelist_purchase.id,'plan_id':obj.id,'partner_id':key_line[1],'location_name':obj.location_name.id,
-                                              'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id,
+                                              'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id,'notes':obj.notes_new,
                                               'location_id':obj.location_id.id,'minimum_planned_date':obj.minimum_planned_date,'deal_date':key_line[0],
                                               })
                 notes = notes + purchase_obj.browse(cr, uid, res_id).name + ';'
