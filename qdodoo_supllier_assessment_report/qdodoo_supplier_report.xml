@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <report
+            string="供应商评估表"
+            id="action_report_supplier_assessment"
+            model="qdodoo.supplier.assessment.report"
+            report_type="qweb-pdf"
+            name="qdodoo_supllier_assessment_report.supplier_assessment"
+            file="qdodoo_supllier_assessment_report.supplier_assessment"
+        />
+    </data>
+</openerp>

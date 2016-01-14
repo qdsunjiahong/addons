@@ -1,0 +1,215 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <template id="supplier_assessment_document">
+            <t t-call="report.external_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <p t-if="o.partner_name">
+                                <strong>供应商:</strong>
+                                <span t-field="o.partner_name.name"/>
+                            </p>
+                            <p t-if="o.supply_amount">
+                                <strong>供货金额:</strong>
+                                <span t-field="o.supply_amount"/>
+                            </p>
+                            <p t-if="o.supply_price">
+                                <strong>供货均价:</strong>
+                                <span t-field="o.supply_price"/>
+                            </p>
+                            <p t-if="o.category_staff">
+                                <strong>品类人员:</strong>
+                                <span t-field="o.category_staff"/>
+                            </p>
+                        </div>
+                        <div class="col-xs-5 col-xs-offset-1">
+                            <p t-if="o.date_assessment">
+                                <strong>考核时间:</strong>
+                                <span t-field="o.date_assessment"/>
+                            </p>
+                            <p t-if="o.supply_supply_quantity">
+                                <strong>供货数量:</strong>
+                                <span t-field="o.supply_supply_quantity"/>
+                            </p>
+                            <p t-if="o.supply_times">
+                                <strong>供货次数:</strong>
+                                <span t-field="o.supply_times"/>
+                            </p>
+                            <p t-if="o.order_personnel">
+                                <strong>订单人员:</strong>
+                                <span t-field="o.order_personnel"/>
+                            </p>
+                        </div>
+                    </div>
+                    <h1>供应商质量考核</h1>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th class="text-left">
+                                    <strong>退货单号</strong>
+                                </th>
+                                <th class="text-center">
+                                    <strong>退货时间</strong>
+                                </th>
+                                <th class="text-right">
+                                    <strong>退货金额</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.return_lines" t-as="return_line">
+                                <td class="text-left">
+                                    <span t-field="return_line.return_order"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-field="return_line.return_date"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="return_line.return_amount"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <p t-if="o.return_times">
+                                <strong>退货次数:</strong>
+                                <span t-field="o.return_times"/>
+                            </p>
+                            <p t-if="o.system_evaluation">
+                                <strong>系统评价:</strong>
+                                <span t-field="o.system_evaluation"/>
+                            </p>
+                        </div>
+                        <div class="col-xs-5 col-xs-offset-1">
+                            <p t-if="o.this_points">
+                                <strong>此项扣分:</strong>
+                                <span t-field="o.this_points"/>
+                            </p>
+                        </div>
+                    </div>
+                    <h1>供应商准交考核</h1>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th class="text-left">
+                                    <strong>迟交单号</strong>
+                                </th>
+                                <th class="text-center">
+                                    <strong>订单日期</strong>
+                                </th>
+                                <th class="text-right">
+                                    <strong>入库日期</strong>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.late_delivery_lines" t-as="delivery_line">
+                                <td class="text-left">
+                                    <span t-field="delivery_line.late_order_name"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-field="delivery_line.order_date"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="delivery_line.warehousing_date"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <p t-if="o.late_delivery_times">
+                                <strong>迟交次数:</strong>
+                                <span t-field="o.late_delivery_times"/>
+                            </p>
+                            <p t-if="o.system_evaluation2">
+                                <strong>系统评价:</strong>
+                                <span t-field="o.system_evaluation2"/>
+                            </p>
+                        </div>
+                        <div class="col-xs-5 col-xs-offset-1">
+                            <p t-if="o.this_points2">
+                                <strong>此项扣分:</strong>
+                                <span t-field="o.this_points2"/>
+                            </p>
+                        </div>
+                    </div>
+                    <h1>其他方面</h1>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <th class="text-left">
+                                    <strong>评价项</strong>
+                                </th>
+                                <th class="text-center">
+                                    <strong>备注</strong>
+                                </th>
+                                <th class="text-center">
+                                    <strong>扣分</strong>
+                                </th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.other_lines" t-as="other_line">
+                                <td class="text-left">
+                                    <span t-field="other_line.evaluation_items"/>
+                                </td>
+                                <td class="text-center">
+                                    <span t-field="other_line.text"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="other_line.points"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <p t-if="o.points">
+                                <strong>此项扣分:</strong>
+                                <span t-field="o.points"/>
+                            </p>
+                        </div>
+                    </div>
+                    <!--系统考评-->
+                    <h1>系统考评</h1>
+
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <p t-if="o.partner_name">
+                                <strong>得分:</strong>
+                                <span t-field="o.final_score"/>
+                            </p>
+                        </div>
+                        <div class="col-xs-5 col-xs-offset-1">
+                            <p t-if="o.date_assessment">
+                                <strong>等级:</strong>
+                                <span t-field="o.grade"/>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <p t-if="o.supplier_feedback">
+                                <strong>供应商反馈:</strong>
+                                <span t-field="o.supplier_feedback"/>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </template>
+        <template id="supplier_assessment">
+            <t t-call="report.html_container">
+                <t t-foreach="doc_ids" t-as="doc_id">
+                    <t t-raw="translate_doc(doc_id, doc_model, 'partner_name.lang', 'qdodoo_supllier_assessment_report.supplier_assessment_document')"/>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</openerp>

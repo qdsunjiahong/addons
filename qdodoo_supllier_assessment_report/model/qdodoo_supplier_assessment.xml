@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <!--供应商评估表form视图-->
+        <record id="qdodoo_supplier_assessment_report_form" model="ir.ui.view">
+            <field name="name">供应商评估表</field>
+            <field name="model">qdodoo.supplier.assessment.report</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="供应商评估表">
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="partner_name" domain="[('supplier','=',True)]"
+                                   on_change="onchange_partner(partner_name)"/>
+                            <field name="date_assessment"/>
+                            <field name="supply_times"/>
+                            <field name="company_id"/>
+                            <field name="supply_amount"/>
+                            <field name="supply_supply_quantity"/>
+                            <field name="supply_price"/>
+                            <field name="category_staff"/>
+                            <field name="order_personnel"/>
+                        </group>
+                        <!-- 分页 -->
+                        <separator string="评价明细" colspan="8"/>
+                        <notebook colspan="4">
+                            <!--供应商质量考核页面-->
+                            <page string="供应商质量考核">
+                                <field colspan="4" name="return_lines"><!-- Tree for fast edit -->
+                                    <tree editable="bottom">
+                                        <field name="return_order"/>
+                                        <field name="return_date"/>
+                                        <field name="return_amount"/>
+                                    </tree>
+                                </field>
+                                <group colspan="4" col="4">
+                                    <field name="return_times"/>
+                                    <field name="this_points"/>
+                                    <field name="system_evaluation"/>
+                                </group>
+                            </page>
+                            <!--供应商准交考核页面-->
+                            <page string="供应商准交考核">
+                                <field colspan="4" name="late_delivery_lines"><!-- Tree for fast edit -->
+                                    <tree editable="bottom">
+                                        <field name="late_order_name"/>
+                                        <field name="order_date"/>
+                                        <field name="warehousing_date"/>
+                                    </tree>
+                                </field>
+                                <group colspan="4" col="4">
+                                    <field name="late_delivery_times"/>
+                                    <field name="this_points2"/>
+                                    <field name="system_evaluation2"/>
+                                </group>
+                            </page>
+                            <!--其他方面-->
+                            <page string="其他方面评价">
+                                <field colspan="4" name="other_lines"><!-- Tree for fast edit -->
+                                    <form string="其他方面评价">
+                                        <group colspan="4" col="4">
+                                            <field name="evaluation_items"/>
+                                            <field name="points"/>
+                                        </group>
+                                        <field name="text"/>
+                                    </form>
+                                    <tree>
+                                        <field name="evaluation_items"/>
+                                        <field name="points"/>
+                                    </tree>
+                                </field>
+                                <group colspan="4" col="4">
+                                    <field name="points"/>
+                                </group>
+                            </page>
+                        </notebook>
+                        <separator string="系统考评" colspan="8"/>
+                        <!--系统考评-->
+                        <group colspan="4" col="4">
+                            <field name="final_score"/>
+                            <field name="grade"/>
+                        </group>
+                        <group>
+                            <field name="supplier_feedback"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!--供应商评估表tree视图-->
+        <record id="qdodoo_supplier_assessment_report_tree" model="ir.ui.view">
+            <field name="name">供应商评估表</field>
+            <field name="model">qdodoo.supplier.assessment.report</field>
+            <field name="arch" type="xml">
+                <tree string="供应商评估表">
+                    <field name="partner_name"/>
+                    <field name="date_assessment"/>
+                    <field name="company_id"/>
+                    <field name="supply_amount"/>
+                    <field name="supply_supply_quantity"/>
+                    <field name="supply_price"/>
+                    <field name="final_score"/>
+                </tree>
+            </field>
+        </record>
+        <!--供应商评估表search视图-->
+        <record id="qdodoo_supplier_assessment_report_search" model="ir.ui.view">
+            <field name="name">供应商评估表</field>
+            <field name="model">qdodoo.supplier.assessment.report</field>
+            <field name="arch" type="xml">
+                <search string="总库存报表">
+                    <field name="partner_name"/>
+                </search>
+            </field>
+        </record>
+        <record id="qdodoo_supplier_assessment_report_action" model="ir.actions.act_window">
+            <field name="name">供应商评估表</field>
+            <field name="res_model">qdodoo.supplier.assessment.report</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="qdodoo_supplier_assessment_report_tree"/>
+        </record>
+        <menuitem name="供应商评估表" id="menu_qdodoo_supplier_assessment" parent="base.next_id_73" sequence="1"
+                  action="qdodoo_supplier_assessment_report_action"/>
+
+    </data>
+</openerp>
