@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report auto="False" id="report_account_move" model="account.move" name="account.move"
+                rml="qdodoo_account_move_report_oe7/report/account_move.rml" string="打印测试"
+                usage="default"/>
+
+    </data>
+</openerp>
