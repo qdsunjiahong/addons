@@ -107,10 +107,14 @@ class qdodoo_supplier_assessment_report(models.Model):
                 return_line = {'return_order': return_order, 'return_date': return_date, 'return_amount': return_amount,
                                'report_id': report_id}
                 return_list.append(return_line)
+            if supply_supply_quantity == 0:
+                supply_price = 0
+            else:
+                supply_price = supply_amount / supply_supply_quantity
             res['value'] = {'supply_amount': supply_amount, 'supply_supply_quantity': supply_supply_quantity,
                             'date_assessment': date_assessment,
                             'supply_times': supply_times, 'company_id': company_id,
-                            'supply_price': supply_amount / supply_supply_quantity,
+                            'supply_price': supply_price,
                             'return_lines': return_list, 'late_delivery_lines': delivery_list,
                             'return_times': return_times, 'late_delivery_times': late_delivery_times}
             return res
