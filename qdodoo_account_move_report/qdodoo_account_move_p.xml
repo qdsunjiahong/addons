@@ -9,5 +9,14 @@
                 name="qdodoo_account_move_report.qdodoo_account_move_report"
                 file="qdodoo_account_move_report.qdodoo_account_move_report"
                 />
+        <report
+                string="会计凭证批量打印"
+                id="action_qdodoo_account_move_report2"
+                model="qdodoo.account.move.report"
+                report_type="qweb-pdf"
+                name="qdodoo_account_move_report.qdodoo_account_move_report2"
+                file="qdodoo_account_move_report.qdodoo_account_move_report2"
+                />
+
     </data>
 </openerp>

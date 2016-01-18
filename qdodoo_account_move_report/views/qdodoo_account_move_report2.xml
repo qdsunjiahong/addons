@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <template id="qdodoo_account_move_report2">
+            <t t-call="report.external_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <h1>分录明细</h1>
+                    <table class="table table-condensed">
+                        <thead>
+                            <tr>
+                                <!--<th class="text-left">-->
+                                    <!--<strong>开发票:</strong>-->
+                                <!--</th>-->
+                                <th class="text-center">
+                                    <strong>名称:</strong>
+                                </th>
+                                <!--<th class="text-right">-->
+                                    <!--<strong>业务伙伴:</strong>-->
+                                <!--</th>-->
+                                <!--<th class="text-right">-->
+                                    <!--<strong>产品:</strong>-->
+                                <!--</th>-->
+
+                                <th class="text-right">
+                                    <strong>科目:</strong>
+                                </th>
+                                <th class="text-right">
+                                    <strong>借方:</strong>
+                                </th>
+
+                                <th class="text-right">
+                                    <strong>贷方:</strong>
+                                </th>
+                                <!--<th class="text-right">-->
+                                    <!--<strong>辅助核算项:</strong>-->
+                                <!--</th>-->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="line">
+                                <!--<td class="text-left">-->
+                                    <!--<span t-field="line.invoice"/>-->
+                                <!--</td>-->
+                                <td class="text-center">
+                                    <span t-field="line.name"/>
+                                </td>
+                                <!--<td class="text-right">-->
+                                    <!--<span t-field="line.partner_name"/>-->
+                                <!--</td>-->
+
+                                <!--<td class="text-right">-->
+                                    <!--<span t-field="line.product_name"/>-->
+                                <!--</td>-->
+                                <td class="text-right">
+                                    <span t-field="line.account_name"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.debit"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.credit"/>
+                                </td>
+                                <!--<td class="text-right">-->
+                                    <!--<span t-field="line.account_analytic"/>-->
+                                <!--</td>-->
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </template>
+        <!--<template id="qdodoo_account_move_report2">-->
+        <!--<t t-call="report.html_container">-->
+        <!--<t t-foreach="doc_ids" t-as="doc_id">-->
+        <!--<t t-raw="translate_doc(doc_id, doc_model, 'partner_id.lang', 'qdodoo_account_move_report.qdodoo_account_move_report_document2')"/>-->
+        <!--</t>-->
+        <!--</t>-->
+        <!--</template>-->
+
+    </data>
+</openerp>

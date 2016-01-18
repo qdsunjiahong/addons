@@ -168,11 +168,11 @@ class account_move_line_inherit(osv.osv):
     }
 
 
-class account_move_line_inherit(osv.osv):
+class payment_order_inherit(osv.osv):
     _inherit = "payment.order"
 
     def fields_get(self, cr, uid, fields=None, context=None, write_access=True, attributes=None):
-        res = super(account_move_line_inherit, self).fields_get(cr, uid, fields, context, write_access, attributes)
+        res = super(payment_order_inherit, self).fields_get(cr, uid, fields, context, write_access, attributes)
         if 'communication2' in res:
             res['communication2'].setdefault('states', {})
             res['communication2']['states']['structured'] = [('readonly', True)]
@@ -190,7 +190,7 @@ class account_move_line_inherit(osv.osv):
             for line_id in rec.line_ids:
                 if line_id.move_line_id:
                     account_obj.write(cr, uid, line_id.move_line_id.id, {'log_is_two': False})
-        return super(account_move_line_inherit, self).unlink(cr, uid, ids, context=context)
+        return super(payment_order_inherit, self).unlink(cr, uid, ids, context=context)
 
     def _get_location_name(self, cr, uid, ids, field_name, args, context=None):
         res = {}

@@ -17,7 +17,9 @@
     'depends': ['base', 'report', 'account'],  # 依赖模块
     'data': [
         'views/qdodoo_account_move_report.xml',
-        'qdodoo_account_move_p.xml'
+        'qdodoo_account_move_p.xml',
+        'wizard/qdodoo_account_move_wizard.xml',
+        'views/qdodoo_account_move_report2.xml'
         # ...
     ],  # 更新XML,CSV
     'js': [

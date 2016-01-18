@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="qdodoo_account_move_wizard_form" model="ir.ui.view">
+            <field name="name">批量打印凭证</field>
+            <field name="model">qdodoo.account.move.wizard</field>
+            <field name="arch" type="xml">
+                <form string="批量打印凭证">
+                    <sheet>
+                            <field name="move_line_ids" invisible="1"/>
+                        <footer>
+                            <button string="打印" name="report_print" type="object" class="oe_highlight"/>
+                            or
+                            <button string="取消" class="oe_link" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record id="qdodoo_account_move_wizard2" model="ir.actions.act_window">
+            <field name="name">批量打印凭证</field>
+            <field name="res_model">qdodoo.account.move.wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_account_move_wizard_form"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+        <record id="qdodoo_account_move_wizard" model="ir.values">
+            <field eval="'client_action_multi'" name="key2"/>
+            <field eval="'account.move'" name="model"/>
+            <field name="name">批量打印凭证</field>
+            <field eval="'ir.actions.act_window,'+str(qdodoo_account_move_wizard2)" name="value"/>
+        </record>
+    </data>
+</openerp>
