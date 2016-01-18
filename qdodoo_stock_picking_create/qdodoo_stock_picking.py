@@ -11,6 +11,70 @@ from openerp.osv import osv
 from datetime import datetime
 
 
+class qdodoo_account_invoice(models.Model):
+    _inherit = 'stock.invoice.onshipping'
+
+    def _compute_date(self):
+        return fields.date.today()
+
+    invoice_date = fields.Date(string=u'发票日期', default=_compute_date)
+
+
+class stock_picking(models.Model):
+    _inherit = 'stock.picking'
+
+    def _get_invoice_vals(self, cr, uid, key, inv_type, journal_id, move, context=None):
+        if context is None:
+            context = {}
+        partner, currency_id, company_id, user_id = key
+        print key, inv_type
+        if inv_type in ('out_invoice', 'out_refund'):
+            account_id = partner.property_account_receivable.id
+            print account_id
+            payment_term = partner.property_payment_term.id or False
+        else:
+            account_id = partner.property_account_payable.id
+            payment_term = partner.property_supplier_payment_term.id or False
+        if payment_term:
+            pterm = self.pool.get('account.payment.term').browse(cr, uid, payment_term)
+            pterm_list = pterm.compute(value=1, date_ref=context.get('date_inv', []))
+            if pterm_list:
+                date_due = max(line[0] for line in pterm_list[0])
+            else:
+                date_due = False
+            return {
+                'origin': move.picking_id.name,
+                'date_invoice': context.get('date_inv', False),
+                'date_due': date_due,
+                'user_id': user_id,
+                'partner_id': partner.id,
+                'account_id': account_id,
+                'payment_term': payment_term,
+                'type': inv_type,
+                'fiscal_position': partner.property_account_position.id,
+                'company_id': company_id,
+                'currency_id': currency_id,
+                'journal_id': journal_id,
+                'group_ref': move.picking_id.group_id.name
+            }
+        else:
+            return {
+                'origin': move.picking_id.name,
+                'date_invoice': context.get('date_inv', False),
+                'date_due': False,
+                'user_id': user_id,
+                'partner_id': partner.id,
+                'account_id': account_id,
+                'payment_term': payment_term,
+                'type': inv_type,
+                'fiscal_position': partner.property_account_position.id,
+                'company_id': company_id,
+                'currency_id': currency_id,
+                'journal_id': journal_id,
+                'group_ref': move.picking_id.group_id.name
+            }
+
+
 class qdodoo_stock_picking(models.Model):
     _inherit = 'stock.transfer_details'
 
@@ -65,6 +129,7 @@ class qdodoo_stock_picking(models.Model):
             onshipping_id.create_invoice()
         return True
 
+
 class qdodoo_stock_move_inherit_tfs(models.Model):
     _inherit = 'stock.move'
 
@@ -77,9 +142,9 @@ class qdodoo_stock_move_inherit_tfs(models.Model):
             # 获取产品公司id
             company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
             # 查询该公司的人
-            company_uid = users_obj.search(cr, uid, [('company_id','=',company_id)])
+            company_uid = users_obj.search(cr, uid, [('company_id', '=', company_id)])
             if not company_uid:
-                 raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+                raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
             else:
                 valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
         return super(qdodoo_stock_move_inherit_tfs, self).create(cr, uid, valus, context=context)
@@ -91,9 +156,9 @@ class qdodoo_stock_move_inherit_tfs(models.Model):
             # 获取产品公司id
             company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
             # 查询该公司的人
-            company_uid = users_obj.search(cr, uid, [('company_id','=',company_id)])
+            company_uid = users_obj.search(cr, uid, [('company_id', '=', company_id)])
             if not company_uid:
-                 raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+                raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
             else:
                 valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
         return super(qdodoo_stock_move_inherit_tfs, self).write(cr, uid, ids, valus, context=context)

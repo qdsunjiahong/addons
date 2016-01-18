@@ -14,7 +14,7 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'stock', 'stock_account', 'qdodoo_stock_picking_add_period'],  # 依赖模块
+    'depends': ['base', 'stock', 'stock_account', 'qdodoo_stock_picking_add_period', 'rain_stock_account'],  # 依赖模块
     'data': [
 
     ],  # 更新XML,CSV

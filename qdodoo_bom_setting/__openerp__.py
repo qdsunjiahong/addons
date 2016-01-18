@@ -45,7 +45,7 @@
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
     'description': """
-    生产物料bom设置
+    1.生产bom增加单价，2.生产单产成品明细增加比例字段,3.bom新增费用页面,4.生产单增加成品单价与总价字段
     """,
 }
 

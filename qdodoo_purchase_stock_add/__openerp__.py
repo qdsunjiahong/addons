@@ -43,7 +43,7 @@
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
     'description': """
-    采购仓库增加
+    1.库存调整增加辅助核算项，2.采购单增加：计划数量、到期数量、入库提醒
     """,
 }
 

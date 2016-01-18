@@ -14,7 +14,6 @@ class qdodoo_sale_order_inherit(models.Model):
     """
     _inherit = 'sale.order'  # 继承
 
-    # location_id_note = fields.Char(u'目的仓库备注')
     project_id = fields.Many2one('account.analytic.account', 'Contract / Analytic', readonly=True,
                                  states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},
                                  required=True, help="The analytic account related to a sales order.")

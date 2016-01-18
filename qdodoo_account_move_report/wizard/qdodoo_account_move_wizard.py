@@ -14,30 +14,17 @@ class qdodoo_account_move_wizard(models.Model):
     _name = 'qdodoo.account.move.wizard'
     _description = 'qdodoo.account.move.wizard'
 
-    def _get_move_lines(self):
-        move_lines = ""
-        context = self._context or {}
-        if context.get('active_model', False) == 'account.move':
-            action_ids = context.get('active_ids', [])
-            for action_id in action_ids:
-                move_lines += str(action_id) + ";"
-            return move_lines[0:-1]
-
-    move_line_ids = fields.Char(string=u'会计凭证', default=_get_move_lines)
-
     # @api.multi
     def report_print(self, cr, uid, ids, context=None):
-        context = context or {}
-        move_line_ids = self.browse(cr, uid, ids[0]).move_line_ids.split(";")
-        move_ids = []
-        for move_line_id in move_line_ids:
-            move_ids.append(int(move_line_id))
         move_obj = self.pool.get('account.move')
         report_obj = self.pool.get('qdodoo.account.move.report')
+        # 删除需打印数据表中数据
         report_ids = report_obj.search(cr, uid, [])
         report_obj.unlink(cr, uid, report_ids)
+        # 创建需打印数据（循环所有选中的凭证数据）
         id_list = []
-        for move_id in move_obj.browse(cr, uid, move_ids):
+        for move_id in move_obj.browse(cr, uid, context.get('active_ids')):
+            # 循环凭证明细
             for line_id in move_id.line_id:
                 data = {
                     'invoice': line_id.invoice.name,
@@ -49,6 +36,7 @@ class qdodoo_account_move_wizard(models.Model):
                     'account_analytic': line_id.analytic_account_id.name,
                     'account_name': line_id.account_id.code + '-' + line_id.account_id.name
                 }
+                # 创建需打印的数据
                 create_id = report_obj.create(cr, uid, data)
                 id_list.append(create_id)
         context['active_ids'] = id_list
