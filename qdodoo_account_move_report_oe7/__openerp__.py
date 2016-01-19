@@ -14,7 +14,7 @@
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'account','sale'],  # 依赖模块
+    'depends': ['base', 'account', 'account_voucher'],  # 依赖模块
     'data': [
         'account_move_report.xml',
         # ...

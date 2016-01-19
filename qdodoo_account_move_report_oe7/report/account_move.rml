@@ -60,7 +60,7 @@
       <lineStyle kind="LINEBELOW" colorName="#000000" start="2,-1" stop="2,-1"/>
       <lineStyle kind="LINEBELOW" colorName="#000000" start="3,-1" stop="3,-1"/>
       <lineStyle kind="LINEBELOW" colorName="#000000" start="4,-1" stop="4,-1"/>
-      <lineStyle kind="LINEBELOW" colorName="#000000" start="5,-1" stop="5,-1"/>
+
     </blockTableStyle>
     <blockTableStyle id="Table5">
       <blockAlignment value="LEFT"/>
@@ -112,41 +112,12 @@
   <pto>
   <para style="terp_default_8">[[repeatIn(objects,'o')]]</para>
   <para style="terp_default_8">[[ setLang(o.partner_id.lang) ]]</para>
-  <pto_header>
-    <blockTable colWidths="181.0,70.0,80.0,70.0,50.0,85.0" repeatRows="1" style="Table4">
-      <tr>
-        <td>
-          <para style="terp_tblheader_Details"><b>Description</b></para>
-        </td>
-        <td>
-          <para style="terp_tblheader_Details_Centre"><b>Tax</b></para>
-        </td>
-        <td>
-          <para style="terp_tblheader_Details_Right"><b>Quantity</b></para>
-        </td>
-        <td>
-          <para style="terp_tblheader_Details_Right"><b>Unit Price</b></para>
-        </td>
-        <td>
-          <para style="terp_tblheader_Details_Centre"><b>Disc.(%)</b></para>
-        </td>
-        <td>
-          <para style="terp_tblheader_Details_Right"><b>Price</b></para>
-        </td>
-      </tr>
-    </blockTable>
-  </pto_header>
     <para style="terp_default_8">
       <font color="white"> </font>
     </para>
     <!--<para style="terp_default_8">
       <font color="white"> </font>
     </para>-->
-    <para style="terp_header"><b>[[ o.state not in ['draft'] and removeParentNode('para') ]] 会计凭证: [[ o.name ]]</b></para>
-    <para style="terp_header"><b>[[ o.state in ['draft'] and removeParentNode('para') ]] 会计凭证: 未记账</b></para>
-    <para style="terp_default_8">
-      <font color="white"> </font>
-    </para>
     <blockTable colWidths="132.0,134.0,135.0,135.0" style="Table2">
       <tr>
         <td>
@@ -182,13 +153,10 @@
     <!--<para style="terp_default_8">
       <font color="white"> </font>
     </para>-->
-    <blockTable colWidths="181.0,70.0,80.0,70.0,50.0,85.0" repeatRows="1" style="Table4">
+    <blockTable colWidths="136.0,100.0,100.0,100.0,100.0" repeatRows="1" style="Table4">
       <tr>
         <td>
-          <para style="terp_tblheader_Details"><b>开发票</b></para>
-        </td>
-        <td>
-          <para style="terp_tblheader_Details_Centre"><b>名称</b></para>
+          <para style="terp_tblheader_Details"><b>名称</b></para>
         </td>
         <td>
           <para style="terp_tblheader_Details_Right"><b>业务伙伴</b></para>
@@ -206,13 +174,10 @@
     </blockTable>
     <section>
       <para style="terp_default_1">[[repeatIn(o.line_id,'line')]]</para>
-      <blockTable colWidths="180.0,70.0,80.0,70.0,50.0,85.0" style="Table5">
+      <blockTable colWidths="136.0,100.0,100.0,100.0,100.0" style="Table5">
         <tr>
           <td>
-            <para style="terp_default_9">[[ format(line.invoice.number) ]] </para>
-          </td>
-          <td>
-			<para style="terp_default_Centre_9">[[format(line.name)]]</para>
+			<para style="terp_default_9">[[format(line.name)]]</para>
           </td>
           <td>
             <para style="terp_default_Right_9">[[ format(line.partner_id.name) ]]</para>
