@@ -232,8 +232,10 @@ class qdodoo_plan_purchase_order(models.Model):
             notes = ''
             # 创建采购单
             for key_line,value_line in purchase_id.items():
-                picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('warehouse_id','=',obj.location_name.id),('default_location_dest_id','=',obj.location_id.id)])
-                picking_type_id = picking_type_ids[0] if picking_type_ids else ''
+                picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', obj.company_id.id)])
+                if not picking_type_ids:
+                    picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id', '=', False)])
+                picking_type_id = picking_type_ids[0]
                 res_id = purchase_obj.create(cr, uid, {'pricelist_id':partner_obj.browse(cr, uid, key_line[1]).property_product_pricelist_purchase.id,'plan_id':obj.id,'partner_id':key_line[1],'location_name':obj.location_name.id,
                                               'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id,'notes':obj.notes_new,
                                               'location_id':obj.location_id.id,'minimum_planned_date':obj.minimum_planned_date,'deal_date':key_line[0],
@@ -283,13 +285,24 @@ class qdodoo_plan_purchase_order_line(models.Model):
         return super(qdodoo_plan_purchase_order_line, self).create(cr, uid, vals, context=context)
 
     # 根据产品和供应商修改产品价格
-    def onchange_product_id(self, cr, uid, ids, product_id, partner_id, qty, uom_id,context=None):
+    def onchange_product_id(self, cr, uid, ids, product_id, partner_id, qty, uom_id, company_id, context=None):
         product_pricelist = self.pool.get('product.pricelist')
         partner_obj = self.pool.get('res.partner')
+        users_obj = self.pool.get('res.users')
+        if ids:
+            obj = self.browse(cr, uid, ids[0])
         res = {}
         res['value'] = {}
         date_order = datetime.now()
         if product_id:
+            # 查询一个公司信息正确的用户
+            # 查询有销售经理权限的id
+            sql = """ select uid from res_groups_users_rel where gid = 10"""
+            cr.execute(sql)
+            uid_ids = [r[0] for r in cr.fetchall()]
+            users_ids = users_obj.search(cr, uid, [('company_id','=',company_id),('id','in',uid_ids)])
+            if not users_ids:
+                raise osv.except_osv(_(u'错误'), _(u'对应公司缺少销售经理！'))
             product_obj = self.pool.get('product.product').browse(cr, uid, product_id, context=context)
             # 获取产品对应的供应商和送货周期\数量
             purchase_dict = {}
@@ -298,9 +311,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
                 purchase_dict[line.name.id] = line.delay
                 purchase_num_dict[line.name.id] = line.min_qty
             if partner_id:
-                if ids:
-                    obj = self.browse(cr, uid, ids[0])
-                pricelist_id = partner_obj.browse(cr, uid, partner_id).property_product_pricelist_purchase.id
+                pricelist_id = partner_obj.browse(cr, users_ids[0], partner_id).property_product_pricelist_purchase.id
                 date_order_str = date_order.strftime(DEFAULT_SERVER_DATE_FORMAT)
                 price = product_pricelist.price_get(cr, uid, [pricelist_id],
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
