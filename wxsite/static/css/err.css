@@ -1,0 +1,5 @@
+body{background: url('../img/errbg.jpg') no-repeat fixed; background-size: 100% 100%;}
+
+.err-info{width: 96%; margin: 120px auto 0; padding-bottom: 0.5em; background-color: white; opacity: 0.7; border-radius: 10px;}
+.err-title{font-size: 18px; line-height: 2.5em; color: black; font-weight: bold; letter-spacing: 2px; font-family: 宋体,微软雅黑; background: url('../img/errheader.jpg') no-repeat; background-size: 100% 100%; text-align: center;}
+.err-content{text-align: center; margin-top: 0.2em; font-size: 15px; line-height: 2.2em;}

@@ -1,0 +1,49 @@
+.carts{width: 310px; margin: 0 auto;}
+.pengyou{width: 24px; height: 24px; border: none 0; vertical-align: middle; margin-bottom: 2px;}
+.carts .ctitle{line-height: 26px; width: 240px; margin: 0 auto; border-bottom: solid 2px #FF6600; font-size: 16px; font-weight: bold; color: #FF6600; text-align: center;}
+
+/*购物车列表，商铺信息*/
+.shop{clear: both; margin-top: 10px; line-height: 20px;}
+.shop .sname{border-bottom: solid 2px #FF6600;}
+.shop .sname a{color: blue; font-weight: bold;}
+
+/*购物车列表，商品信息*/
+.product{margin-top: 6px; border: solid 1px #ccc;}
+.product div{overflow: hidden;}
+
+.product .check{float: left; width: 20px; height: 100%;}
+
+.product .pinfo{float: left; width: 80px; margin-left: 4px;}
+.product .pinfo .pimg{display: block; width: 80px; height: 80px; border: none 0;}
+.product .pinfo .pname{line-height: 20px; height: 40px; overflow: hidden}
+
+.product .buynum{float: left; margin-left: 4px; width: 130px; height: 120px; padding-left: 26px; border-left: dotted 1px #ccc;}
+.product .buynum .price{font-size: 12px; line-height: 30px; margin-top: 10px; text-indent: 20px;}
+.product .buynum .price b{color: red; font-size: 16px;}
+.product .buynum .youhui{color: #FF6600;}
+.product .buynum .chquantity{display: block; float: left; margin-right: 2px; margin-top: 2px; color: black; width: 16px; height: 16px; line-height: 16px; text-align: center; border: solid 1px #ccc; font-size: 14px;}
+.product .buynum .quantity{display: block; float: left; margin-right: 2px; width: 50px; height: 18px; line-height: 16px; border: solid 1px #ccc; text-align: right; padding-right: 2px;}
+.product .buynum .subsum{margin-top: 2px; line-height: 30px;}
+
+.product .op{float: left; width: 40px; height: 120px; padding-left: 2px; border-left: dotted 1px #ccc; line-height: 22px;}
+.product .op a{display: block; text-align: center;}
+.product .op a.delcart{color: #888;}
+.product .op a.note{color: #FF7744;}
+
+/*金额及提交订单*/
+.fixedbtm{width: 100%; position: fixed; bottom: 0; clear: both; z-index: 50; background-color: white; border-top: solid 1px #ccc; border-bottom: solid 1px #ccc;}
+.sumsub, .share{width: 310px; margin: 0 auto; padding: 2px 0;}
+.share{border-top: solid 1px #ccc;}
+.sumsub .sum, .share .selnum{float: left; line-height: 28px; font-size: 12px;}
+
+.sumsub .sum b{font-size: 16px; color: #FF6600;}
+.sumsub input, .share input{display: block; float: right; height: 26px; border: solid 1px yellow; background-color: #FF6600; color: white; border-radius: 5px; cursor: pointer;}
+.share input{background-color: #00AFED; border-color: white;}
+
+/*备注*/
+.addnote{line-height: 14px; display: none; border-top: solid 1px #ccc;}
+.addnote input{width: 260px; line-height: 14px; height: 16px;}
+
+
+.up{clear: both; border: none 0; height: 35px;}
+
