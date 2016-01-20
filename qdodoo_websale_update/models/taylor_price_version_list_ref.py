@@ -123,7 +123,7 @@ class qdodoo_product_pricelist_inherit(models.Model):
                 a = line_value
                 version = line_key
         if not version:
-            raise osv.except_osv(_('Warning!'), _("At least one pricelist has no active version !\nPlease create or activate one."))
+            raise except_orm(_('Warning!'), _("At least one pricelist has no active version !\nPlease create or activate one."))
         categ_ids = {}
         for p in products:
             categ = p.categ_id
