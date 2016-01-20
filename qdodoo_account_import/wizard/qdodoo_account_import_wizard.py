@@ -26,6 +26,8 @@ class qdodoo_account_import(models.Model):
         sheets = excel_obj.sheets()
         account_obj = self.env['account.account']
         data_obj = self.env['ir.model.data']
+        tax_obj = self.env['account.tax']
+        user_obj = self.env['res.users']
         company_ids = self.env['res.company'].search([])
         account_type_ids = self.env['account.account.type'].search([])
         account_ids = account_obj.search([])
@@ -45,15 +47,19 @@ class qdodoo_account_import(models.Model):
             for row in range(2, sh.nrows):
                 row_n = row + 1
                 data = {}
-                try:
-                    code = str(int(sh.cell(row, 0).value)) if sh.cell(row, 0).value else str(0)
-                    name = sh.cell(row, 1).value or False
-                    account_type = sh.cell(row, 2).value or False
-                    user_type = sh.cell(row, 3).value or False
-                    company_name = sh.cell(row, 4).value or False
-                    parent_account = sh.cell(row, 5).value
-                except:
-                    raise except_orm(_(u'警告'), _(u'第%s行有错误') % row_n)
+                code = str(int(sh.cell(row, 0).value))
+                name = sh.cell(row, 1).value
+                account_type = sh.cell(row, 2).value
+                user_type = sh.cell(row, 3).value
+                company_name = sh.cell(row, 4).value
+                parent_account = sh.cell(row, 5).value
+                reconcile = sh.cell(row, 6).value or False
+                if reconcile == 'Y' or reconcile == 'y':
+                    reconcile = True
+                else:
+                    reconcile = False
+                note = sh.cell(row, 7).value or ''
+                tax_ids = sh.cell(row, 8).value
                 if parent_account == '':
                     parent_account = False
                 else:
@@ -73,10 +79,11 @@ class qdodoo_account_import(models.Model):
                     raise except_orm(_(u'警告'), _(u'第%s行类型填写有误') % row_n)
                 data['user_type'] = account_type_dict.get(user_type)
                 if not company_name:
-                    raise except_orm(_(u'警告'), _(u'第%s行公司为空') % row_n)
-                if not company_dict.get(company_name, False):
-                    raise except_orm(_(u'警告'), _(u'第%s行公司填写有误') % row_n)
-                company_id_l = company_dict.get(company_name)
+                    company_id_l = user_obj.browse(self.env.uid).company_id.id
+                else:
+                    if not company_dict.get(company_name, False):
+                        raise except_orm(_(u'警告'), _(u'第%s行公司填写有误') % row_n)
+                    company_id_l = company_dict.get(company_name)
                 data['company_id'] = company_id_l
                 if (code, company_dict.get(company_name)) in account_company_list:
                     raise except_orm(_(u'警告'), _(u'第%s行上级科目已存在') % row_n)
@@ -85,10 +92,20 @@ class qdodoo_account_import(models.Model):
                     if not parent_id:
                         raise except_orm(_(u'警告'), _(u'第%s行上级科目填写有误') % row_n)
                     data['parent_id'] = parent_id
+                data['reconcile'] = reconcile
+                data['note'] = note
                 crete_obj = account_obj.create(data)
                 res_id = crete_obj.id
                 account_dict[(code, company_id_l)] = res_id
                 return_list.append(res_id)
+                if tax_ids:
+                    tax_list = tax_ids.split("/")
+                    for tax_l in tax_list:
+                        tax_id = tax_obj.search([('name', '=', tax_l), ('company_id', '=', company_id_l)]).id
+                        sql = """
+                        insert into account_account_tax_default_rel (account_id,tax_id) VALUES (%s,%s)
+                        """ % (crete_obj.id, tax_id)
+                        self.env.cr.execute(sql)
         if return_list:
             tree_model, tree_id = data_obj.get_object_reference('account', 'view_account_list')
             form_model, form_id = data_obj.get_object_reference('account', 'view_account_form')

@@ -7,14 +7,14 @@
 ###########################################################################################
 
 {
-    'name': u'科目导入',  # 模块名称
+    'name': u'用户导入',  # 模块名称
     'version': '1.0',  # 版本
     'category': 'Technology',  # 分类
     'author': 'qdodoo Technology',  # 作者
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
-    'depends': ['base', 'account', ],  # 依赖模块
+    'depends': ['base'],  # 依赖模块
     'data': [
         'wizard/qdodoo_users_import_menu.xml'
     ],  # 更新XML,CSV
@@ -42,7 +42,7 @@
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
     'description': """
-    科目导入
+    用户导入
     """,
 }
 

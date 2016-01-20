@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_users_import_form" model="ir.ui.view">
+            <field name="name">用户导入</field>
+            <field name="model">qdodoo.users.import</field>
+            <field name="arch" type="xml">
+                <form string="用户导入" version="7.0">
+                    <group>
+                       <field name="excel_file"  string="用户导入"/>
+                    </group>
+                    <group>
+                        <a href="/qdodoo_users_import/static/user_template.xls">点此进行模板下载</a>
+                    </group>
+                    <footer>
+                        <button string="导入" name="action_import" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="qdodoo_users_import_action" model="ir.actions.act_window">
+            <field name="name">用户导入</field>
+            <field name="res_model">qdodoo.users.import</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_users_import_form"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" action="qdodoo_users_import_action"
+                  id="menu_users_import"
+                  parent="base.menu_users"/>
+
+    </data>
+</openerp>
