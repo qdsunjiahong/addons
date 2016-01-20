@@ -235,10 +235,11 @@ class qdodoo_plan_purchase_order(models.Model):
                 picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', obj.company_id.id)])
                 if not picking_type_ids:
                     picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id', '=', False)])
-                picking_type_id = picking_type_ids[0]
+                picking_type_id = self.pool.get('stock.picking.type').browse(cr, uid, picking_type_ids[0])
+
                 res_id = purchase_obj.create(cr, uid, {'pricelist_id':partner_obj.browse(cr, uid, key_line[1]).property_product_pricelist_purchase.id,'plan_id':obj.id,'partner_id':key_line[1],'location_name':obj.location_name.id,
-                                              'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id,'notes':obj.notes_new,
-                                              'location_id':obj.location_id.id,'minimum_planned_date':obj.minimum_planned_date,'deal_date':key_line[0],
+                                              'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id.id,'notes':obj.notes_new,
+                                              'location_id':picking_type_id.default_location_dest_id.id,'minimum_planned_date':obj.minimum_planned_date,'deal_date':key_line[0],
                                               })
                 notes = notes + purchase_obj.browse(cr, uid, res_id).name + ';'
                 # 创建采购订单明细
