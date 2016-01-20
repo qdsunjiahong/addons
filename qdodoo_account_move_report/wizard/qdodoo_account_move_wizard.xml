@@ -6,26 +6,42 @@
             <field name="model">qdodoo.account.move.wizard</field>
             <field name="arch" type="xml">
                 <form string="批量打印凭证">
-                    <group>
-                        <separator string="你确定要批量打印这些凭证吗?"/>
-                    </group>
-                    <footer>
-                        <button string="打印" name="report_print" type="object" class="oe_highlight"/>
-                        or
-                        <button string="取消" class="oe_link" special="cancel"/>
-                    </footer>
+                    <sheet>
+                        <group colspan="4" col="4">
+                            <field name="start_date" required="1"/>
+                            <field name="end_date" required="1"/>
+                            <field name="company_id" required="1"/>
+                            <field name="journal_id" attrs="{'invisible':[('company_id','=',False)]}" required="1"
+                                   domain="[('company_id','=',company_id)]"/>
+                        </group>
+                        <footer>
+                            <button string="打印" name="report_print" type="object" class="oe_highlight"/>
+                            or
+                            <button string="取消" class="oe_link" special="cancel"/>
+                        </footer>
+                    </sheet>
                 </form>
             </field>
         </record>
-
-        <act_window name="批量打印凭证"
-        res_model="qdodoo.account.move.wizard"
-        src_model="account.move"
-        view_mode="form"
-        target="new"
-        multi="True"
-        key2="client_action_multi"
-        id="qdodoo_account_move_wizard2"/>
+        <record id="qdodoo_account_move_wizard2" model="ir.actions.act_window">
+            <field name="name">批量打印凭证</field>
+            <field name="res_model">qdodoo.account.move.wizard</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_account_move_wizard_form"/>
+            <field name="context">{}</field>
+            <field name="target">new</field>
+        </record>
+        <!--<record id="qdodoo_account_move_wizard" model="ir.values">-->
+        <!--<field eval="'client_action_multi'" name="key2"/>-->
+        <!--<field eval="'account.move'" name="model"/>-->
+        <!--<field name="name">批量打印凭证</field>-->
+        <!--<field eval="'ir.actions.act_window,'+str(qdodoo_account_move_wizard2)" name="value"/>-->
+        <!--</record>-->
+        <menuitem icon="STOCK_INDENT" name="凭证批量打印" action="qdodoo_account_move_wizard2"
+                  id="menu_account_move_report"
+                  parent="account.menu_finance_entries"/>
 
     </data>
 </openerp>

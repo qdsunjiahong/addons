@@ -11,49 +11,121 @@ from openerp.exceptions import except_orm
 
 
 class qdodoo_account_move_wizard(models.Model):
+    """
+    批量打印wizard模型
+    """
     _name = 'qdodoo.account.move.wizard'
     _description = 'qdodoo.account.move.wizard'
 
+    start_date = fields.Date(string=u'开始时间')
+    end_date = fields.Date(string=u'结束时间')
+    company_id = fields.Many2one('res.company', string=u'公司')
+    journal_id = fields.Many2one('account.journal', string=u'账簿')
+
     # @api.multi
-    def report_print(self, cr, uid, ids, context=None):
-        move_obj = self.pool.get('account.move')
+    def report_print(self, cr, uid, ids, context):
+        context = context or {}
+        data = self.browse(cr, uid, ids[0])
         report_obj = self.pool.get('qdodoo.account.move.report')
-        # 删除需打印数据表中数据
-        report_ids = report_obj.search(cr, uid, [])
-        report_obj.unlink(cr, uid, report_ids)
-        # 创建需打印数据（循环所有选中的凭证数据）
-        id_list = []
-        for move_id in move_obj.browse(cr, uid, context.get('active_ids')):
-            # 循环凭证明细
-            for line_id in move_id.line_id:
-                data = {
-                    'invoice': line_id.invoice.name,
-                    'name': line_id.name,
-                    'product_name': line_id.product_id.name,
-                    'partner_name': line_id.partner_id.name,
-                    'debit': line_id.debit,
-                    'credit': line_id.credit,
-                    'account_analytic': line_id.analytic_account_id.name,
-                    'account_name': line_id.account_id.code + '-' + line_id.account_id.name
-                }
-                # 创建需打印的数据
-                create_id = report_obj.create(cr, uid, data)
-                id_list.append(create_id)
-        context['active_ids'] = id_list
+        sql_del = """delete from qdodoo_account_move_report where 1=1"""
+        cr.execute(sql_del)
+        report_list = []
+        account_debit = {}  # 借方金额{"account_name":debit}
+        account_credit = {}  # 贷方金额{"account_name":credit}
+        report_ids = []
+        sql_search = """
+        select
+            aml.id as id,
+            aml.name as aml_name,
+            aml.debit as debit,
+            aml.credit as credit,
+            aa.name as account_name,
+            rp.name as partner_name,
+            am.name as am_name
+        from account_move_line aml
+          left join account_move am on am.id=aml.move_id
+          left join account_account aa on aa.id=aml.account_id
+          left join res_partner rp on rp.id = aml.partner_id
+        where am.state = 'posted' and am.date >= '%s' and am.date <= '%s' and am.company_id = %s and am.journal_id= %s
+        group by
+            aml.id,aml.name,aml.debit,aml.credit,aa.name,rp.name,am.name
+        """ % (data.start_date, data.end_date, data.company_id.id, data.journal_id.id)
+        cr.execute(sql_search)
+        result = cr.fetchall()
+        min_n = 0
+        min_number = ''
+        max_n = 0
+        max_number = ''
+        for res in result:
+            aml_id, aml_name, debit, credit, account_name, partner_name, am_name = res
+            am_number = am_name.split("/")[-1]
+            if min_n == 0 and max_n == 0:
+                min_n = int(am_number)
+                max_n = int(am_number)
+                min_number = am_name
+                max_number = am_name
+            else:
+                if int(am_number) > max_n:
+                    max_number = am_name
+                if int(am_number) < min_n:
+                    min_number = am_name
+            if partner_name:
+                account_name = account_name + '/' + partner_name
+            account_debit[account_name] = account_debit.get(account_name, 0) + debit
+            account_credit[account_name] = account_credit.get(account_name, 0) + credit
+            if account_name not in report_list:
+                report_list.append(account_name)
+        report_line_list = []
+        for report_l in report_list:
+            debit = account_debit.get(report_l, 0)
+            credit = account_credit.get(report_l, 0)
+            data = {
+                'account_name': report_l,
+                'debit': debit,
+                'credit': credit
+            }
+            report_line_list.append((0, 0, data))
+        date = fields.Date.today()
+        company_name = self.pool.get('res.users').browse(cr, uid, uid).company_id.name
+        data_p = {
+            'min_number': min_number,
+            'max_number': max_number,
+            'date': date,
+            'company_name': company_name,
+            'report_lines': report_line_list,
+        }
+        create_id1 = report_obj.create(cr, uid, data_p)
+        report_ids.append(create_id1)
+        context['active_ids'] = report_ids
         context['active_model'] = 'qdodoo.account.move.report'
-        return self.pool.get("report").get_action(cr, uid, [], 'qdodoo_account_move_report.qdodoo_account_move_report2',
+        return self.pool.get("report").get_action(cr, uid, [],
+                                                  'qdodoo_account_move_report.qdodoo_account_move_report2',
                                                   context=context)
 
 
 class qdodoo_account_move_report(models.Model):
+    """
+    凭证打印整合模块
+    """
     _name = 'qdodoo.account.move.report'
     _description = 'qdodoo.account.move.report'
 
-    invoice = fields.Char(string=u'开发票')
+    date = fields.Date(string=u'日期')
+    min_number = fields.Char(string=u'最小凭证号')
+    max_number = fields.Char(string=u'最大凭证号')
+    company_name = fields.Char(string=u'核算单位')
+    report_lines = fields.One2many('account.move.report.line', 'report_id')
+
+
+class account_move_report_line(models.Model):
+    """
+    明细
+    """
+    _name = 'account.move.report.line'
+    _description = 'account.move.report.line'
+
+    report_id = fields.Many2one('qdodoo.account.move.report')
     name = fields.Char(string=u'名称')
-    product_name = fields.Char(string=u'产品')
-    partner_name = fields.Char(string=u'业务伙伴')
-    debit = fields.Float(string=u'借方')
-    credit = fields.Float(string=u'贷方')
-    account_analytic = fields.Char(string=u'辅助核算项')
     account_name = fields.Char(string=u'科目')
+    debit = fields.Float(string=u'借方金额')
+    credit = fields.Float(string=u'贷方金额')
