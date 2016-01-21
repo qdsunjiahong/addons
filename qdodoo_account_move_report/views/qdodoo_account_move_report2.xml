@@ -33,7 +33,7 @@
                                         <strong>名称:</strong>
                                     </th>
                                     <th class="text-center">
-                                        <strong>科目:</strong>
+                                        <strong>会计科目:</strong>
                                     </th>
                                     <th class="text-center">
                                         <strong>借方:</strong>
@@ -52,10 +52,10 @@
                                     <td class="text-left">
                                         <span t-field="line.account_name"/>
                                     </td>
-                                    <td class="text-right">
+                                    <td class="text-center">
                                         <span t-field="line.debit"/>
                                     </td>
-                                    <td class="text-right">
+                                    <td class="text-center">
                                         <span t-field="line.credit"/>
                                     </td>
                                 </tr>
