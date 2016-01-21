@@ -135,15 +135,14 @@ class qdodooo_website_update(website_sale):
         output_warehouse = pool.get('res.partner').browse(cr, uid, int(partner)).out_stock
         sale_order = ""
         for key, value in kw.items():
-            if  int(value) > 0:
-                if  key !='category':
-                    sql = "SELECT id   FROM product_product where product_tmpl_id=%s" % key
+            if int(value) > 0:
+                if key !='category':
+                    sql = "SELECT id FROM product_product where product_tmpl_id=%s" % key
                     cr.execute(sql)
                     product_id = cr.fetchall()[0]
                     sale_order = request.website.sale_get_order(force_create=1)
                     # value=int(value)* multiple.get(int(key))
                     sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
-
         if output_warehouse:
             pool.get('sale.order').write(cr, SUPERUSER_ID, int(sale_order), {'warehouse_id': int(output_warehouse)})
         return request.redirect("/shop/cart")
@@ -803,7 +802,7 @@ class qdodooo_website_update(website_sale):
                 val['product_uom'] = key.uom_id.id
                 val['price_unit'] = -valus
                 val['name'] = key.name
-                line_obj.create(cr ,uid, val)
+                line_obj.create(cr ,1, val)
                 minus_money += valus
         for key,valus in product_num_dict.items():
             if valus[1] > 0 and valus[2] > 0:
@@ -941,7 +940,7 @@ class qdodooo_website_update(website_sale):
         values = {}
         # 获取所有的活动
         promotion_obj = request.registry.get('qdodoo.promotion')
-        promotion_ids = promotion_obj.search(cr, uid, [])
+        promotion_ids = promotion_obj.search(cr, uid, [('is_play','=',True)])
         values['promotion'] = promotion_obj.browse(cr, uid, promotion_ids)
         # 获取当前登录人已参加的活动
         promotion_use_obj = request.registry.get('qdodoo.user.promotion')

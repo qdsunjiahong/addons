@@ -138,6 +138,15 @@ class qdodoo_sale_order_inherit_tfs(models.Model):
     all_money = fields.Float(u'合计',compute='_get_all_money')
     minus_money = fields.Float(u'优惠金额')
 
+    def create(self, cr, uid, vals, context=None):
+        partner_obj = self.pool.get('res.partner')
+        if vals.get('partner_id'):
+            if not vals.get('project_id'):
+                vals['project_id'] = partner_obj.browse(cr, 1, vals.get('partner_id')).analytic_account_id.id
+            if not vals.get('warehouse_id'):
+                vals['warehouse_id'] = partner_obj.browse(cr, 1, vals.get('partner_id')).out_stock.id
+        return super(qdodoo_sale_order_inherit_tfs, self).create(cr, uid, vals, context=context)
+
     def _get_all_money(self):
         num = 0.0
         for line in self.order_line:

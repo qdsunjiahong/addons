@@ -6,6 +6,13 @@
                 <field name="model">store.deposit</field>
                 <field name="arch" type="xml">
                     <form string="门店存款">
+                        <header>
+                            <button name="btn_sent" states="draft" string="提交申请" type="object"/>
+                            <button name="btn_done" states="sent" string="通过" type="object"/>
+                            <button name="btn_draft" states="sent" string="驳回" type="object"/>
+                            <button name="btn_cancel" states="draft,sent" string="取消" type="object"/>
+                            <field name="state" widget="statusbar" statusbar_visible="draft,sent,done,over" statusbar_colors='{"draft":"red","sent":"blue"}'/>
+                        </header>
                         <group>
                             <group>
                             <field name="name"/>
@@ -61,6 +68,7 @@
                         <field name="locat_deposit"/>
                         <field name="money"/>
                         <field name="remarks"/>
+                        <field name="state"/>
                     </tree>
                 </field>
             </record>

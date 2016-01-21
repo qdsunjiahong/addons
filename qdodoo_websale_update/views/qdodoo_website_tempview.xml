@@ -8,6 +8,7 @@
                 <script type="text/javascript">
 
                 </script>
+                <link rel='stylesheet' href='/qdodoo_websale_update/static/src/css/taylor_style.css'/>
                 <form t-att-action="keep('/shop/bat/cart')" method="POST">
                     <table class='table table-striped table-condensed' id="cart_products">
                         <thead>
@@ -105,8 +106,9 @@
                             </t>
                         </tbody>
                     </table>
-                    <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">加入购物车
-                    </a>
+                    <div class="add_to_cart_buttom">
+                        <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">加入购物车</a>
+                    </div>
                 </form>
             </xpath>
         </template>

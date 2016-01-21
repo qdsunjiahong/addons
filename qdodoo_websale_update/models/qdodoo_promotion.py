@@ -18,7 +18,7 @@ _logger = logging.getLogger(__name__)
 
 class qdodoo_promotion(models.Model):
     """
-        满减促销单
+        促销单
     """
     _name = 'qdodoo.promotion'    # 模型名称
     _description = 'qdodoo.promotion'    # 模型描述
@@ -29,9 +29,11 @@ class qdodoo_promotion(models.Model):
     version_id = fields.One2many('qdodoo.promotion.version','promotion_id',string=u'方案版本')
     active = fields.Boolean(u'有效')
     company_id = fields.Many2one('res.company',u'公司',required=True)
+    is_play = fields.Boolean(u'是否让客户自己报名')
 
     _defaults = {
         'active':True,
+        'is_play':True,
         'company_id': lambda self, cr, uid, ids, context=None:self.pool.get('res.users').browse(cr, uid, uid).company_id.id
     }
 
@@ -39,8 +41,8 @@ class qdodoo_promotion(models.Model):
         selection_ids = valus.get('selection_ids')
         if selection_ids:
             self_ids = self.search(cr, uid, [('selection_ids','=',selection_ids)])
-            if self_ids:
-                raise osv.except_osv(_('错误!'), _("此促销类型已存在."))
+            # if self_ids:
+            #     raise osv.except_osv(_('错误!'), _("此促销类型已存在."))
         return super(qdodoo_promotion, self).create(cr, uid, valus, context=context)
 
 class qdodoo_promotion_version_gift(models.Model):
@@ -157,6 +159,12 @@ class qdodoo_promotion_version_gift_items(models.Model):
 
 class qdodoo_user_promotion(models.Model):
     _name = 'qdodoo.user.promotion'
+    _rec_name = 'promotion'
 
     user = fields.Many2one('res.users',u'用户')
     promotion = fields.Many2one('qdodoo.promotion',u'优惠活动')
+    active = fields.Boolean(u'有效')
+
+    _defaults = {
+        'active':True
+    }
