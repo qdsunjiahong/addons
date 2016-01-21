@@ -10,7 +10,7 @@
                         <field name="excel_file" string="产品导入"/>
                     </group>
                     <group>
-                        <a href="/qdodoo_account_import/static/product_inport.xls">点此进行模板下载</a>
+                        <a href="/qdodoo_product_import/static/product_inport.xls">点此进行模板下载</a>
                     </group>
                     <footer>
                         <button string="导入" name="action_import" type="object" class="oe_highlight"/>
