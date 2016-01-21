@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="didi">
+
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8"/>
+                <script type="text/javascript" src="https://g.alicdn.com/ilw/ding/0.3.8/scripts/dingtalk.js"></script>
+                <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
+                <title></title>
+            </head>
+            <body>
+                <input type="hidden" name="corpId" t-att-value="corpId"/>
+                <input type="hidden" name="agentId" t-att-value="agentId"/>
+                <input type="hidden" name="timeStamp" t-att-value="timestamp"/>
+                <input type="hidden" name="nonceStr" t-att-value="noncestr"/>
+                <input type="hidden" name="signature" t-att-value="signature"/>
+                <input type="hidden" name="access_token" t-att-value="access_token"/>
+            </body>
+            <script>
+
+                var log = document.createElement('div');
+                log.setAttribute('id', 'log');
+                document.body.appendChild(log);
+
+                dd.config({
+                    agentId: $("input[name='agentId']").val(),
+                    corpId: $("input[name='corpId']").val(),
+                    timeStamp: $("input[name='timeStamp']").val(),
+                    nonceStr: $("input[name='nonceStr']").val(),
+                    signature: $("input[name='signature']").val(),
+                    jsApiList: ['device.notification.alert', 'device.notification.confirm']
+                });
+
+
+                dd.ready(function () {
+
+                    dd.runtime.info({
+                        onSuccess: function (info) {
+                        },
+                        onFail: function (err) {
+                            alert('fail: ' + JSON.stringify(err));
+                        }
+                    });
+
+                    dd.runtime.permission.requestAuthCode({
+                        corpId:$("input[name='corpId']").val(),
+						onSuccess: function (info) {
+                            $.ajax({
+                                url: '/shop/code?code=' + info.code + '&amp;access_token='+$("input[name='access_token']").val(),
+                                type: 'GET',
+                                success: function (info) {
+                                    var res = eval("("+info+")");
+                                    if (res.key == '1') {
+                                        location.href=res.info;
+                                    }
+                                    else {
+                                        alert('auth error: ' + res.info);
+                                    }
+                                },
+                                error: function (xhr, errorType, error) {
+                                    alert(errorType + ', ' + error);
+                                }
+                            });
+                        },
+                        onFail: function (err) {
+                            alert('requestAuthCode fail: ' + JSON.stringify(err));
+                        }
+                    });
+                });
+
+                dd.error(function (err) {
+                    alert('dd error: ' + JSON.stringify(err));
+                });
+
+            </script>
+            </html>
+
+        </template>
+
+    </data>
+</openerp>
