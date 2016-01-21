@@ -17,12 +17,9 @@ class qdodoo_account_move_wizard(models.Model):
     _name = 'qdodoo.account.move.wizard'
     _description = 'qdodoo.account.move.wizard'
 
-    def _get_company_id(self):
-        return self.env.user.company_id.id
-
     start_date = fields.Date(string=u'开始时间')
     end_date = fields.Date(string=u'结束时间')
-    company_id = fields.Many2one('res.company', string=u'公司', default=_get_company_id)
+    company_id = fields.Many2one('res.company', string=u'公司')
     journal_id = fields.Many2one('account.journal', string=u'账簿')
 
     # @api.multi
@@ -30,14 +27,9 @@ class qdodoo_account_move_wizard(models.Model):
         context = context or {}
         data = self.browse(cr, uid, ids[0])
         report_obj = self.pool.get('qdodoo.account.move.report')
-        sql_del1 = """delete from account_move_report_line where 1=1"""
-        cr.execute(sql_del1)
-        sql_del2 = """delete from qdodoo_account_move_report where 1=1"""
-        cr.execute(sql_del2)
+        sql_del = """delete from qdodoo_account_move_report where 1=1"""
+        cr.execute(sql_del)
         report_list = []
-        company_name = data.company_id.name
-        create_user = self.pool.get('res.users').browse(cr, uid, uid).name
-
         account_debit = {}  # 借方金额{"account_name":debit}
         account_credit = {}  # 贷方金额{"account_name":credit}
         report_ids = []
@@ -94,38 +86,21 @@ class qdodoo_account_move_wizard(models.Model):
             }
             report_line_list.append((0, 0, data))
         date = fields.Date.today()
-        report_line_list_new = []
-        for report_line_l in report_line_list:
-            report_line_list_new.append(report_line_l)
-            if len(report_line_list_new) % 5 == 0:
-                data_p = {
-                    'min_number': min_number,
-                    'max_number': max_number,
-                    'date': date,
-                    'company_name': company_name,
-                    'create_user': create_user,
-                    'report_lines': report_line_list_new,
-                }
-                create_id1 = report_obj.create(cr, uid, data_p)
-                report_ids.append(create_id1)
-                report_line_list_new = []
-        if len(report_line_list_new) > 0:
-            data_p = {
-                'min_number': min_number,
-                'max_number': max_number,
-                'date': date,
-                'company_name': company_name,
-                'create_user': create_user,
-                'report_lines': report_line_list_new,
-            }
-            create_id1 = report_obj.create(cr, uid, data_p)
-            report_ids.append(create_id1)
-
-        context['active_ids'] = [report_ids]
+        company_name = self.pool.get('res.users').browse(cr, uid, uid).company_id.name
+        data_p = {
+            'min_number': min_number,
+            'max_number': max_number,
+            'date': date,
+            'company_name': company_name,
+            'report_lines': report_line_list,
+        }
+        create_id1 = report_obj.create(cr, uid, data_p)
+        report_ids.append(create_id1)
+        context['active_ids'] = report_ids
         context['active_model'] = 'qdodoo.account.move.report'
         return self.pool.get("report").get_action(cr, uid, [],
-                                           'qdodoo_account_move_report.qdodoo_account_move_report2',
-                                           context=context)
+                                                  'qdodoo_account_move_report.qdodoo_account_move_report2',
+                                                  context=context)
 
 
 class qdodoo_account_move_report(models.Model):
@@ -139,7 +114,6 @@ class qdodoo_account_move_report(models.Model):
     min_number = fields.Char(string=u'最小凭证号')
     max_number = fields.Char(string=u'最大凭证号')
     company_name = fields.Char(string=u'核算单位')
-    create_user = fields.Char(string=u'制单人')
     report_lines = fields.One2many('account.move.report.line', 'report_id')
 
 

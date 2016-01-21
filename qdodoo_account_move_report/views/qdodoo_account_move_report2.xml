@@ -2,11 +2,12 @@
 <openerp>
     <data>
         <template id="qdodoo_account_move_report2">
-            <t t-call="report.external_layout">
+            <!--<t t-call="report.external_layout">-->
                 <t t-foreach='docs' t-as='o'>
                     <div class="page">
                         <div class="oe_structure"/>
                         <h2 class='text-center'>记账凭证</h2>
+                        <p class='text-center' t-field="o.date"/>
                         <div class='row'>
                             <div class='col-xs-6 pull-left'>
                                 <span>公司名称:</span>
@@ -31,14 +32,14 @@
                                     <th class="text-center">
                                         <strong>名称:</strong>
                                     </th>
-                                    <th class="text-right">
+                                    <th class="text-center">
                                         <strong>科目:</strong>
                                     </th>
-                                    <th class="text-right">
+                                    <th class="text-center">
                                         <strong>借方:</strong>
                                     </th>
 
-                                    <th class="text-right">
+                                    <th class="text-center">
                                         <strong>贷方:</strong>
                                     </th>
                                 </tr>
@@ -48,7 +49,7 @@
                                     <td class="text-center">
                                         <span t-field="line.name"/>
                                     </td>
-                                    <td class="text-right">
+                                    <td class="text-left">
                                         <span t-field="line.account_name"/>
                                     </td>
                                     <td class="text-right">
@@ -60,11 +61,32 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <div class='row'>
+                            <div class='col-xs-2'>
+                                <span>财务主管:</span>
+                            </div>
+                            <div class='col-xs-2'>
+                                <span>记账:</span>
+                            </div>
+                            <div class='col-xs-2'>
+                                <span>复核:</span>
+                            </div>
+                            <div class='col-xs-2'>
+                                <span>出纳:</span>
+                            </div>
+                            <div class='col-xs-2'>
+                                <span>制单:</span>
+                                <span t-field='o.create_user'/>
+                            </div>
+                            <div class='col-xs-2'>
+                                <span>经办人:</span>
+                            </div>
+
+                        </div>
+
                     </div>
                 </t>
-            </t>
+            <!--</t>-->
         </template>
-
-
     </data>
 </openerp>
