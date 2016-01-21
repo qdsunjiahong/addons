@@ -2,7 +2,6 @@
 
 from openerp import models, fields, api, _
 
-
 class store_deposit(models.Model):
     _name = "store.deposit"
 

@@ -1,3 +1,4 @@
+/*
 //重设顶部菜单内容宽度
 var catsLength = $('.top-cats ul:first li').length*4;
 $('.top-cats ul:first').css('width', catsLength+'em');
@@ -25,7 +26,42 @@ $('.top-cats ul:first').drag({
 //        if(dragX != pageX)dragX = pageX;
     }
 });
+*/
 
+//更改购买数量
+$('.select-product a').click(function(){
+	var pid = $(this).parent().prop('id'),
+		quantity = parseFloat($(this).parent().find('span').text());
+
+	if($(this).hasClass('quantity-reduce')){
+		quantity -= 1;
+	}else if($(this).hasClass('quantity-add')){
+		quantity += 1;
+	}
+
+	if(quantity >= 0){
+		$.ajax({
+			url: '/shop/wx/onchange',
+			type: 'POST',
+			data: {
+				action: 'update',
+				cartid: pid,
+				number: quantity,
+			}
+		}).done(function(msg){
+			if(msg == '1'){
+				location.href='/shop/wx/lunch';
+			}else{
+				alert('操作失败，请刷新页面！');
+			}
+		});
+	}else{
+		alert('购买数量不合法!');
+	}
+	    
+
+
+});
 
 //顶部定时滚动
 setInterval(function(){

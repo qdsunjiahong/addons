@@ -88,20 +88,15 @@ class website_sale(http.Controller):
             """
             以下可以是用户注册处理
             """
-            user_id = users_obj.create(cr, SUPERUSER_ID, {'login':wx_openid,'name':wx_nickname})
-            new_uid = user_id
-        else:
-            new_uid = wx_user_exists[0]
-        request.session['new_uid'] = new_uid
-        return request.redirect("/shop/wx/lunch")
+            users_obj.create(cr, SUPERUSER_ID, {'login':wx_openid,'name':wx_nickname,'password':'qdodoo'})
+        return request.redirect("/login?db=%s&login=%s&key=%s&redirect=%s"%(request.session.db,wx_openid,'qdodoo','shop/wx/lunch'))
 
     @http.route(['/shop/wx/about'], type='http', auth="public", website=True)
     def get_about(self, **post):
         """
             进入支付页面，并传递数据
         """
-        cr, context, pool = request.cr, request.context, request.registry
-        uid = request.session['new_uid']
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # 获取当前公司的名称（根据用户模型获取数据）
         users_obj = pool.get('res.users')
         company_obj = users_obj.browse(cr, SUPERUSER_ID, uid).company_id
@@ -122,26 +117,28 @@ class website_sale(http.Controller):
 
     @http.route(['/shop/wx/onchange'], type='http', auth="public", website=True)
     def get_onchange(self, **post):
-        cr, context, pool = request.cr, request.context, request.registry
-        uid = request.session['new_uid']
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # 判断是如何修改数据
         # 删除数据
         try:
             # 获取操作的数据
             car_obj = pool.get('qdodoo.wxsite.car')
             car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid),('name','=',int(post.get('cartid')))])
-            if post.get('action') == 'del':
-                car_obj.unlink(cr, SUPERUSER_ID, car_ids[0])
-            if post.get('action') == 'update':
-                car_obj.write(cr, SUPERUSER_ID, car_ids[0], {'number':int(post.get('number'))})
+            if car_ids:
+                if post.get('action') == 'del':
+                    car_obj.unlink(cr, SUPERUSER_ID, car_ids[0])
+                if post.get('action') == 'update':
+                    car_obj.write(cr, SUPERUSER_ID, car_ids[0], {'number':int(post.get('number'))})
+            else:
+                if post.get('action') == 'update':
+                    car_obj.create(cr, SUPERUSER_ID, {'user_id':uid,'name':int(post.get('cartid')),'number':int(post.get('number'))})
             return '1'
-        except:
+        except ValueError, e:
             return '2'
 
     @http.route(['/shop/wx/car'], type='http', auth="public", website=True)
     def get_car(self, **post):
-        cr, context, pool = request.cr, request.context, request.registry
-        uid = request.session['new_uid']
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # 获取当前公司的名称（根据用户模型获取数据）
         users_obj = pool.get('res.users')
         company_name = users_obj.browse(cr, SUPERUSER_ID, uid).company_id.name
@@ -152,7 +149,7 @@ class website_sale(http.Controller):
         product_num = {} #数量
         products = []
         car_obj = pool.get('qdodoo.wxsite.car')
-        car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
+        car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid),('number','>',0)])
         for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
             products.append(key_line.name)
             product_num[key_line.name] = key_line.number
@@ -172,8 +169,7 @@ class website_sale(http.Controller):
     @http.route(['/ajax/addtocart'], type='http', auth="public", website=True)
     def get_addtocart(self, **post):
         try:
-            cr, context, pool = request.cr, request.context, request.registry
-            uid = request.session['new_uid']
+            cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
             car_obj = pool.get('qdodoo.wxsite.car')
             car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid),('name','=',int(post.get('pid')))])
             if car_ids:
@@ -182,13 +178,12 @@ class website_sale(http.Controller):
             else:
                 car_obj.create(cr, SUPERUSER_ID, {'name':int(post.get('pid')),'number':int(post.get('num')), 'user_id':uid})
             return '1'
-        except:
+        except ValueError, e:
             return '2'
 
     @http.route(['/shop/wx/order'], type='http', auth="public", website=True)
     def get_order(self, **post):
-        cr, context, pool = request.cr, request.context, request.registry
-        uid = request.session['new_uid']
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # 获取当前登录人的客户
         users_obj = pool.get('res.users')
         partner_obj = users_obj.browse(cr, SUPERUSER_ID, uid).partner_id
@@ -214,8 +209,7 @@ class website_sale(http.Controller):
 
     @http.route(['/shop/wx/user'], type='http', auth="public", website=True)
     def get_user(self, **post):
-        cr, context, pool = request.cr, request.context, request.registry
-        uid = request.session['new_uid']
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         user_obj = pool.get('res.users')
         user_name = user_obj.browse(cr, SUPERUSER_ID, uid).name
 
@@ -240,12 +234,8 @@ class website_sale(http.Controller):
         站点首页
         """
         # 先校验是否登录
-        cr, context, pool = request.cr, request.context, request.registry
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # 3代表公开用户，也就是未登录状态
-        if request.session.get('new_uid'):
-            uid = request.session['new_uid']
-        else:
-            uid = request.uid
         if uid == 3:
             return self.user_check()
         else:
@@ -262,17 +252,19 @@ class website_sale(http.Controller):
 
             # 获取所有的产品模板数据
             template_obj = pool.get('product.template')
-            product_ids = template_obj.search(cr, uid, domain)
+            product_ids = template_obj.search(cr, SUPERUSER_ID, domain)
             products = template_obj.browse(cr, SUPERUSER_ID, product_ids, context=context)
 
             # 获取该产品是否已加入到了购物车
             key_name = {}
             all_car_num = 0
+            all_money = 0
             car_obj = pool.get('qdodoo.wxsite.car')
             car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid),('name','in',product_ids)])
             for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
-                key_name[key_line.name.id] = u'已添加'
+                key_name[key_line.name.id] = key_line.number
                 all_car_num += key_line.number
+                all_money += key_line.number * key_line.name.lst_price #获取总金额
 
             category_ids = category_obj.search(cr, SUPERUSER_ID, [('parent_id', '=', False)], context=context)
             categs = category_obj.browse(cr, SUPERUSER_ID, category_ids, context=context)
@@ -298,13 +290,13 @@ class website_sale(http.Controller):
                 'pricelist': pricelist,
                 'key_name':key_name,
                 'all_car_num':all_car_num,
+                'all_money':all_money,
             }
             return request.website.render("wxsite.products",values)
 
     @http.route(['/shop/wx/product/<model("product.template"):product>'], type='http', auth="public", website=True)
     def product(self, product, category='', **kwargs):
-        cr, context, pool = request.cr, request.context, request.registry
-        uid = request.session['new_uid']
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         category_obj = pool['product.public.category']
         template_obj = pool['product.template']
 
@@ -377,8 +369,7 @@ class website_sale(http.Controller):
         还需到微信商户平台（pay.weixin.qq.com）-->账户设置-->API安全-->密钥设置中设置密钥，对应本函数中的wx_key
         参考：https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_1
         """
-        cr, context, pool = request.cr, request.context, request.registry
-        uid = request.session['new_uid']
+        cr, uid, context, pool = request.cr,request.uid, request.context, request.registry
         # 获取当前公司的名称（根据用户模型获取数据）
         users_obj = pool.get('res.users')
         users = users_obj.browse(cr, SUPERUSER_ID, uid)
@@ -724,7 +715,6 @@ class website_sale(http.Controller):
         # 获取jsapi_ticket
         url_1 = 'https://oapi.dingtalk.com/get_jsapi_ticket?access_token='+access_token+'&type=jsapi'
         response_1 = urllib2.urlopen(url_1, timeout=10)
-        print response_1,'111111111111111'
         values = {}
         values['corpId'] = corpid
         values['agentId'] = '10292872'
@@ -748,5 +738,4 @@ class website_sale(http.Controller):
         # result_new = json.loads(response.read())
         # is_success, result = self.handle_result(result_new)
         # access_token = result.get('access_token')
-        print post,'11111111'
         return True
