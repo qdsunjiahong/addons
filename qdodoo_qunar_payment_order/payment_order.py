@@ -23,6 +23,8 @@ class qunar_payment(osv.Model):
         to_pay_ids = []
         for id in context.get('active_ids', []):
             account_invoice = account_invoice_obj.browse(cr, uid, id, context=context)
+            if account_invoice.state != 'open':
+                raise osv.except_osv(u'错误', "你只能支付待支付状态的发票!'")
             to_pay_ids.append(account_invoice.id)
             partner_ids.append(account_invoice.partner_id.id)
             amount += account_invoice.residual
