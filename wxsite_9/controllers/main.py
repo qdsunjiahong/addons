@@ -20,6 +20,7 @@ import util
 from urllib import urlencode
 from werkzeug.utils import redirect
 import os,sys
+import simplejson
 import requests.packages.urllib3.util.ssl_
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'
 
@@ -39,7 +40,7 @@ class website_sale(http.Controller):
             wx_oauth_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='+wx_appid+'&redirect_uri='+urllib.quote(wx_redirect, '')+'&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect'
             return redirect(wx_oauth_url)  #向微信授权跳转
 
-    @http.route(['/wxsite/wxoauth'], type='http', auth="public", website=True, csrf=False)
+    @http.route(['/wxsite/wxoauth'], type='http', auth="public", website=True)
     def wx_oauth(self, **post):
         """
         微信授权回调地址，用户同意授权后将带参(code）跳转入本地址
@@ -90,7 +91,7 @@ class website_sale(http.Controller):
             """
             以下可以是用户注册处理
             """
-            users_obj.create(cr, SUPERUSER_ID, {'login':wx_openid,'name':wx_nickname,'password':'qdodoo'})
+            users_obj.create(cr, SUPERUSER_ID, {'login':wx_openid,'name':wx_nickname,'password':'qdodoo','oauth_provider_id':''})
         return request.redirect("/login?db=%s&login=%s&key=%s&redirect=%s"%(request.session.db,wx_openid,'qdodoo','shop/wx/lunch'))
 
     @http.route(['/shop/wx/about'], type='http', auth="public", website=True, csrf=False)
@@ -134,9 +135,15 @@ class website_sale(http.Controller):
             else:
                 if post.get('action') == 'update':
                     car_obj.create(cr, SUPERUSER_ID, {'user_id':uid,'name':int(post.get('cartid')),'number':int(post.get('number'))})
-            return '1'
+            all_car_num = 0
+            all_money = 0
+            car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
+            for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
+                all_car_num += key_line.number
+                all_money += key_line.number * key_line.name.lst_price #获取总金额
+            return simplejson.dumps({'key':'1','all_car_num':all_car_num,'all_money':all_money})
         except ValueError, e:
-            return '2'
+            return '-1'
 
     @http.route(['/shop/wx/car'], type='http', auth="public", website=True, csrf=False)
     def get_car(self, **post):
@@ -230,7 +237,7 @@ class website_sale(http.Controller):
         return request.website.render("wxsite.user",values)
 
     @http.route(['/shop/wx/lunch',
-                 '/shop/wx/lunch/<model("product.public.category"):category>',], type='http', auth="public", website=True, csrf=False)
+                 '/shop/wx/lunch/<model("pos.category"):category>',], type='http', auth="public", website=True)
     def tracking_cart(self, category=None , **post):
         """
         站点首页
@@ -299,13 +306,13 @@ class website_sale(http.Controller):
     @http.route(['/shop/wx/product/<model("product.template"):product>'], type='http', auth="public", website=True, csrf=False)
     def product(self, product, category='', **kwargs):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
-        category_obj = pool['product.public.category']
+        category_obj = pool['pos.category']
         template_obj = pool['product.template']
 
         context.update(active_id=product.id)
 
         if category:
-            category = category_obj.browse(cr, uid, int(category), context=context)
+            category = category_obj.browse(cr, SUPERUSER_ID, int(category), context=context)
 
         attrib_list = request.httprequest.args.getlist('attrib')
         attrib_values = [map(int,v.split("-")) for v in attrib_list if v]
@@ -313,8 +320,8 @@ class website_sale(http.Controller):
 
         keep = QueryURL('/shop/wx/lunch', category=category and category.id, attrib=attrib_list)
 
-        category_ids = category_obj.search(cr, uid, [], context=context)
-        category_list = category_obj.name_get(cr, uid, category_ids, context=context)
+        category_ids = category_obj.search(cr, SUPERUSER_ID, [], context=context)
+        category_list = category_obj.name_get(cr, SUPERUSER_ID, category_ids, context=context)
         category_list = sorted(category_list, key=lambda category: category[1])
 
         pricelist = get_pricelist()

@@ -28,16 +28,18 @@ $('.top-cats ul:first').drag({
 });
 */
 
-//更改购买数量
-$('.select-product a').click(function(){
-	var pid = $(this).parent().prop('id'),
-		quantity = parseFloat($(this).parent().find('span').text());
+function chQuantity(pid, addOrReduce){
+    var thisDiv = $('div.select-product[id="'+pid+'"]'),
+		quantity = 1;  //默认为1
 
-	if($(this).hasClass('quantity-reduce')){
-		quantity -= 1;
-	}else if($(this).hasClass('quantity-add')){
-		quantity += 1;
-	}
+    if(thisDiv.find('span').length > 0){  //如果有数量，则在此数量上进行加减
+        quantity = parseInt(thisDiv.find('span').text());
+        if(addOrReduce == 'add'){
+		    quantity += 1;
+	    }else if(addOrReduce == 'reduce'){
+		    quantity -= 1;
+	    }
+    }
 
 	if(quantity > 0){
 		$.ajax({
@@ -48,9 +50,20 @@ $('.select-product a').click(function(){
 				cartid: pid,
 				number: quantity,
 			}
-		}).done(function(msg){
-			if(msg == '1'){
-				location.href='/shop/wx/lunch';
+		}).done(function(msg){  //msg是更改后该产品在购物车内数量，-1表示操作失败
+			var chedQuantity = quantity;
+            var res = eval("("+msg+")");
+			if(res.key == '1'){
+				if(thisDiv.find('span').text()=='0'){  //如果没有减号和数量，则添加
+					thisDiv.append('<a href="javascript:void(0)" name="reduce" class="quantity-reduce" title="减少购买数量" onclick="chQuantity('+pid+', \'reduce\')"></a>');
+				    thisDiv.find('span').text(chedQuantity+'');
+                    $('.selected-quantity').find('span').text(res.all_car_num);
+                    $('.selected-sum').find('span').text(res.all_money);
+                }else{
+                    thisDiv.find('span').text(chedQuantity+'');
+                    $('.selected-quantity').find('span').text(res.all_car_num);
+                    $('.selected-sum').find('span').text(res.all_money);
+                }
 			}else{
 				alert('操作失败，请刷新页面！');
 			}
@@ -58,9 +71,17 @@ $('.select-product a').click(function(){
 	}else{
 		alert('购买数量不合法!');
 	}
-	    
+}
 
+//将页面已有的加减号点击事件绑定到处理函数中
+$('.select-product a').click(function(){
+	var pid = $(this).parent().prop('id');
 
+    if($(this).hasClass('quantity-reduce')){
+        chQuantity(pid, 'reduce');
+    }else if($(this).hasClass('quantity-add')){
+        chQuantity(pid, 'add');
+    }
 });
 
 //顶部定时滚动

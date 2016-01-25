@@ -5,7 +5,7 @@
         <!--产品分类-->
         <template id="categories_recursive" name="Category list">
           <li t-att-class="'active' if c.id == int(category or 0) else ''">
-              <a t-att-href="keep('/shop/wx/lunch/' + slug(c), category=0)" t-field="c.name"></a>
+              <a t-att-href="keep('/shop/wx/lunch/%s'%slug(c), category=0)" t-field="c.name"></a>
               <ul t-if="c.child_id" class="nav nav-pills nav-stacked nav-hierarchy">
                   <t t-foreach="c.child_id" t-as="c">
                       <t t-call="wxsite.categories_recursive"/>
@@ -53,18 +53,6 @@
                     <div class="top-info"><span t-esc="company_name"/><span class="top-info-desk"></span></div>
                     <!--主体部分-->
                     <div class="main">
-                        <!--图片滚动-->
-                        <!--<div class="index-scrolls">-->
-                            <!--<a class="curr-img" href="./"><img src="/wxsite/static/images/index-scroll1.jpg" /></a>-->
-                            <!--<a href="./"><img src="/wxsite/static/images/index-scroll2.jpg" /></a>-->
-                            <!--<a href="./"><img src="/wxsite/static/images/index-scroll3.jpg" /></a>-->
-                            <!--<ul class="scroll-marks">-->
-                                <!--<li class="curr-mark"></li>-->
-                                <!--<li></li>-->
-                                <!--<li></li>-->
-                            <!--</ul>-->
-                        <!--</div>-->
-
 
                         <!--顶部分类菜单-->
                         <div class="top-cats">
@@ -82,35 +70,22 @@
                                 <div class="product oe_product oe_list oe_product_cart">
                                     <t t-call="wxsite.products_item"/>
                                     <div t-att-id="product.id" class="select-product">
-                                    <a href="javascript:void(0)" name="add" class="quantity-add" title="增加购买数量"></a>
-                                    <span t-esc="key_name.get(product.id,0)"></span>
-                                    <a href="javascript:void(0)" name="reduce" class="quantity-reduce" title="减少购买数量"></a>
+                                        <a href="javascript:void(0)" name="add" class="quantity-add" title="增加购买数量"></a>
+                                        <span t-if="key_name.get(product.id,0) > 0" t-esc="key_name.get(product.id,0)"></span>
+                                        <a t-if="key_name.get(product.id,0) > 0" href="javascript:void(0)" name="reduce" class="quantity-reduce" title="减少购买数量"></a>
                                     </div>
                                 </div>
                             </t>
                         </div>
+                        <br/>
+                        <div class="clear"></div>
                     </div>
 
 					<!--新底部菜单，参照惠美app设计图-->
 					<div class="simple-btn">
-						<span class="selected-quantity">共<span t-esc="all_car_num"/>份</span>总价：￥<span class="selected-sum"><span t-esc="all_money"/></span>
+						共<span class="selected-quantity"><span t-esc="all_car_num"/>份</span>总价：￥<span class="selected-sum"><span t-esc="all_money"/></span>
 						<a href="/shop/wx/car" title="查看我已选菜品">选好了</a>
 					</div>
-		
-                    
-                    <!--底部固定菜单，各页通用
-                    <div class="footer-menus">
-                        <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
-                        </div>
-                        <div class="fmenu-item">
-                            <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
-                        </div>
-                        <div class="fmenu-item">
-                            <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
-                        </div>
-                    </div>-->
                     
                     <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
                     <script type="text/javascript" src="/wxsite/static/js/addtocart.js"></script>  <!--购物车添加js-->

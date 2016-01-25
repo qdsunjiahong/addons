@@ -37,7 +37,8 @@ $('a.delcart').click(function(){
             action: 'del',
             cartid: cartID
         }}).done(function(msg){
-            if(msg == '1'){  //删除成功
+            var res = eval("("+msg+")");
+            if(res.key == '1'){  //删除成功
                 location.href='/shop/wx/car';
             }else{
                 alert("操作失败，请刷新页面！");
@@ -75,7 +76,8 @@ $('a.chquantity').click(function(){
                 number: quantity,
             }
         }).done(function (msg) {
-            if (msg == '1') {  //操作成功
+            var res = eval("("+msg+")");
+            if (res.key == '1') {  //操作成功
                 location.href = '/shop/wx/car';
             } else {
                 alert("操作失败，请刷新页面！");

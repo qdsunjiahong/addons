@@ -18,6 +18,7 @@
     'data': [
         'views/template.xml',
         'views/wxsite.xml',
+        'security/ir.model.access.csv',
         # ...
     ],    #更新XML,CSV
     'js': [
