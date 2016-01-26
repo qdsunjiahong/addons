@@ -40,7 +40,7 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
                 where
                     sm.product_id = %s and (sm.location_dest_id = %s or sm.location_id = %s) and sm.state='done' and sm.product_id = %s and sm.date >= '%s' and sm.date <= '%s'
                 """ % (self.product_id,self.location_id,self.location_id,self.product_id,self.start_date,self.end_date)
-        sql += """group by sm.location_id,sm.product_id,sm.product_uom_qty,sm.date,sm.id order by sm.date desc"""
+        sql += """group by sm.location_id,sm.product_id,sm.product_uom_qty,sm.date,sm.id order by sm.date"""
         self.cr.execute(sql.decode('utf-8'))
         result = self.cr.fetchall()
         # 根据id获取产品名字、编号
