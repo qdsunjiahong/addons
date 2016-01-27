@@ -39,7 +39,8 @@
                                 <field name="notes"/>
                             </group>
                             <group>
-                                <field name="location_name" domain="[('company_id','=',company_id)]" on_change="change_location_id(location_name)"/>
+                                <field name="location_name" domain="[('company_id','=',company_id)]"
+                                       on_change="change_location_id(location_name)"/>
                                 <field name="location_id"/>
                                 <field name="origin"/>
                                 <field name="notes_new"/>
@@ -52,22 +53,26 @@
                                         <field name="import_file"/>
                                     </group>
                                     <group>
-                                        <button name='btn_import_data' string='导入' type='object' states="draft" />
+                                        <button name='btn_import_data' string='导入' type='object' states="draft"/>
                                         <a href="/qdodoo_plan_purchase_order/static/template.xls">点此进行模板下载</a>
                                     </group>
                                 </group>
                                 <field name="order_line">
                                     <tree editable="bottom" colors="red:colors=='red'">
-                                        <field name="product_id" on_change="onchange_product_id(product_id,partner_id,qty,uom_id,parent.company_id)" domain="[('company_id','=',parent.company_id)]"/>
+                                        <field name="product_id"
+                                               on_change="onchange_product_id(product_id,partner_id,qty,uom_id,parent.company_id)"
+                                               domain="[('company_id','=',parent.company_id)]"/>
                                         <field name="qty_jh" sum="合计"/>
                                         <field name="qty" sum="合计" attrs="{'required':[('state','!=','draft')]}"/>
                                         <field name="plan_date_jh"/>
                                         <field name="plan_date" attrs="{'required':[('state','!=','draft')]}"/>
-                                        <field name="price_unit"/>
+                                        <field name="price_unit" invisible="1"/>
+                                        <field name="price_unit2" readonly="1"/>
                                         <field name="uom_id"/>
                                         <field name="state" invisible="True"/>
                                         <field name="colors" invisible="True"/>
-                                        <field name="partner_id" attrs="{'required':[('state','!=','draft')]}" on_change="onchange_product_id(product_id,partner_id,qty,uom_id,parent.company_id)"/>
+                                        <field name="partner_id" attrs="{'required':[('state','!=','draft')]}"
+                                               on_change="onchange_product_id(product_id,partner_id,qty,uom_id,parent.company_id)"/>
                                         <field name="name"/>
                                         <field name="is_cancel"/>
                                     </tree>
