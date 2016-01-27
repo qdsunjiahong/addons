@@ -129,8 +129,7 @@ class qdodooo_website_update(website_sale):
         else:
             # 存在 就在product.pricelist 查询出相应的价格列表 价格表
             pricelist = pool.get('product.pricelist').browse(cr, uid, context['pricelist'], context)
-        multiple=request.session.get('taylor_session')
-        partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid, context=context).partner_id
+        partner = pool.get('res.users').browse(cr, uid, uid, context=context).partner_id
         # 读取当前客户的出库库位
         output_warehouse = pool.get('res.partner').browse(cr, uid, int(partner)).out_stock
         sale_order = ""
@@ -141,14 +140,11 @@ class qdodooo_website_update(website_sale):
                     cr.execute(sql)
                     product_id = cr.fetchall()[0]
                     sale_order = request.website.sale_get_order(force_create=1)
-                    # value=int(value)* multiple.get(int(key))
                     sale_order._cart_update(product_id=int(product_id[0]), add_qty=float(value), set_qty=float(set_qty))
         if output_warehouse:
-            pool.get('sale.order').write(cr, SUPERUSER_ID, int(sale_order), {'warehouse_id': int(output_warehouse)})
+            pool.get('sale.order').write(cr, uid, int(sale_order), {'warehouse_id': int(output_warehouse)})
         return request.redirect("/shop/cart")
-        # #得到销售订单
-        # request.website.sale_get_order(force_create=1)._cart_update(product_id=int(product_id), add_qty=float(add_qty), set_qty=float(set_qty))
-        # return request.redirect("/shop/cart")
+
 
     @http.route(['/shop/cart'], type='http', auth="public", website=True)
     def cart(self, **post):
@@ -196,11 +192,7 @@ class qdodooo_website_update(website_sale):
                 # 把搜索条件转化为 oa代码 区间集合
                 domain += ['|', '|', '|', ('name', 'ilike', srch), ('description', 'ilike', srch),
                            ('description_sale', 'ilike', srch), ('product_variant_ids.default_code', 'ilike', srch)]
-        ids_lst = []
-        for line,val in self.get_local_num_dict(pool.get('product.template').search(cr, SUPERUSER_ID, [])).items():
-            if val > 0:
-                ids_lst.append(line)
-        domain += [('id','in',ids_lst)]
+
         #自己定义保存之前的过滤条件
         cata_domain = domain
         # 来查看一下我们的搜索条件
@@ -346,6 +338,8 @@ class qdodooo_website_update(website_sale):
                 product_num[key_line] = '充足'
             elif 2000 > value_line > 1000:
                 product_num[key_line] = '紧张'
+            elif value_line <= 0:
+                product_ids.remove(key_line)
             else:
                 product_num[key_line] = str(value_line)
         products = product_obj.browse(cr, uid, product_ids, context=context)
@@ -408,7 +402,7 @@ class qdodooo_website_update(website_sale):
         }
         return request.website.render("website_sale.products", values)
 
-    def get_local_num_dict(self, template_ids ):
+    def get_local_num_dict(self, template_ids):
         '''
         通过产品模板id和 当前UID查询出当前门店对应的库位
         返回库位中每个产品模板对应数量的字典
@@ -420,29 +414,42 @@ class qdodooo_website_update(website_sale):
         #先设定常用变量
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         #查询出当前客户
-        partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid, context=context)
-        local_id=partner.location_id.id
+        partner = pool.get('res.users').browse(cr, uid, uid, context=context)
         product_obj=pool.get('product.product')
         quant_obj=pool.get('stock.quant')
         move_obj=pool.get('stock.move')
-        if not  local_id:
+        if not partner.location_id:
             raise except_orm(_('Warning!'),_('当前没有有效的库位信息，请检查客户资料是否正确！'))
-        res = []
+        # 获取出库库位
+        local_id=partner.location_id.id
         re_dict={}
-        re_dict_new={}
+        # 查询组合品模板id
+        mrp_dict = []
+        mrp_obj = pool.get('mrp.bom')
+        mrp_ids = mrp_obj.search(cr, uid, [('type','=','phantom')])
+        for mrp_id in mrp_obj.browse(cr, uid, mrp_ids):
+            mrp_dict.append(mrp_id.product_tmpl_id.id)
+
+        # 获取产品的库存数量
+        quant_product_dict = {}
+        quant_ids = quant_obj.search(cr, uid, [('location_id','=',local_id)])
+        for quant in quant_obj.browse(cr, uid, quant_ids):
+            quant_product_dict[quant.product_id.id] = quant.qty
+
+        #先查询出产品模版对应的产品
         for temp_id in template_ids:
-            #先查询出产品模版对应的产品
-            product_id=product_obj.search(cr ,SUPERUSER_ID ,[('product_tmpl_id','=',int(temp_id))],limit=1)
-            #根据产品ID查询出产quant中的数量
-            re_dict[int(temp_id)]=0
-            if product_id:
-                product_id=product_id[0]
-                for quant in quant_obj.browse(cr ,SUPERUSER_ID ,quant_obj.search(cr ,SUPERUSER_ID ,[('location_id','=',local_id),('product_id','=',product_id)])):
-                    re_dict[int(temp_id)]+=quant.qty
+            for product_id in product_obj.search(cr ,uid ,[('product_tmpl_id','=',temp_id)]):
+                #根据产品ID查询出产quant中的数量
+                if product_id in quant_product_dict:
+                    if temp_id in re_dict:
+                        re_dict[temp_id] += quant_product_dict.get(product_id)
+                    else:
+                        re_dict[temp_id] = quant_product_dict.get(product_id)
+
         # 获取被占用的库存
         quant_dict = {}
-        move_ids = move_obj.search(cr, SUPERUSER_ID, [('state','in',('confirmed','assigned')),('location_id','=',local_id)])
-        for move_id in move_obj.browse(cr, SUPERUSER_ID, move_ids):
+        move_ids = move_obj.search(cr, uid, [('state','in',('confirmed','assigned')),('location_id','=',local_id)])
+        for move_id in move_obj.browse(cr, uid, move_ids):
             if move_id.reserved_quant_ids:
                 for quant_id in move_id.reserved_quant_ids:
                     if quant_id.product_id.product_tmpl_id.id in quant_dict:
@@ -450,7 +457,10 @@ class qdodooo_website_update(website_sale):
                     else:
                         quant_dict[quant_id.product_id.product_tmpl_id.id] = quant_id.qty
         for key_line, values_line in re_dict.items():
-            re_dict[key_line] = values_line - quant_dict.get(key_line,0.0)
+            if key_line in mrp_dict:
+                re_dict[key_line] = 3000
+            else:
+                re_dict[key_line] = values_line - quant_dict.get(key_line,0.0)
         return re_dict
 
     def checkout_values(self, data=None):
@@ -462,15 +472,15 @@ class qdodooo_website_update(website_sale):
         state_orm = registry.get('res.country.state')
 
         # 搜索出哪个国家
-        country_ids = orm_country.search(cr, SUPERUSER_ID, [], context=context)
+        country_ids = orm_country.search(cr, uid, [], context=context)
         # 得到国家数据
-        countries = orm_country.browse(cr, SUPERUSER_ID, country_ids, context)
+        countries = orm_country.browse(cr, uid, country_ids, context)
         # 搜索出当前国家的状态？  啥状态？？？
-        states_ids = state_orm.search(cr, SUPERUSER_ID, [], context=context)
+        states_ids = state_orm.search(cr, uid, [], context=context)
         # 得到状态值
-        states = state_orm.browse(cr, SUPERUSER_ID, states_ids, context)
+        states = state_orm.browse(cr, uid, states_ids, context)
         # 得到当前用户的供应商
-        partner = orm_user.browse(cr, SUPERUSER_ID, request.uid, context).partner_id
+        partner = orm_user.browse(cr, uid, request.uid, context).partner_id
 
         # 初始化订单
         order = None
@@ -485,7 +495,7 @@ class qdodooo_website_update(website_sale):
             # 如果当前的用户不为  当前站点所显示的id
             if request.uid != request.website.user_id.id:
                 checkout.update(self.checkout_parse("billing", partner))
-                shipping_ids = orm_partner.search(cr, SUPERUSER_ID,
+                shipping_ids = orm_partner.search(cr, uid,
                                                   [("parent_id", "=", partner.id), ('type', "=", 'delivery')],
                                                   context=context)
                 if checkout.get('city'):
@@ -495,7 +505,7 @@ class qdodooo_website_update(website_sale):
                 order = request.website.sale_get_order(force_create=1, context=context)
                 if order.partner_id:
                     domain = [("partner_id", "=", order.partner_id.id)]
-                    user_ids = request.registry['res.users'].search(cr, SUPERUSER_ID, domain,
+                    user_ids = request.registry['res.users'].search(cr, uid, domain,
                                                                     context=dict(context or {}, active_test=False))
                     if not user_ids or request.website.user_id.id not in user_ids:
                         checkout.update(self.checkout_parse("billing", order.partner_id))
@@ -526,9 +536,9 @@ class qdodooo_website_update(website_sale):
         ctx = dict(context, show_address=1)
         shippings = []
         if shipping_ids:
-            shippings = shipping_ids and orm_partner.browse(cr, SUPERUSER_ID, list(shipping_ids), ctx) or []
+            shippings = shipping_ids and orm_partner.browse(cr, uid, list(shipping_ids), ctx) or []
         if shipping_id > 0:
-            shipping = orm_partner.browse(cr, SUPERUSER_ID, shipping_id, ctx)
+            shipping = orm_partner.browse(cr, uid, shipping_id, ctx)
             checkout.update(self.checkout_parse("shipping", shipping))
 
         checkout['shipping_id'] = shipping_id
@@ -582,7 +592,7 @@ class qdodooo_website_update(website_sale):
         if redirection:
             return redirection
         if post.get('city'):
-            city_id = registry.get('hm.city').search(cr, SUPERUSER_ID, [('name', '=', post.get('city'))])
+            city_id = registry.get('hm.city').search(cr, uid, [('name', '=', post.get('city'))])
             if city_id:
                 post['city'] = city_id[0]
             else:
@@ -631,13 +641,13 @@ class qdodooo_website_update(website_sale):
         multiple=request.session.get('taylor_session')
         # 判断赠品的数量是否超过
         for key, value in template_dict.items():
-            line_ids = line_obj.search(cr, 1, [('product_id','=',product.get(key)),('order_id','=',order.id)])
-            line_obj_ids = line_obj.browse(cr, 1, line_ids[0])
+            line_ids = line_obj.search(cr, uid, [('product_id','=',product.get(key)),('order_id','=',order.id)])
+            line_obj_ids = line_obj.browse(cr, uid, line_ids[0])
             if key in gifts_num:
-                line_obj.write(cr, 1, line_ids, {'price_unit':0.0})
+                line_obj.write(cr, uid, line_ids, {'price_unit':0.0})
                 if value > gifts_num[key]:
                     return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
-            line_obj.write(cr, 1, line_ids, {'multiple_number':line_obj_ids.product_uom_qty*multiple.get(key)})
+            line_obj.write(cr, uid, line_ids, {'multiple_number':line_obj_ids.product_uom_qty*multiple.get(key)})
         promotion_obj = registry.get('qdodoo.promotion')
         line_obj = registry.get('sale.order.line')
         users_obj = registry.get('res.users')
@@ -647,7 +657,7 @@ class qdodooo_website_update(website_sale):
         for key,valus in product_price_dict.items():
             minus_money += valus
         sale_order_obj = registry.get('sale.order')
-        sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'minus_money':minus_money})
+        sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money})
         return request.redirect("/shop/payment")
 
     # 获取满赠产品数量
@@ -662,7 +672,7 @@ class qdodooo_website_update(website_sale):
         # 判断是否有对应的满赠促销单
         date = datetime.datetime.now().date().strftime('%Y-%m-%d')
         version = ''
-        promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','gift'),('company_id','=',users_obj.browse(cr, SUPERUSER_ID, uid).company_id.id)])
+        promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','gift'),('company_id','=',users_obj.browse(cr, uid, uid).company_id.id)])
         if promotion_id:
             promotion_user_ids = promotion_user.search(cr, uid, [('user','=',uid),('promotion','=',promotion_id[0])])
             if not promotion_user_ids:
@@ -672,7 +682,7 @@ class qdodooo_website_update(website_sale):
                 if (line.date_start <= date or not line.date_start) and (line.date_end >= date or not line.date_end):
                     version = line
         # 获取当前登录人的销售团队
-        user_section_id = users_obj.browse(cr, SUPERUSER_ID, uid).default_section_id
+        user_section_id = users_obj.browse(cr, uid, uid).default_section_id
         if not user_section_id:
             raise except_orm(_('Warning!'),_('当前登录人未设置销售团队！'))
         # 如果存在满足时间段的版本
@@ -703,7 +713,7 @@ class qdodooo_website_update(website_sale):
         # 判断是否有对应的满减促销单
         date = datetime.datetime.now().date().strftime('%Y-%m-%d')
         version = ''
-        promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','reduction'),('company_id','=',users_obj.browse(cr, SUPERUSER_ID, uid).company_id.id)])
+        promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','reduction'),('company_id','=',users_obj.browse(cr, uid, uid).company_id.id)])
         if promotion_id:
             promotion_user_ids = promotion_user.search(cr, uid, [('user','=',uid),('promotion','=',promotion_id[0])])
             if not promotion_user_ids:
@@ -714,7 +724,7 @@ class qdodooo_website_update(website_sale):
                     version = line
         # 如果存在满足时间段的版本
         # 获取当前登录人的销售团队
-        user_section_id = users_obj.browse(cr, SUPERUSER_ID, uid).default_section_id
+        user_section_id = users_obj.browse(cr, uid, uid).default_section_id
         if not user_section_id:
             raise except_orm(_('Warning!'),_('当前登录人未设置销售团队！'))
         product_price_dict = {}
@@ -775,7 +785,7 @@ class qdodooo_website_update(website_sale):
             order = request.website.sale_get_order(context=context)
         else:
             # 查询出相应的销售订单
-            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
+            order = request.registry['sale.order'].browse(cr, uid, sale_order_id, context=context)
             # 还是在判断下 当前订单号 和缓存中的是否一致
             assert order.id == request.session.get('sale_last_order_id')
         if not order or not order.amount_total:
@@ -792,7 +802,7 @@ class qdodooo_website_update(website_sale):
         product_num_dict = self.get_minus_gift(cr, uid, order, promotion_obj, promotion_user, users_obj)
         minus_money = 0
         for line in order.order_line:
-            line_obj.write(cr, 1, line.id, {'product_uom_qty':line.multiple_number})
+            line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
         for key,valus in product_price_dict.items():
             if valus > 0:
                 val = {}
@@ -802,7 +812,7 @@ class qdodooo_website_update(website_sale):
                 val['product_uom'] = key.uom_id.id
                 val['price_unit'] = -valus
                 val['name'] = key.name
-                line_obj.create(cr ,1, val)
+                line_obj.create(cr ,uid, val)
                 minus_money += valus
         for key,valus in product_num_dict.items():
             if valus[1] > 0 and valus[2] > 0:
@@ -816,32 +826,33 @@ class qdodooo_website_update(website_sale):
                 val['product_uom'] = key.uom_id.id
                 val['price_unit'] = 0
                 val['name'] = key.name
-                line_obj.create(cr ,1, val)
-                gift_obj.write(cr, 1, valus[0], {'product_items_num':gift_obj.browse(cr, uid, valus[0]).product_items_num - val['product_uom_qty']})
+                line_obj.create(cr ,uid, val)
+                gift_obj.write(cr, uid, valus[0], {'product_items_num':gift_obj.browse(cr, uid, valus[0]).product_items_num - val['product_uom_qty']})
         user_id = order.partner_id.user_id.id or uid
-        section_obj = users_obj.browse(cr, SUPERUSER_ID, user_id)
+        section_obj = users_obj.browse(cr, uid, user_id)
+        section_obj = users_obj.browse(cr, uid, user_id)
         section_id = section_obj.default_section_id.id if section_obj.default_section_id else False
         if section_id:
-            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'minus_money':minus_money,'section_id':section_id,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+            sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money,'section_id':section_id,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
         else:
-            sale_order_obj.write(cr, SUPERUSER_ID, order.id, {'minus_money':minus_money,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+            sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
         order.action_button_confirm()
         # send by email
         # 邮件act为销售订单 生成报价单
-        email_act = sale_order_obj.action_quotation_send(cr, SUPERUSER_ID, [order.id], context=request.context)
-        sale_order_obj.manual_invoice(cr, SUPERUSER_ID, [order.id],context=context)
+        email_act = sale_order_obj.action_quotation_send(cr, uid, [order.id], context=request.context)
+        sale_order_obj.manual_invoice(cr, uid, [order.id],context=context)
         # 获取对应发票列表id
         inv_ids = []
         inv_ids += [invoice.id for invoice in order.invoice_ids]
-        for line in invoice_obj.browse(cr, SUPERUSER_ID, inv_ids):
+        for line in invoice_obj.browse(cr, uid, inv_ids):
             if line.state == 'draft':
-                invoice_obj.signal_workflow(cr, SUPERUSER_ID, [line.id], 'invoice_open')
+                invoice_obj.signal_workflow(cr, uid, [line.id], 'invoice_open')
         # 获取对应的出库单列表id
         pick_ids = []
         pick_ids += [picking.id for picking in order.picking_ids]
-        for line in picking_obj.browse(cr, SUPERUSER_ID, pick_ids):
+        for line in picking_obj.browse(cr, uid, pick_ids):
             if line.state == 'confirmed':
-                picking_obj.action_assign(cr, SUPERUSER_ID, [line.id])
+                picking_obj.action_assign(cr, uid, [line.id])
         # clean context and session, then redirect to the confirmation page
         request.website.sale_reset(context=context)
 
@@ -853,7 +864,7 @@ class qdodooo_website_update(website_sale):
 
         sale_order_id = request.session.get('sale_last_order_id')
         if sale_order_id:
-            order = request.registry['sale.order'].browse(cr, SUPERUSER_ID, sale_order_id, context=context)
+            order = request.registry['sale.order'].browse(cr, uid, sale_order_id, context=context)
         else:
             return request.redirect('/shop')
 
@@ -898,7 +909,7 @@ class qdodooo_website_update(website_sale):
                 shipping_partner_id = order.partner_invoice_id.id
 
         values = {
-            'order': request.registry['sale.order'].browse(cr, SUPERUSER_ID, order.id, context=context)
+            'order': request.registry['sale.order'].browse(cr, uid, order.id, context=context)
         }
         values['multiple'] = multiple
         values['errors'] = sale_order_obj._get_errors(cr, uid, order, context=context)
@@ -907,21 +918,21 @@ class qdodooo_website_update(website_sale):
 
 
         # 得到我想要的账号余额
-        partner = pool.get('res.users').browse(cr, SUPERUSER_ID, uid).partner_id
-        have_money = pool.get('res.partner').browse(cr, SUPERUSER_ID, partner.id).credit
+        partner = pool.get('res.users').browse(cr, uid, uid).partner_id
+        have_money = pool.get('res.partner').browse(cr, uid, partner.id).credit
         if have_money >= 0:
             values['credit'] = 0
         else:
             values['credit'] = abs(have_money)
         if not values['errors']:
-            acquirer_ids = payment_obj.search(cr, SUPERUSER_ID, [('website_published', '=', True),
+            acquirer_ids = payment_obj.search(cr, uid, [('website_published', '=', True),
                                                                  ('company_id', '=', order.company_id.id)],
                                               context=context)
             values['acquirers'] = list(payment_obj.browse(cr, uid, acquirer_ids, context=context))
             render_ctx = dict(context, submit_class='btn btn-primary', submit_txt=_('Pay Now'))
             for acquirer in values['acquirers']:
                 acquirer.button = payment_obj.render(
-                    cr, SUPERUSER_ID, acquirer.id,
+                    cr, uid, acquirer.id,
                     order.name,
                     order.amount_total,
                     order.pricelist_id.currency_id.id,
@@ -941,12 +952,29 @@ class qdodooo_website_update(website_sale):
         # 获取所有的活动
         promotion_obj = request.registry.get('qdodoo.promotion')
         promotion_ids = promotion_obj.search(cr, uid, [('is_play','=',True)])
-        values['promotion'] = promotion_obj.browse(cr, uid, promotion_ids)
         # 获取当前登录人已参加的活动
         promotion_use_obj = request.registry.get('qdodoo.user.promotion')
         promotion_use_ids = promotion_use_obj.search(cr, uid, [('user','=',uid),('promotion','in',promotion_ids)])
         values['promotion_users'] = promotion_use_obj.browse(cr, uid, promotion_use_ids)
+        promotion_ids_old = []
+        for line in values['promotion_users']:
+            promotion_ids_old.append(line.promotion.id)
+        # 获取未报名的活动
+        promotion_ids_new = list(set(promotion_ids) - set(promotion_ids_old))
+        values['promotion'] = promotion_obj.browse(cr, uid, promotion_ids_new)
         return request.website.render("qdodoo_websale_update.promotion",values)
+
+    # 跳转到对账单页面
+    @http.route(['/shop/account'], type='http', auth="public", website=True)
+    def return_account(self, **post):
+        cr, uid, context = request.cr, request.uid, request.context
+
+        url_base = request.registry['ir.config_parameter'].get_param(cr, SUPERUSER_ID, 'web.base.url')
+        action_id = request.registry['ir.model.data'].get_object_reference(cr, uid, 'qdodoo_websale_update',
+                                                                           'action_account_order')[1]
+        url = url_base + '/web#' + 'page=0&limit=80&view_type=list&model=account.move.line' + '&action=%s' % action_id
+        ret = "<html><head><meta http-equiv='refresh' content='0;URL=%s'></head></html>" % url
+        return ret
 
     # 0获取优惠失败，请联系管理员；1该优惠您已经报名；2报名成功
     @http.route(['/shop/user/info/data_new'], type='http', auth="public", website=True)
@@ -959,5 +987,5 @@ class qdodooo_website_update(website_sale):
         if promotion_ids:
             return '1'
         else:
-            promotion_obj.create(cr, 1, {'user':uid,'promotion':int(post.get('promotion_id'))})
+            promotion_obj.create(cr, SUPERUSER_ID, {'user':uid,'promotion':int(post.get('promotion_id'))})
             return '2'

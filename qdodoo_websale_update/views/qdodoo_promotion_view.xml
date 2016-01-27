@@ -262,5 +262,12 @@
             <field name="sequence" type="int">99</field>
         </record>
 
+        <record id="menu_qdodoo_mendian" model="website.menu">
+            <field name="name">对账单</field>
+            <field name="url">/shop/account</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence" type="int">37</field>
+        </record>
+
     </data>
 </openerp>

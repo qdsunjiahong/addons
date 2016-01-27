@@ -31,6 +31,7 @@
              'views/res_partner_inherit.xml',
              'views/qdodoo_promotion_view.xml',
              'security/ir.model.access.csv',
+             'security/qdodoo_websale_update.xml',
              'views/door_deposit.xml',],
     'application': True,  # 是否认证
     'installable': True,  # 是否可安装

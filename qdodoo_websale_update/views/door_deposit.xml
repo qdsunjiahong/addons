@@ -11,6 +11,7 @@
                             <button name="btn_done" states="sent" string="通过" type="object"/>
                             <button name="btn_draft" states="sent" string="驳回" type="object"/>
                             <button name="btn_cancel" states="draft,sent" string="取消" type="object"/>
+                            <button name="btn_over" states="done" string="付款" type="object"/>
                             <field name="state" widget="statusbar" statusbar_visible="draft,sent,done,over" statusbar_colors='{"draft":"red","sent":"blue"}'/>
                         </header>
                         <group>
@@ -79,7 +80,7 @@
                 <field name="view_type">form</field>
                 <field name="view_mode">tree,form</field>
             </record>
-            <menuitem id="qdodoo_door_dipozit_act" name="门店存款" parent="base.menu_sales" action="store_deposit_act"/>
+            <menuitem id="qdodoo_door_dipozit_act" name="门店存款" parent="portal.portal_orders" action="store_deposit_act" sequence="99"/>
 
 
         </data>

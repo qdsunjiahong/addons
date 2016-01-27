@@ -3,24 +3,12 @@
 from openerp import models, fields, api, _
 from openerp.osv import osv
 
-class qdodoo_account_voucher_inherit(models.Model):
-    _inherit = 'account.voucher'
-
-    deposit_apply_id = fields.Many2one('store.deposit',u'付款申请单')
-
-    def proforma_voucher(self, cr, uid, ids, context=None):
-        res = super(qdodoo_account_voucher_inherit, self).proforma_voucher(cr, uid, ids, context=context)
-        obj = self.browse(cr, uid, ids[0])
-        deposit_obj = self.pool.get('store.deposit')
-        if obj.deposit_apply_id:
-            deposit_obj.write(cr, uid, obj.deposit_apply_id.id, {'state':'over'})
-        return res
-
 class store_deposit(models.Model):
     _name = "store.deposit"
     _order = 'id desc'
 
     name = fields.Many2one('res.partner',string='账户',required=True)
+    voucher_id = fields.Many2one('account.voucher',string='付款单')
     deposit_time = fields.Datetime(string='存款时间', required=True)
     locat_deposit = fields.Char('地点', required=True)
     money = fields.Float(string='金额', digits=(20, 2), required=True)
@@ -48,7 +36,6 @@ class store_deposit(models.Model):
         val['partner_id'] = obj.name.id
         val['amount'] = obj.money
         val['company_id'] = obj.name.company_id.id
-        val['deposit_apply_id'] = obj.id
         val['type'] = 'receipt'
         val['pre_line'] = True
         if journal_id:
@@ -64,12 +51,19 @@ class store_deposit(models.Model):
                 val['account_id'] = journal.default_credit_account_id.id or journal.default_debit_account_id.id
         else:
             raise osv.except_osv(_(u'警告!'), _(u'缺少对应的账簿!'))
-        voucher_obj.create(cr, 1, val)
-        return self.write(cr, uid, ids, {'state':'done'})
+        voucher_id = voucher_obj.create(cr, 1, val)
+        return self.write(cr, uid, ids, {'state':'done','voucher_id':voucher_id})
 
     # 申请驳回
     def btn_draft(self, cr, uid, ids, context=None):
         return self.write(cr, uid, ids, {'state':'draft'})
+
+    # 付款
+    def btn_over(self, cr, uid, ids, context=None):
+        obj = self.browse(cr, uid, ids[0])
+        voucher_obj = self.pool.get('account.voucher')
+        voucher_obj.proforma_voucher(cr, uid, [obj.voucher_id.id])
+        return self.write(cr, uid, ids, {'state':'over'})
 
     # 取消
     def btn_cancel(self, cr, uid, ids, context=None):

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data noupdate="0">
+
+    <record model="ir.ui.menu" id="qdodoo_door_dipozit_act">
+        <field eval="[(4, ref('base.group_portal'))]" name="groups_id"/>
+    </record>
+
+</data>
+</openerp>
