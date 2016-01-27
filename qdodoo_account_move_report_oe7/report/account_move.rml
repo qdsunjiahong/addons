@@ -118,7 +118,7 @@
     <!--<para style="terp_default_8">
       <font color="white"> </font>
     </para>-->
-    <blockTable colWidths="132.0,134.0,135.0,135.0" style="Table2">
+    <blockTable colWidths="100.0,80.0,80.0,135.0,141" style="Table2">
       <tr>
         <td>
           <para style="terp_tblheader_General_Centre"><b>凭证号</b></para>
@@ -132,9 +132,12 @@
         <td>
           <para style="terp_tblheader_General_Centre"><b>凭证簿</b></para>
         </td>
+        <td>
+          <para style="terp_tblheader_General_Centre"><b>关联单号</b></para>
+        </td>
       </tr>
     </blockTable>
-    <blockTable colWidths="132.0,134.0,135.0,135.0" style="Table3">
+    <blockTable colWidths="100.0,80.0,80.0,135.0,141" style="Table3">
       <tr>
         <td>
           <para style="terp_default_Centre_8">[[ o.name ]]</para>
@@ -144,6 +147,9 @@
         </td>
         <td>
           <para style="terp_default_Centre_8">[[ o.date ]]</para>
+        </td>
+        <td>
+          <para style="terp_default_Centre_8">[[ o.journal_id.name ]]</para>
         </td>
         <td>
           <para style="terp_default_Centre_8">[[ o.ref ]]</para>
