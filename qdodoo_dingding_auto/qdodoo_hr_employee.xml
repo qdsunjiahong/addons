@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="qdodoo_view_employee_form3">
+            <field name="name">增加员工编号</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <field name="work_location" position="after">
+                    <field name="e_no" required="1"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>
