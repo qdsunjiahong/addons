@@ -19,7 +19,8 @@
 #
 ##############################################################################
 
-from openerp import fields,models,api,_ 
+from openerp import fields,models,api,_
+from openerp import SUPERUSER_ID
 
 class qunar_balance_ledger_filter_partner(models.Model):
 	_inherit="account.partner.ledger"
@@ -42,12 +43,12 @@ class qunar_partner_bedger(account_partner_ledger.third_party_ledger):
  	def set_context(self, objects, data, ids, report_type=None):
 		obj_move = self.pool.get('account.move.line')
 		obj_partner = self.pool.get('res.partner')
-		self.query = obj_move._query_get(self.cr, self.uid, obj='l', context=data['form'].get('used_context', {}))
+		self.query = obj_move._query_get(self.cr, SUPERUSER_ID, obj='l', context=data['form'].get('used_context', {}))
 		ctx2 = data['form'].get('used_context',{}).copy()
 		self.initial_balance = data['form'].get('initial_balance', True)
 		if self.initial_balance:
 		    ctx2.update({'initial_bal': True})
-		self.init_query = obj_move._query_get(self.cr, self.uid, obj='l', context=ctx2)
+		self.init_query = obj_move._query_get(self.cr, SUPERUSER_ID, obj='l', context=ctx2)
 		self.reconcil = True
 		if data['form']['filter'] == 'unreconciled':
 		    self.reconcil = False
