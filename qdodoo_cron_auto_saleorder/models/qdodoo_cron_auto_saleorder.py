@@ -220,10 +220,10 @@ class beiyou_data(osv.Model):
     def btn_search(self, cr, uid, ids, context=None):
         obj = self.pool.get('sale.order')
         get_date = self.browse(cr, uid, ids[0]).get_date
-        # try:
-        obj.start_update_month(cr, uid, get_date)
-        # except Exception, e:
-        #     raise osv.except_osv('错误', "请输入正确的日期格式!'")
+        try:
+            obj.start_update_month(cr, uid, get_date)
+        except Exception, e:
+            raise osv.except_osv('错误', "请输入正确的日期格式!'")
         result = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'qdodoo_cron_auto_saleorder', 'qdodoo_beiyou_tree')
         view_id = result and result[1] or False
         result_form = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'qdodoo_cron_auto_saleorder', 'qdodoo_beiyou_form')

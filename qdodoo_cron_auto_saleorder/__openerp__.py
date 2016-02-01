@@ -20,8 +20,9 @@
     'images' : [],    #模块图片
     'depends' : ['base','mail','sale','product','stock'],    #依赖模块
     'data': [
-        'views/cron_autoorder.xml',
         'views/qdodoo_beiyou_view.xml',
+        'views/cron_autoorder.xml',
+
     ],    #更新XML,CSV
     'js': [
         # 'static/src/js/account_move_reconciliation.js',
