@@ -88,6 +88,7 @@
             <field name="arch" type="xml">
                 <tree string="日志类型">
                     <field name="name"/>
+                    <field name="user_id" string="创建人"/>
                 </tree>
             </field>
         </record>

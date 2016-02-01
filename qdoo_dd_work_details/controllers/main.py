@@ -93,17 +93,18 @@ class qdoo_dd_work(http.Controller):
     def web_work_details(self, *kwargs):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         category_ids = pool.get('qdodoo.detail.category').search(cr, SUPERUSER_ID, [])
+        category_ids2 = pool.get('qdodoo.detail.category').browse(cr, SUPERUSER_ID, category_ids)
         values = {}
-        values['category_ids'] = category_ids
+        values['category_ids'] = category_ids2
         date_time = fields.Datetime.now()
-        values['date_time'] = 'abcdda'
+        values['date_time'] = date_time
         return request.website.render("qdoo_dd_work_details.details_dd", values)
 
     @http.route(['/details_create'], type='http', auth='public', website=True)
     def details_create(self, **kwargs):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         category = kwargs.get('category')
-        date_time = kwargs.get('datetime')
+        date_time = fields.datetime.now()
         text = kwargs.get('text')
         data = {
             'category_id': int(category),
@@ -111,7 +112,7 @@ class qdoo_dd_work(http.Controller):
             'user_id': uid,
             'text': text
         }
-        pool.get('qdodoo.work.details').create(cr, uid, data)
+        res=pool.get('qdodoo.work.details').create(cr, SUPERUSER_ID, data)
         return '1'
 
     @http.route(['/search/details'], type='http', auth='public', website=True)

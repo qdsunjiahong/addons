@@ -5,33 +5,34 @@
             <html>
                 <head>
                     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;"/>
+                    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;"/>-->
                     <title>写日志</title>
                     <script type="text/javascript" src="/qdoo_dd_work_details/static/js/jquery-2.1.0.min.js"/>
                     <script>
-                        $(function(){
-                        $("#detail_post").click(function(){
-                        var category = $("category").find('option:select').val();
-                        var datetime = $('#datetime').val();
-                        var text = $('#text').val();
-                        if (category = ''|| text=''){
-                        alert("请检查信息是否填写完整！")
-                        }else{
-                        $.ajax({
-                        async : false,
-                        type: "POST",
-                        url: "/shop/user/info/data_new",
-                        data: {"category":category,"datetime":datetime,'text':text}
-                        }).done(function(msg){
-                        if (msg=='1'){
-                        alert('提交成功');
-                        }else{
-                        alert('提交失败');
-                        }
-                        };
+                       $(function () {
+                        $("#detail_post").click(function () {
+                            var category = $("#category").val();
+                            var datetime = $('#datetime').val();
+                            var text = $('#text').val();
+                            if (category == "" || text == "") {
+                                alert("请检查信息是否填写完整！");
+                            } else {
+                                $.ajax({
+                                    async: false,
+                                    type: "POST",
+                                    url: "/details_create",
+                                    data: {"category": category, "datetime": datetime, 'text': text}
+                                }).done(function (msg) {
+                                    if (msg == 1) {
+                                        alert('提交成功');
+                                    } else {
+                                        alert('提交失败');
+                                    }
+                                })
+                            }
                         });
-                        });
-                    </script>
+                    });
+                                </script>
 
                 </head>
                 <body>
@@ -50,14 +51,11 @@
                                 </t>
                             </select>
                         </span>
-                        <p id="datetime">时间:
-                            <span t-esc="date_time"/>
-                        </p>
                         <p>日志内容:</p>
                         <textarea cols="30" col="10" id="text">
                             请在这里填写体质内容
                         </textarea>
-                        <button id="detail_post" type="butthon" value="提交"/>
+                        <button id="detail_post" value="提交"/>
                     </div>
                 </body>
             </html>
