@@ -96,7 +96,7 @@ class qdoo_dd_work(http.Controller):
         values = {}
         values['category_ids'] = category_ids
         date_time = fields.Datetime.now()
-        values['date_time'] = date_time
+        values['date_time'] = 'abcdda'
         return request.website.render("qdoo_dd_work_details.details_dd", values)
 
     @http.route(['/details_create'], type='http', auth='public', website=True)

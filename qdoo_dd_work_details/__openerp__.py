@@ -16,6 +16,7 @@
     'images': [],  # 模块图片
     'depends': ['base'],  # 依赖模块
     'data': [
+        'views/qdodoo_hr_work_details.xml',
         'views/template.xml'
         # ...
     ],  # 更新XML,CSV

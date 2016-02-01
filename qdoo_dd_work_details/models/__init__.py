@@ -1,0 +1,1 @@
+import qdodoo_hr_work_details
