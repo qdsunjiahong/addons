@@ -46,7 +46,6 @@ class qdodoo_cron_saleorder(osv.Model):
         # html_url = r"http://221.215.106.214:8080/ci/webservices/index.php/api/b2test/order/sql/2015-02-01"
         # 正式url
         html_url = r"http://221.215.106.214:8080/bbw/webservices/index.php/api/b2erp/morder/sql/" + yearsday
-        # print html_url
         # 获得html工作流
         html_stream = urllib2.urlopen(html_url)
         # 解析xml
@@ -117,7 +116,7 @@ class qdodoo_cron_saleorder(osv.Model):
                 else:
                     # 获取对应的辅助核算项
                     partner_id_name = partner.browse(cr, uid, partner_id[0])
-                    analytic_id = analytic_obj.search(cr, uid, [('name','=',partner_id_name+'营运部')])
+                    analytic_id = analytic_obj.search(cr, uid, [('name','=',partner_id_name.name+'营运部')])
                     if analytic_id:
                         order_id = self.create(cr, uid,
                                      {'partner_id': partner_id[0],'company_id':3, 'order_policy':'manual','warehouse_id': stock_id[0], 'date_order': now,'beiyou_date':order_date,'is_auto':True},
@@ -166,7 +165,6 @@ class qdodoo_cron_saleorder(osv.Model):
             file = self.pool.get('ir.config_parameter').get_param(cr, uid, 'beiyou.data_loggin', dict)
             fobj = open(file, 'a')
             fobj.seek(fobj.tell(), 2)
-            # print message
             fobj.write(message)
         except Exception, e:
             mess = message + '日志写入报错!%s' % e
@@ -186,7 +184,6 @@ class qdodoo_cron_saleorder(osv.Model):
             dict = {}
             FILE = self.pool.get('ir.config_parameter').get_param(cr, uid, 'beiyou.data_loggin', dict)
             # FILE = r'O:\qdodoo\odoo-8.0-20150319\openerp\addons\qdodoo_cron_auto_saleorder\data\write_data.txt'
-            # print FILE
             fobj = open(FILE, 'a')
             # 追加当前数据写入
             fobj.seek(fobj.tell(), 2)
@@ -223,10 +220,10 @@ class beiyou_data(osv.Model):
     def btn_search(self, cr, uid, ids, context=None):
         obj = self.pool.get('sale.order')
         get_date = self.browse(cr, uid, ids[0]).get_date
-        try:
-            obj.start_update_month(cr, uid, get_date)
-        except Exception, e:
-            raise osv.except_osv('错误', "请输入正确的日期格式!'")
+        # try:
+        obj.start_update_month(cr, uid, get_date)
+        # except Exception, e:
+        #     raise osv.except_osv('错误', "请输入正确的日期格式!'")
         result = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'qdodoo_cron_auto_saleorder', 'qdodoo_beiyou_tree')
         view_id = result and result[1] or False
         result_form = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'qdodoo_cron_auto_saleorder', 'qdodoo_beiyou_form')
