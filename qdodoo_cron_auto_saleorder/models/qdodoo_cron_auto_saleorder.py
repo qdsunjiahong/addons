@@ -80,6 +80,7 @@ class qdodoo_cron_saleorder(osv.Model):
         product = self.pool.get('product.product')
         stock = self.pool.get('stock.warehouse')
         error_model = self.pool.get('beiyou.data')
+        analytic_obj = self.pool.get('account.analytic.account')
         now = datetime.datetime.now()
         for data in error_model.browse(cr, uid, data_list):
             message = '================================开始插入一条数据==============================\n'
@@ -114,15 +115,20 @@ class qdodoo_cron_saleorder(osv.Model):
                                                       'delay': product_obj_id.sale_delay,
                                                       'price_unit': total/number}, context=context)
                 else:
-                    order_id = self.create(cr, uid,
-                                 {'partner_id': partner_id[0],'company_id':3, 'order_policy':'manual','warehouse_id': stock_id[0], 'date_order': now,'beiyou_date':order_date,'is_auto':True},
-                                 context=context)
-                    order_line_id = order.create(cr, uid, {'order_id': order_id,
-                                                      'product_id': product_obj_id.id,
-                                                      'product_uom_qty': number,
-                                                      'delay': product_obj_id.sale_delay,
-                                                      'price_unit': total/number}, context=context)
-
+                    # 获取对应的辅助核算项
+                    partner_id_name = partner.browse(cr, uid, partner_id[0])
+                    analytic_id = analytic_obj.search(cr, uid, [('name','=',partner_id_name+'营运部')])
+                    if analytic_id:
+                        order_id = self.create(cr, uid,
+                                     {'partner_id': partner_id[0],'company_id':3, 'order_policy':'manual','warehouse_id': stock_id[0], 'date_order': now,'beiyou_date':order_date,'is_auto':True},
+                                     context=context)
+                        order_line_id = order.create(cr, uid, {'order_id': order_id,
+                                                          'product_id': product_obj_id.id,
+                                                          'product_uom_qty': number,
+                                                          'delay': product_obj_id.sale_delay,
+                                                          'price_unit': total/number}, context=context)
+                    else:
+                        message += '缺少对应%s的辅助核算项！\n'%partner_id_name
                 message += '订单明细创建成功！\n'
                 error_model.write(cr, uid, data.id, {'is_save': True,'description': simple_message}, context=context)
 
