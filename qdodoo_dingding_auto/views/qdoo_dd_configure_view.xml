@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_qdoo_dingding_config_settings" model="ir.ui.view">
+            <field name="name">钉钉配置</field>
+            <field name="model">qdodoo.dd.congigure</field>
+            <field name="arch" type="xml">
+                <form string="钉钉配置" class="oe_form_configuration">
+                    <header>
+                        <button string="应用" type="object" name="execute" class="oe_highlight"/>
+                        or
+                        <button string="取消" type="object" name="cancel" class="oe_link"/>
+
+                    </header>
+                    <separator string="钉钉配置"/>
+                    <group>
+                        <label for="id" string="钉钉配置"/>
+                        <div>
+                            <div>
+                                <label for="dd_corpid" string="钉钉corpid"/>
+                                <field name="dd_corpid"/>
+                            </div>
+                            <div>
+                                <label for="dd_secrect" string="dd_secrect"/>
+                                <field name="dd_secrect"/>
+                            </div>
+                        </div>
+                    </group>
+                </form>
+            </field>
+        </record>
+        <record id="action_qdoo_dd_config_settings" model="ir.actions.act_window">
+            <field name="name">钉钉配置</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.dd.congigure</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+        </record>
+        <menuitem id="menu_dingding" parent="hr.menu_hr_root" name="钉钉"/>
+        <menuitem id="menu_qdoo_dd_configure" name="钉钉配置" parent="menu_dingding"
+                  action="action_qdoo_dd_config_settings"/>
+    </data>
+</openerp>

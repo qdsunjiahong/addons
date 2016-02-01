@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_qdoo_dingding_init" model="ir.ui.view">
+            <field name="name">钉钉人力初始化</field>
+            <field name="model">qdodoo.department.auto</field>
+            <field name="arch" type="xml">
+                <form string="钉钉人力初始化">
+                    <footer>
+                        <button string="初始化" type="object" name="dd_hr_synchronization2" class="oe_highlight"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="action_qdoo_dingding_init" model="ir.actions.act_window">
+            <field name="name">钉钉配置</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.department.auto</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_qdoo_dingding_init"/>
+        </record>
+        <menuitem id="menu_qdoo_dd_init" name="钉钉人力初始化" parent="menu_dingding"
+                  action="action_qdoo_dingding_init"/>
+    </data>
+</openerp>

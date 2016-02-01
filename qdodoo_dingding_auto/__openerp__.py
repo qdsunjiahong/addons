@@ -7,17 +7,18 @@
 ###########################################################################################
 
 {
-    'name': u'erp与钉钉部门员工同步管理',  # 模块名称
+    'name': u'erp人力资源与钉钉同步管理',  # 模块名称
     'version': '1.0',  # 版本
     'category': 'Technology',  # 分类
-    'author': 'qdodoo Technology',  # 作者
+    'author': 'Adger Zhou',  # 作者
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '',  # 摘要
     'images': [],  # 模块图片
     'depends': ['base', 'hr'],  # 依赖模块
     'data': [
-        'qdodoo_hr_employee.xml',
-        'qdodoo_dingding_data.xml'
+        'views/qdodoo_dingding_data.xml',
+        'views/qdoo_dd_configure_view.xml',
+        'views/qdoo_dd_init_view.xml',
         # ...
     ],  # 更新XML,CSV
     'js': [
@@ -44,7 +45,11 @@
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装
     'description': """
-    erp与钉钉部门员工同步管理
+erp人力资源与钉钉同步管理
+操作步骤:
+1.安装模块后，首先配置钉钉，菜单：人力资源》钉钉》钉钉配置
+2.配置完成后，初始化钉钉，慎用，该功能将初始化同步钉钉与erp系统，执行删除钉钉在erp没有的部门和员工，新建钉钉没有的员工信息，以及更新已有的员工信息
+3.找到计划的动作，设置为有效，即可每天定时执行同步操作
     """,
 }
 
