@@ -9,5 +9,16 @@
             <field name="sequence" type="int">37</field>
         </record>
 
+        <record model="ir.ui.view" id="view_pos_config_form_inherit">
+            <field name="name">pos_config_inherit</field>
+            <field name="model">pos.config</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_config_form"/>
+            <field name="arch" type="xml">
+                <field name="proxy_ip" position="after">
+                    <field name="front_desk"/>
+                </field>
+            </field>
+        </record>
+
     </data>
 </openerp>

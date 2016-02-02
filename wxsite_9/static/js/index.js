@@ -1,32 +1,41 @@
-/*
-//重设顶部菜单内容宽度
-var catsLength = $('.top-cats ul:first li').length*4;
-$('.top-cats ul:first').css('width', catsLength+'em');
+//左侧菜单拖拽
+var dragY = 0,  //拖拽的Y坐标
+	lastDragY = 0,  //步步紧随的Y坐标
+	currPositionY = 30,  //当前页面位置的Y坐标
+	dragDistance = 0;  //拖拽的距离
 
-//顶部菜单拖拽
-var dragX = 0;
-$('.top-cats ul:first').drag({
+$('.top-cats').drag({
     process: function(e){
-        var pageX = e.pageX;
-        
-        if(dragX == 0)dragX = pageX;
-        
-        var moveX = parseInt(pageX - dragX);
-        if(moveX > 0)moveX = 0;
-        
-        
-        $('.top-cats ul:first').css({
-            'left': moveX+'px',
-            'top': '0'
-        });
+        dragY = parseInt(e.pageY);
+		if(lastDragY==0)lastDragY = dragY - 1;
+		dragDistance = dragY - lastDragY;
+		lastDragY = dragY;
+
+		currPositionY += dragDistance;
+
+		$('.top-cats').css({
+			'left': '1%',
+			'top': currPositionY+'px'
+		});
+
     },
     end: function(e){
-//        var pageX = e.pageX;
-//        
-//        if(dragX != pageX)dragX = pageX;
+		lastDragY = 0;
+
+		if(currPositionY > 30){
+			var stepLong = parseInt((currPositionY-30)/25);
+			var recoverY = setInterval(function(){
+				currPositionY -= stepLong;
+				$('.top-cats').css('top', currPositionY+'px');
+
+				if(currPositionY < 31){
+					clearInterval(recoverY);
+				}
+			},10)
+		}
     }
 });
-*/
+//左侧菜单拖拽结束
 
 function chQuantity(pid, addOrReduce){
     var thisDiv = $('div.select-product[id="'+pid+'"]'),

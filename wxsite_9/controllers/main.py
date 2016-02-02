@@ -28,7 +28,8 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 class website_sale(http.Controller):
-    def user_check(self):
+
+    def user_check(self, company_id):
         """
         该方法检查用户是否登陆，如未登陆，则向微信授权跳转
         """
@@ -37,7 +38,7 @@ class website_sale(http.Controller):
         if not request.session.has_key('user_id'):  #通过session信息判断是否登陆，修改为odoo登陆的session键
             wx_appid = config.get_param(cr, uid, 'wx_appid')  #微信服务号APPID
             wx_redirect = config.get_param(cr, uid, 'web.base.url') + '/wxsite/wxoauth'  #微信授权后的回调地址，不可包含GET参数
-            wx_oauth_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='+wx_appid+'&redirect_uri='+urllib.quote(wx_redirect, '')+'&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect'
+            wx_oauth_url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='+wx_appid+'&redirect_uri='+urllib.quote(wx_redirect, '')+'&response_type=code&scope=snsapi_userinfo&state=%s#wechat_redirect'%company_id
             return redirect(wx_oauth_url)  #向微信授权跳转
 
     @http.route(['/wxsite/wxoauth'], type='http', auth="public", website=True)
@@ -50,7 +51,7 @@ class website_sale(http.Controller):
         """
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         wx_code = post['code']  #授权code，属于GET参数
-        wx_state = post['state']  #跳转链接中的state参数，原样返回
+        company_id = post['state']  #跳转链接中的state参数，原样返回(公司id)
         config = pool.get('ir.config_parameter')
         """
         根据code获取access token和openid
@@ -64,12 +65,13 @@ class website_sale(http.Controller):
         ret_dict = json.loads(ret_json)  #解析json
         access_token = ret_dict['access_token']  #access_token
         wx_openid = ret_dict['openid']   #openid，微信用户唯一标识
+        login = wx_openid + company_id
 
         """
         在此处根据openid判断用户是否已存在数据库中
         """
         users_obj = pool.get('res.users')
-        wx_user_exists = users_obj.search(cr, SUPERUSER_ID, [('login','=',wx_openid)])
+        wx_user_exists = users_obj.search(cr, SUPERUSER_ID, [('login','=',login),('company_id','=',int(company_id))])
         request.session['openid']=wx_openid
 
         """
@@ -91,8 +93,8 @@ class website_sale(http.Controller):
             """
             以下可以是用户注册处理
             """
-            users_obj.create(cr, SUPERUSER_ID, {'login':wx_openid,'name':wx_nickname,'password':'qdodoo','oauth_provider_id':''})
-        return request.redirect("/login?db=%s&login=%s&key=%s&redirect=%s"%(request.session.db,wx_openid,'qdodoo','shop/wx/lunch'))
+            users_obj.create(cr, SUPERUSER_ID, {'login':login,'name':wx_nickname,'password':'qdodoo','oauth_provider_id':'','company_id':int(company_id),'company_ids':[[6, False, [int(company_id)]]]})
+        return request.redirect("/login?db=%s&login=%s&key=%s&redirect=%s"%(request.session.db,login,'qdodoo','shop/wx/lunch'))
 
     @http.route(['/shop/wx/about'], type='http', auth="public", website=True, csrf=False)
     def get_about(self, **post):
@@ -104,16 +106,8 @@ class website_sale(http.Controller):
         users_obj = pool.get('res.users')
         company_obj = users_obj.browse(cr, SUPERUSER_ID, uid).company_id
 
-        # 获取加入购物车的总金额
-        all_car_num = 0
-        car_obj = pool.get('qdodoo.wxsite.car')
-        car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
-        for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
-            all_car_num += key_line.number
-
         values={
             'company_obj':company_obj,
-            'all_car_num': all_car_num,
         }
 
         return request.website.render("wxsite.about",values)
@@ -142,6 +136,20 @@ class website_sale(http.Controller):
                 all_car_num += key_line.number
                 all_money += key_line.number * key_line.name.lst_price #获取总金额
             return simplejson.dumps({'key':'1','all_car_num':all_car_num,'all_money':all_money})
+        except ValueError, e:
+            return '-1'
+
+    @http.route(['/onchange/order'], type='http', auth="public", website=True, csrf=False)
+    def get_onchange_order(self, **post):
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        # 判断是如何修改数据
+        # 删除数据
+        try:
+            # 获取操作的数据
+            _logger.info('11111111111111:%s'%post)
+            order_obj = pool.get('pos.order')
+            order_obj.write(cr, SUPERUSER_ID, int(post.get('res_order_id_new[]')), {'customer_count':int(post.get('deskNo',0)),'note':post.get('orderNote')})
+            return '1'
         except ValueError, e:
             return '-1'
 
@@ -201,16 +209,7 @@ class website_sale(http.Controller):
         order_ids = order_obj.search(cr, SUPERUSER_ID, [('partner_id','=',partner_obj.id),('state','!=','cancel')])
         orders = order_obj.browse(cr, SUPERUSER_ID, order_ids)
 
-        # 获取加入购物车的总数量
-        all_car_num = 0
-
-        car_obj = pool.get('qdodoo.wxsite.car')
-        car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
-        for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
-            all_car_num += key_line.number
-
         values={
-            'all_car_num': all_car_num,
             'orders':orders,
         }
 
@@ -222,42 +221,39 @@ class website_sale(http.Controller):
         user_obj = pool.get('res.users')
         user_name = user_obj.browse(cr, SUPERUSER_ID, uid).name
 
-        # 获取加入购物车的总数量
-        all_car_num = 0
-        car_obj = pool.get('qdodoo.wxsite.car')
-        car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
-        for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
-            all_car_num += key_line.number
-
         values={
             'user_name':user_name,
-            'all_car_num': all_car_num,
         }
 
         return request.website.render("wxsite.user",values)
 
     @http.route(['/shop/wx/lunch',
                  '/shop/wx/lunch/<model("pos.category"):category>',], type='http', auth="public", website=True)
-    def tracking_cart(self, category=None , **post):
+    def tracking_cart(self, category=None ,desk_id=False, **post):
         """
         站点首页
         """
         # 先校验是否登录
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        config_obj = pool.get('pos.config')
+        # 如果有桌号
         # 3代表公开用户，也就是未登录状态
-        if uid == 3:
-            return self.user_check()
+        if desk_id or uid == 3:
+            config_id = config_obj.browse(cr, SUPERUSER_ID, int(desk_id))
+            company_id = config_id.company_id.id
+            return self.user_check(company_id)
         else:
             category_obj = pool.get('pos.category')
+            # 获取当前公司的名称（根据用户模型获取数据）
+            users_obj = pool.get('res.users')
+            company_obj = users_obj.browse(cr, SUPERUSER_ID, uid).company_id
+            company_name = company_obj.name
+            company_id = company_obj.id
             # 组织数据查询时的条件
-            domain = [("sale_ok", "=", True),("available_in_pos","=",True)]
+            domain = [("sale_ok", "=", True),("available_in_pos","=",True),('company_id','=',company_id)]
             if category:
                 domain += [('pos_categ_id', 'child_of', int(category))]
                 category = category_obj.browse(cr, SUPERUSER_ID, int(category), context=context)
-
-            # 获取当前公司的名称（根据用户模型获取数据）
-            users_obj = pool.get('res.users')
-            company_name = users_obj.browse(cr, SUPERUSER_ID, uid).company_id.name
 
             # 获取所有的产品模板数据
             template_obj = pool.get('product.template')
@@ -275,7 +271,7 @@ class website_sale(http.Controller):
                 all_car_num += key_line.number
                 all_money += key_line.number * key_line.name.lst_price #获取总金额
 
-            category_ids = category_obj.search(cr, SUPERUSER_ID, [('parent_id', '=', False)], context=context)
+            category_ids = category_obj.search(cr, SUPERUSER_ID, [('parent_id', '=', False)], order="sequence",context=context)
             categs = category_obj.browse(cr, SUPERUSER_ID, category_ids, context=context)
 
             keep = QueryURL('/shop/wx/lunch', category=category and int(category))
@@ -381,39 +377,50 @@ class website_sale(http.Controller):
         cr, uid, context, pool = request.cr,request.uid, request.context, request.registry
         # 获取当前公司的名称（根据用户模型获取数据）
         users_obj = pool.get('res.users')
+        product_obj = pool.get('product.product')
         users = users_obj.browse(cr, SUPERUSER_ID, uid)
         company_name = users.company_id.name
+        company_id = users.company_id.id
         partner_id = users.partner_id.id
         order_obj = pool.get('pos.order')
         if post.get('oid'):
             res_order_id = int(post.get('oid'))
             all_money = float(post.get('money'))
-            all_car_num = 0
-            for order in order_obj.browse(cr, SUPERUSER_ID, res_order_id).lines:
-                all_car_num += order.qty
         else:
-            car_obj = pool.get('qdodoo.wxsite.car')
-            car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
-            # 生成销售订单（POS）
-            order_line_obj = pool.get('pos.order.line')
-            res_order_id = order_obj.create(cr, SUPERUSER_ID, {'partner_id':partner_id,'pricelist_id':1})
+            session_obj = pool.get('pos.session')
+            session_id = session_obj.search(cr, SUPERUSER_ID, [('config_id.company_id','=',company_id),('state','=','opened')])
+            if not session_id:
+                values = {
+                    'company_name':company_name,
+                    'error_text':u'微信暂停收款，请联系服务员点餐',
+                }
+                return request.website.render("wxsite.error", values)
+            else:
+                # 获取负责人
+                uid_session = session_obj.browse(cr, SUPERUSER_ID, session_id[0]).user_id.id
+                car_obj = pool.get('qdodoo.wxsite.car')
+                car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
+                # 生成销售订单（POS）
+                order_line_obj = pool.get('pos.order.line')
+                res_order_id = order_obj.create(cr, uid_session, {'partner_id':partner_id,'pricelist_id':1,'company_id':company_id})
 
-            # 获取加入购物车的总金额
-            all_money = 0
-            all_car_num = 0
-            for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
-                all_money += key_line.number * key_line.name.lst_price #获取总金额
-                all_car_num += key_line.number
-                # 生成销售单明细
-                order_line_obj.create(cr, SUPERUSER_ID, {'order_id':res_order_id,'product_id':key_line.name.id,
-                                                         'qty':key_line.number,'price_unit':key_line.name.lst_price})
-            car_obj.unlink(cr, SUPERUSER_ID, car_ids)
+                # 获取加入购物车的总金额
+                all_money = 0
+                for key_line in car_obj.browse(cr, SUPERUSER_ID, car_ids):
+                    # 根据产品模板id获取产品id
+                    product_ids = product_obj.search(cr, SUPERUSER_ID, [('product_tmpl_id','=',key_line.name.id)])
+                    all_money += key_line.number * key_line.name.lst_price #获取总金额
+                    # 生成销售单明细
+                    order_line_obj.create(cr, uid_session, {'company_id':company_id,'order_id':res_order_id,'product_id':product_ids[0],
+                                                             'qty':key_line.number,'price_unit':key_line.name.lst_price})
+                car_obj.unlink(cr, SUPERUSER_ID, car_ids)
 
 
         wx_openid = request.session['openid']    #微信用户openid
         config = pool.get('ir.config_parameter')
         #下面几个变量是微信支付相关配置
         wx_appid = config.get_param(cr, uid, 'wx_appid')    #公众号号APPID，通常是微信签约时的服务号APPID
+        wx_fix = config.get_param(cr, uid, 'wx_fix')    #支付订单号前缀
         wx_mchid = config.get_param(cr, uid, 'wx_mchid')  #商户号，签约微信支付后分配的商户号
         wx_key = config.get_param(cr, uid, 'wx_key')  #微信支付密钥，到微信商户平台设置并填写此处
         wx_pay_backnotify = config.get_param(cr, uid, 'web.base.url') + '/shop/wx/backnotify'  #接收微信支付异步通知地址，不可携带参数
@@ -425,15 +432,14 @@ class website_sale(http.Controller):
         for i in range(1, 32, 1):
             nonce_str += chars[random.randint(0, chars_length)]
         spbill_create_ip = config.get_param(cr, uid, 'spbill_create_ip')
-        if res_order_id < 10:
-            res_order_id = '0' + str(res_order_id)
+        out_trade_no = wx_fix + str(res_order_id)
         #微信统一下单接口所需参数
         wx_oparam = {
             'appid': wx_appid,   #公众号号APPID
             'mch_id': wx_mchid,  #商户号
             'nonce_str': nonce_str,
             'body': u'点餐订单',  #支付单简要描述
-            'out_trade_no': res_order_id,  #商户订单号
+            'out_trade_no': out_trade_no,  #商户订单号
             'total_fee': int(all_money * 100),  #支付金额，单位为“分”，所以要x100
             'spbill_create_ip': spbill_create_ip,  #用户端IP地址，此处我不知道怎么获取
             'notify_url': wx_pay_backnotify,  #异步通知地址
@@ -455,7 +461,6 @@ class website_sale(http.Controller):
         res = urllib2.urlopen(request_new)
         return_xml = etree.fromstring(res.read())
         error_text = ''
-        _logger.info('111111111:%s'%data_xml)
         if return_xml.find('return_code').text == 'SUCCESS':
             if return_xml.find('result_code').text == 'SUCCESS':
                 prepay_id = return_xml.find('prepay_id').text  #预下单编号
@@ -468,14 +473,14 @@ class website_sale(http.Controller):
                 #JSAPI支付所需数据
                 wx_pay_dict = {
                     'appId': wx_appid,  #微信公众号APPID
-                    'timeStamp': str(time.time()),  #当前Unix时间戳
+                    'timeStamp': str(int(time.time())),  #当前Unix时间戳
                     'nonceStr': nonce_str,  #随机字符串
                     'package': 'prepay_id='+prepay_id,  #订单详情扩展，主要填写统一下单接口返回的预下单编号
                     'signType': 'MD5',  #签名算法，目前仅支持MD5
                 }
                 _, prestr_new = util.params_filter(wx_pay_dict)
                 wx_pay_dict['paySign'] = hashlib.md5(prestr_new + '&key=' +wx_key).hexdigest().upper()
-
+                wx_pay_dict['res_order_id'] = res_order_id,
                 #转换成json格式，将在页面js脚本中使用该数据
                 wx_pay_json = json.dumps(wx_pay_dict)
 
@@ -483,8 +488,8 @@ class website_sale(http.Controller):
                 values = {
                     'pay_json': wx_pay_json,
                     'company_name':company_name,
-                    'all_car_num': all_car_num,
                     'all_money':all_money,
+                    'res_order_id':res_order_id,
                 }
                 return request.website.render("wxsite.wxpay", values)
             else:
@@ -502,7 +507,6 @@ class website_sale(http.Controller):
         values = {
             'company_name':company_name,
             'error_text':error_text,
-            'all_car_num':all_car_num,
         }
         return request.website.render("wxsite.error", values)
 
@@ -604,21 +608,23 @@ class website_sale(http.Controller):
             wx_add = 'https://api.mch.weixin.qq.com/pay/orderquery'
             wx_appid = config.get_param(cr, uid, 'wx_appid')    #公众号号APPID，通常是微信签约时的服务号APPID
             wx_mchid = config.get_param(cr, uid, 'wx_mchid')  #商户号，签约微信支付后分配的商户号
+            wx_fix = config.get_param(cr, uid, 'wx_fix') #付款订单号前缀
             # 查询所有未完成的订单
-            order_ids = order_obj.search(cr, SUPERUSER_ID, [('state','=','draft')])
-            for order_ids in order_ids:
+            order_ids = order_obj.search(cr, SUPERUSER_ID, [('state','=','draft'),('partner_id','!=',False)])
+            for order_id in order_ids:
                 #生成一个随机字符串，不长于32位，主要保证签名不可预测
                 nonce_str = ''
                 chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
                 chars_length = len(chars) - 1
                 for i in range(1, 32, 1):
                     nonce_str += chars[random.randint(0, chars_length)]
+                out_trade_no = wx_fix + str(order_id)
                 #微信查询接口所需参数
                 wx_search = {
                     'appid': wx_appid,   #公众号号APPID
                     'mch_id': wx_mchid,  #商户号
                     'nonce_str': nonce_str,
-                    'out_trade_no': order_ids,  #商户订单号
+                    'out_trade_no': out_trade_no,  #商户订单号
                 }
 
                 """
@@ -634,78 +640,127 @@ class website_sale(http.Controller):
                 return_xml = etree.fromstring(res.read())
                 if return_xml.find('return_code').text == "SUCCESS" and return_xml.find('result_code').text != 'FAIL':
                     pay_state = return_xml.find('trade_state').text #交易状态
-                    pos_id = return_xml.find('out_trade_no').text #订单号
-                    pos_obj = order_obj.browse(cr, SUPERUSER_ID, int(pos_id))
+                    pos_obj = order_obj.browse(cr, SUPERUSER_ID, int(order_id))
                     if pay_state == 'SUCCESS':
                         res_id = payment_obj.create(cr, SUPERUSER_ID, {'journal_id':pos_obj.session_id.config_id.journal_ids[0].id,
                                                               'amount':pos_obj.amount_total,'payment_name':u'微信支付',
                                                               'payment_date':datetime.now().date()})
                         payment_obj.check(cr, SUPERUSER_ID, [res_id], context={'active_id':pos_obj.id})
-                        infomation = """<receipt align="center" value-thousands-separator="" width="40">
+                        # 组织后台打印数据
+                        infomation_new = """<receipt align="center" value-thousands-separator="" width="40">
                             <div font="b">
-                                    <div>%s</div>
-                                    <div>电话：%s</div>
-                                    <div>%s</div>
-                                    <div>%s</div>
-                                    <div>--------------------------------</div>
-                                    <div>被服务于 %s</div>
+                                <div><pre>订单号 %s</pre></div>
+                                <div><pre>%s</pre></div>
                             </div>
                             <br/><br/>
-                            <div line-ratio="0.6">"""%(pos_obj.company_id.name,pos_obj.company_id.phone,pos_obj.company_id.email,
-                                                       pos_obj.company_id.website,pos_obj.user_id.name)
+                            <div line-ratio="0.6">++++++"""%(pos_obj.name,datetime.now())
+                        # 组织前台打印数据
+                        infomation = """<receipt align="center" value-thousands-separator="" width="40">
+                        <div font="b">
+                                <div>微信支付-结账单</div>
+                                <div>订单号：%s</div>
+                                <div>时间：%s</div>
+                                <div>==================================================</div>
+                        <br/><br/>
+                        ++++++<div>产品　　　　　　数量　　　　单价　　　　金额　　　　@@@@@%s@@@@@</div>++++++"""%(pos_obj.name,datetime.now(),pos_obj.session_id.config_id.front_desk)
+                        # <div font="b"  size="double-height double-wight">
+                        #         <div>%s</div>
+                        #         <div>电话：%s</div>
+                        #         <div>%s</div>
+                        #         <div>=======================</div>
+                        #         <div>微信点餐</div>
+                        # </div>
+                        # <br/><br/>
+                        # <div line-ratio="0.6">"""%(pos_obj.company_id.name,pos_obj.company_id.phone,
+                        #                            pos_obj.company_id.website)
                         # 循环订单明细
                         for line in pos_obj.lines:
-                            infomation += """++++++<line><left>%s</left></line>
-                            <line indent="1">
-                                <left>
-                                    <value value-autoint="on" value-decimals="3">
-                                        %s
-                                    </value>
-                                        %s
-
-                                    x
-
-                                    <value value-decimals="2">
-
-                                        %s
-
-                                    </value>
-                                    ===%s===
-                                </left>
-                                <right>
-                                    <value>%s</value>
-                                </right>
-                            </line>++++++"""%(line.product_id.name,line.qty,line.product_id.uom_id.name,line.product_id.list_price,
-                           dict_post_ip.get(line.product_id.pos_categ_id.id), line.product_id.list_price)
-
-                        infomation += """</div>
-                            <line><right>--------</right></line>
-                            <line size="double-height">
-                                <left><pre>        合计</pre></left>
+                            infomation_new += """<line size="double-height">
+                                <left><pre>%s</pre></left>
                                 <right><value>%s</value></right>
-                            </line>
-                            <br/><br/>
-                                <line>
-                                    <left>现金 (CNY)</left>
-                                    <right><value>%s</value></right>
-                                </line>
-                            <br/>
-                            <line size="double-height">
-                                <left><pre>        CHANGE</pre></left>
-                                <right><value>0</value></right>
-                            </line>
-                            <br/>
-                            <br/>
-                            <div font="b">
-                                <div>Order %s</div>
-                                <div>%s</div>
+                                @@@@@%s@@@@@
+                                </line>++++++"""%(line.product_id.name,line.qty,dict_post_ip.get(line.product_id.pos_categ_id.id))
+                            product_id_name = line.product_id.name
+                            if len(product_id_name) < 8:
+                                product_id_name += ('　' * (8-len(product_id_name)))
+                            else:
+                                product_id_name = product_id_name[:8]
+                            product_qty = str(line.qty)
+                            if len(product_qty) < 6:
+                                product_qty += ('　' * 5)
+                            else:
+                                product_qty = product_qty[:6]
+                            product_list = str(line.product_id.list_price)
+                            if len(product_list) < 6:
+                                product_list += ('　' * 5)
+                            else:
+                                product_list = product_list[:6]
+                            product_subtotal = str(line.price_subtotal_incl)
+                            if len(product_subtotal) < 6:
+                                product_subtotal += ('　' * 5)
+                            else:
+                                product_subtotal = product_subtotal[:6]
+                            infomation += """<div>
+                            %s
+                            %s
+                            %s
+                            %s
+                            @@@@@%s@@@@@
+                            </div>++++++"""%(product_id_name,product_qty,product_list,
+                            product_subtotal, pos_obj.session_id.config_id.front_desk)
+                            # infomation += """++++++<line><left>%s </left></line><line>
+                            #         <left>
+                            #             <value>
+                            #                 %s
+                            #             </value>
+                            #             %s
+                            #
+                            #             x
+                            #
+                            #             <value>
+                            #                 %s
+                            #             </value>
+                            #             </left>
+                            #     <right><value>%s</value></right>
+                            #     ===%s===
+                            #     </line>++++++"""%(line.product_id.name,line.qty,line.product_id.uom_id.name,line.product_id.list_price,
+                            #    line.price_subtotal_incl, pos_obj.session_id.config_id.front_desk)
+                        infomation_new += """</div>
+                                <br/><br/><br/>
+                                <div size="double-height">
+                                    <left><pre>备注：%s号桌 %s</pre></left>
+                                </div>
+                                </receipt>"""%(pos_obj.customer_count, pos_obj.note)
+                        amount_total = str(pos_obj.amount_total)
+                        if len(amount_total) < 6:
+                            amount_total += ('　' * 5)
+                        else:
+                            amount_total = amount_total[:6]
+                        note = u'号桌:'+str(pos_obj.customer_count)+'　　备注：'+ pos_obj.note
+                        infomation += """
+                            <br/><br/><br/>
+                            <div size="double-height">
+                                合计　　　　　　　　　　　　　　　　　%s
                             </div>
-                        </receipt>"""%(pos_obj.amount_total,pos_obj.amount_total,pos_obj.name,datetime.now())
+                            <br/>
+                            <div size="double-height">
+                                %s
+                            </div>
+                            <br/><br/>
+                            <div>==================================================</div>
+                            <div>%s</div>
+                            <div>电话：%s</div>
+                            <div>%s</div>
+                            </div>
+                        </receipt>"""%(amount_total, note, pos_obj.company_id.name, pos_obj.company_id.phone, pos_obj.company_id.website)
+                        _logger.info('1111111111111111:%s'%infomation)
                         print_list_obj.create(cr, SUPERUSER_ID, {'name':infomation,'is_print':False})
+                        print_list_obj.create(cr, SUPERUSER_ID, {'name':infomation_new,'is_print':False})
+
                     elif pay_state == 'USERPAYING':
                         pass
                     else:
-                        order_obj.signal_workflow(cr, SUPERUSER_ID, [int(pos_id)], 'cancel')
+                        order_obj.signal_workflow(cr, SUPERUSER_ID, [int(order_id)], 'cancel')
                 else:
                     pass
             return 'SUCCESS'

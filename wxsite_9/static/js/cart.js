@@ -116,8 +116,6 @@ $('input.quantity').change(function(){
 //点击确认按钮，提交表单
 $('button[name="suborder"]').click(function(){
     //可以在此做一些检验
-
-
     
     $('form#subform').submit();
 });

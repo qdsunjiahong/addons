@@ -265,7 +265,6 @@
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -296,7 +295,8 @@
                     <div class="main">
                         <!--已选菜品列表-->
                         <div class="wxpay-title">支付菜单</div>
-
+                        <div class="desk">您是：<input class="deskno" name="deskno" value="" />号桌</div>
+                        <div class="order-note">备注：<input class="onote" name="onote" value="" placeholder="您可以提一些建议或要求" /></div>
                         <div class="pay-sum">￥<span t-esc="all_money"/></div>
                         <button class="pay-btn" onclick="callpay()">立即支付</button>
                     </div>
@@ -309,7 +309,6 @@
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -368,7 +367,6 @@
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -395,7 +393,7 @@
 
                         <!--第一笔订单-->
                         <div class="order" t-foreach="orders" t-as="order">
-                            <div class="order" a-att-id="order.name">
+                            <div a-att-id="order.name">
                                 <div class="oid">订单：<span t-esc="order.name"></span><span class="ostatus oflag15" t-esc="'未付' if order.state=='draft' else '已付'"></span></div>
 
                                 <!--商品列表-->
@@ -443,7 +441,6 @@
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title="个人中心"><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -487,7 +484,6 @@
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title="个人中心"><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>

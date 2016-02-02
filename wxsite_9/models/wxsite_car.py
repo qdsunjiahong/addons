@@ -30,3 +30,8 @@ class qdodoo_print_list(models.Model):
 
    name = fields.Char(u'信息')
    is_print = fields.Boolean(u'是否已打印')
+
+class qdodoo_pos_config(models.Model):
+    _inherit = 'pos.config'
+
+    front_desk = fields.Char(u'前台打印机地址')
