@@ -41,10 +41,12 @@ class qdodoo_stock_move_tfs(models.Model):
             move_ids = move_obj.search(cr, uid, [('move_tfs','=',line_id.id)])
             if line_id.picking_id.acc:
                 line_date = line_id.picking_id.acc.date_stop
+                period_id = line_id.picking_id.acc.id
             else:
                 line_date = line_id.date
+                period_id = self.pool.get('account.period').search(cr, uid, [('company_id','=',line_id.company_id.id),('date_start','<=',line_id.date),('date_stop','>=',line_id.date)])[0]
             for move_id in move_ids:
-                move_obj.write(cr, uid, move_id, {'date':line_date})
+                move_obj.write(cr, uid, move_id, {'date':line_date,'period_id':period_id})
         return res_id
 
 class qdodoo_stock_quant_tfs(models.Model):
@@ -68,7 +70,7 @@ class qdodoo_stock_quant_tfs(models.Model):
                 'force_period', self.pool.get('account.period').find(cr, uid, move.date, context=context)[0])
             move_obj.create(cr, uid, {'journal_id': journal_id,
                                       'line_id': move_lines,
-                                      'period_id': move.period_id.id or period_id,
+                                      'period_id': period_id or move.period_id.id,
                                       'date': move.date,
                                       'move_tfs': move.id,
                                       'ref': move.picking_id.name}, context=context)
