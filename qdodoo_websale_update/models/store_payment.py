@@ -2,6 +2,26 @@
 
 from openerp import models, fields, api, _
 from openerp.osv import osv
+from datetime import datetime
+
+class qdodoo_account_voucher_inherit(models.Model):
+    _inherit = 'account.voucher'
+
+    store_id = fields.Many2one('store.deposit',u'存款单')
+
+    def unlink(self, cr, uid, ids, context=None):
+        store_obj = self.pool.get('store.deposit')
+        for obj in self.browse(cr, uid, ids):
+            if obj.store_id and obj.store_id.state == 'done':
+                store_obj.write(cr, uid, obj.store_id.id, {'state':'sent'})
+        return super(qdodoo_account_voucher_inherit, self).unlink(cr, uid, ids, context=context)
+
+    def cancel_voucher(self, cr, uid, ids, context=None):
+        store_obj = self.pool.get('store.deposit')
+        for obj in self.browse(cr, uid, ids):
+            if obj.store_id and obj.store_id.state == 'done':
+                store_obj.write(cr, uid, obj.store_id.id, {'state':'sent'})
+        return super(qdodoo_account_voucher_inherit, self).cancel_voucher(cr, uid, ids, context=context)
 
 class store_deposit(models.Model):
     _name = "store.deposit"
@@ -38,6 +58,7 @@ class store_deposit(models.Model):
         val['company_id'] = obj.name.company_id.id
         val['type'] = 'receipt'
         val['pre_line'] = True
+        val['store_id'] = ids[0]
         if journal_id:
             val['joutnal_id'] = journal_id[0]
             journal = journal_obj.browse(cr, uid, journal_id[0])
@@ -51,7 +72,7 @@ class store_deposit(models.Model):
                 val['account_id'] = journal.default_credit_account_id.id or journal.default_debit_account_id.id
         else:
             raise osv.except_osv(_(u'警告!'), _(u'缺少对应的账簿!'))
-        voucher_id = voucher_obj.create(cr, 1, val)
+        voucher_id = voucher_obj.create(cr, uid, val)
         return self.write(cr, uid, ids, {'state':'done','voucher_id':voucher_id})
 
     # 申请驳回
@@ -62,7 +83,13 @@ class store_deposit(models.Model):
     def btn_over(self, cr, uid, ids, context=None):
         obj = self.browse(cr, uid, ids[0])
         voucher_obj = self.pool.get('account.voucher')
+        checking_obj = self.pool.get('qdodoo.checking.list')
         voucher_obj.proforma_voucher(cr, uid, [obj.voucher_id.id])
+        if obj.name.credit < 0:
+            all_money = -obj.name.credit
+        else:
+            all_money = 0.0
+        checking_obj.create(cr, uid, {'date':datetime.now(),'recharge':obj.money,'type':'beforehand','notes':obj.voucher_id.name,'all_money':all_money})
         return self.write(cr, uid, ids, {'state':'over'})
 
     # 取消

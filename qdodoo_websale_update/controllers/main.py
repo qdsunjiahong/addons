@@ -15,7 +15,6 @@ from openerp.exceptions import except_orm
 import  datetime
 _ = GettextAlias()
 
-
 class qdodoo_pageer(table_compute):
     PPG = 150
 
@@ -327,7 +326,6 @@ class qdodooo_website_update(website_sale):
             post['attrib'] = attrib_list
         # 分页信息
         pager = request.website.pager(url=url, total=product_count, page=page, step=PPG, scope=7, url_args=post)
-
         # 产品列表  产品模板搜索 PPG 当前页面产品数量    过滤pager['offset'] 这些数量   跟读 website_published 排序
         product_ids = product_obj.search(cr, uid, domain, limit=PPG, offset=pager['offset'],
                                          order='website_published desc, website_sequence desc', context=context)
@@ -339,10 +337,12 @@ class qdodooo_website_update(website_sale):
             elif 2000 > value_line > 1000:
                 product_num[key_line] = '紧张'
             elif value_line <= 0:
-                product_ids.remove(key_line)
+                pass
             else:
                 product_num[key_line] = str(value_line)
-        products = product_obj.browse(cr, uid, product_ids, context=context)
+        # 分页信息
+        pager_new = request.website.pager(url=url, total=len(product_num.keys()), page=page, step=PPG, scope=7, url_args=post)
+        products = product_obj.browse(cr, uid, product_num.keys(), context=context)
         style_obj = pool['product.style']
         style_ids = style_obj.search(cr, uid, [], context=context)
         styles = style_obj.browse(cr, uid, style_ids, context=context)
@@ -385,7 +385,7 @@ class qdodooo_website_update(website_sale):
             'category': category,
             'attrib_values': attrib_values,
             'attrib_set': attrib_set,
-            'pager': pager,
+            'pager': pager_new,
             'pricelist': pricelist,
             'products': products,
             'key':key,
@@ -448,7 +448,7 @@ class qdodooo_website_update(website_sale):
 
         # 获取被占用的库存
         quant_dict = {}
-        move_ids = move_obj.search(cr, uid, [('state','in',('confirmed','assigned')),('location_id','=',local_id)])
+        move_ids = move_obj.search(cr, uid, [('product_id.product_tmpl_id','in',template_ids),('state','in',('confirmed','assigned')),('location_id','=',local_id)])
         for move_id in move_obj.browse(cr, uid, move_ids):
             if move_id.reserved_quant_ids:
                 for quant_id in move_id.reserved_quant_ids:
@@ -794,6 +794,7 @@ class qdodooo_website_update(website_sale):
             raise except_orm(_('Warning!'),_('客户没有设置对应的辅助核算项，请检查客户资料是否正确！'))
         promotion_obj = request.registry['qdodoo.promotion']
         line_obj = request.registry['sale.order.line']
+        checking_obj = request.registry['qdodoo.checking.list']
         users_obj = request.registry['res.users']
         promotion_user = request.registry['qdodoo.user.promotion']
         # 获取满减金额
@@ -830,12 +831,11 @@ class qdodooo_website_update(website_sale):
                 gift_obj.write(cr, uid, valus[0], {'product_items_num':gift_obj.browse(cr, uid, valus[0]).product_items_num - val['product_uom_qty']})
         user_id = order.partner_id.user_id.id or uid
         section_obj = users_obj.browse(cr, uid, user_id)
-        section_obj = users_obj.browse(cr, uid, user_id)
         section_id = section_obj.default_section_id.id if section_obj.default_section_id else False
         if section_id:
-            sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money,'section_id':section_id,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+            sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money,'section_id':section_id,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id,'is_website':True})
         else:
-            sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id})
+            sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money,'order_policy': 'manual','project_id':order.partner_id.analytic_account_id.id,'user_id':user_id,'is_website':True})
         order.action_button_confirm()
         # send by email
         # 邮件act为销售订单 生成报价单
@@ -850,9 +850,15 @@ class qdodooo_website_update(website_sale):
         # 获取对应的出库单列表id
         pick_ids = []
         pick_ids += [picking.id for picking in order.picking_ids]
-        for line in picking_obj.browse(cr, uid, pick_ids):
+        for line in picking_obj.browse(cr, SUPERUSER_ID, pick_ids):
             if line.state == 'confirmed':
-                picking_obj.action_assign(cr, uid, [line.id])
+                picking_obj.action_assign(cr, SUPERUSER_ID, [line.id])
+        # 生成对账单明细
+        if order.partner_id.credit < 0:
+            all_money = -order.partner_id.credit
+        else:
+            all_money = 0.0
+        checking_obj.create(cr, uid, {'date':datetime.datetime.now(),'comsume':order.amount_total,'type':'order','notes':order.name,'all_money':all_money})
         # clean context and session, then redirect to the confirmation page
         request.website.sale_reset(context=context)
 
@@ -972,7 +978,7 @@ class qdodooo_website_update(website_sale):
         url_base = request.registry['ir.config_parameter'].get_param(cr, SUPERUSER_ID, 'web.base.url')
         action_id = request.registry['ir.model.data'].get_object_reference(cr, uid, 'qdodoo_websale_update',
                                                                            'action_account_order')[1]
-        url = url_base + '/web#' + 'page=0&limit=80&view_type=list&model=account.move.line' + '&action=%s' % action_id
+        url = url_base + '/web#' + 'page=0&limit=80&view_type=list&model=qdodoo.checking.list' + '&action=%s' % action_id
         ret = "<html><head><meta http-equiv='refresh' content='0;URL=%s'></head></html>" % url
         return ret
 

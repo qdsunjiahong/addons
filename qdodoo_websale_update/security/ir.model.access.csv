@@ -31,3 +31,5 @@ access_account_journal_period,分析账户账期,account.model_account_journal_p
 access_store_deposit,门店存款,model_store_deposit,base.group_portal,1,1,1,0
 access_stock_picking,装箱单,stock.model_stock_picking,base.group_portal,1,1,1,0
 access_stock_move,转移单,stock.model_stock_move,base.group_portal,1,1,1,0
+access_account_voucher,付款单,account_voucher.model_account_voucher,base.group_portal,1,1,1,0
+access_qdodoo_checking_list,对账单,model_qdodoo_checking_list,base.group_portal,1,1,1,0

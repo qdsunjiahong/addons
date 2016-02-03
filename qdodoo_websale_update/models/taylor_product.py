@@ -137,6 +137,11 @@ class qdodoo_sale_order_inherit_tfs(models.Model):
 
     all_money = fields.Float(u'合计',compute='_get_all_money')
     minus_money = fields.Float(u'优惠金额')
+    is_website = fields.Boolean(u'是否是网络报货生成的订单')
+
+    _defaults = {
+        'is_website':False,
+    }
 
     def create(self, cr, uid, vals, context=None):
         partner_obj = self.pool.get('res.partner')

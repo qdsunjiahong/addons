@@ -168,3 +168,15 @@ class qdodoo_user_promotion(models.Model):
     _defaults = {
         'active':True
     }
+
+class qdodoo_checking_list(models.Model):
+    _name = 'qdodoo.checking.list'
+    _order = 'id desc'
+
+    date = fields.Datetime(u'操作时间')
+    recharge = fields.Float(u'充值')
+    comsume = fields.Float(u'消费')
+    refund = fields.Float(u'订单退款')
+    all_money = fields.Float(u'可用余额')
+    type = fields.Selection([('beforehand',u'预存款'),('order',u'订货消费'),('refund',u'退款')],u'业务类型')
+    notes = fields.Text(u'备注')

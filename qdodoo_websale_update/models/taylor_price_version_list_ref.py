@@ -99,6 +99,7 @@ class qdodoo_product_pricelist_inherit(models.Model):
         currency_obj = self.pool.get('res.currency')
         product_obj = self.pool.get('product.template')
         product_uom_obj = self.pool.get('product.uom')
+        users_obj = self.pool.get('res.users')
         price_type_obj = self.pool.get('product.price.type')
 
         if not products:
@@ -106,6 +107,7 @@ class qdodoo_product_pricelist_inherit(models.Model):
 
         version = False
         lst = {}
+        # 获取开始时间满足条件的价格比明细
         for v in pricelist.version_id:
             if (v.date_start is False) or (v.date_start <= date):
                 lst[v] = v.date_end
@@ -122,7 +124,12 @@ class qdodoo_product_pricelist_inherit(models.Model):
             if (line_key.date_end is False) and not version:
                 a = line_value
                 version = line_key
+
         if not version:
+            # 获取当前登录人用户的价格表
+            property_product_pricelist =  users_obj.browse(cr, uid, uid).partner_id.property_product_pricelist
+            if property_product_pricelist != pricelist:
+                return self._price_rule_get_multi(cr, uid, property_product_pricelist, products_by_qty_by_partner, context=context)
             raise except_orm(_('Warning!'), _("At least one pricelist has no active version !\nPlease create or activate one."))
         categ_ids = {}
         for p in products:
