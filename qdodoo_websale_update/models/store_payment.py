@@ -33,6 +33,7 @@ class store_deposit(models.Model):
     locat_deposit = fields.Char('地点', required=True)
     money = fields.Float(string='金额', digits=(20, 2), required=True)
     remarks = fields.Text(string='备注')
+    company_id = fields.Many2one(related='name.company_id', relation='res.company',string='备注')
     state = fields.Selection([('draft',u'草稿'),('sent',u'待审核'),('done',u'待记账'),('over',u'完成'),('cancel',u'取消')],u'状态')
 
     def _get_user(self, cr, uid, ids, context=None):
