@@ -29,6 +29,16 @@ class qdodoo_account_move_tfs(models.Model):
 
     move_tfs = fields.Many2one('stock.move',u'转移单',copy=False)
 
+    def create(self, cr, uid, vals, context=None):
+        picking_obj = self.pool.get('stock.picking')
+        if vals.get('ref'):
+            picking_ids = picking_obj.search(cr, uid, [('name','=',vals.get('ref'))])
+            if picking_ids:
+                acc = picking_obj.browse(cr, uid, picking_ids[0]).acc
+                if acc:
+                    vals['period_id'] = acc.id
+        return super(qdodoo_account_move_tfs, self).create(cr, uid, vals, context=context)
+
 class qdodoo_stock_move_tfs(models.Model):
     _inherit = 'stock.move'
 
