@@ -108,6 +108,28 @@ class qdodoo_stock_picking(models.Model):
             ['&', ('picking_id', '=', self.picking_id.id), '!', ('id', 'in', processed_ids)])
         packops.unlink()
         self.picking_id.do_transfer()
+        # 修改对应的凭证的辅助核算项
+        # 先判断原单据如果是销售订单
+        analytic = ''
+        sale_id = self.env['sale.order'].search([('name','=',self.picking_id.origin)])
+        if sale_id:
+            analytic = sale_id.project_id.id
+        else:
+            # 判断是否仍然是出库单
+            res = self.env['stock.picking'].search([('name','=',self.picking_id.origin)])
+            while res:
+                sale_id = self.env['sale.order'].search([('name','=',res.origin)])
+                if sale_id:
+                    analytic = sale_id.project_id.id
+                    break
+                else:
+                    res = self.env['stock.picking'].search([('name','=',res.origin)])
+        # 获取到辅助核算项，更新对应的凭证中的辅助核算项
+        # 查询对应的凭证
+        account_id = self.env['account.move'].search([('ref','=',self.picking_id.name)])
+        if account_id:
+            for line in account_id.line_id:
+                line.write({'analytic_account_id':analytic})
         #####创建发票
         ite_obj = self.item_ids[0]
         location_model_cus, lo_id = self.env['ir.model.data'].get_object_reference('stock', 'stock_location_suppliers')
