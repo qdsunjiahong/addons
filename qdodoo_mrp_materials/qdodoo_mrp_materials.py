@@ -7,6 +7,7 @@
 ###########################################################################################
 
 from openerp import fields, models
+from openerp.osv import osv
 import time
 from openerp.tools.translate import _
 from datetime import timedelta, datetime
@@ -34,9 +35,18 @@ class qdodoo_account_move_tfs(models.Model):
         if vals.get('ref'):
             picking_ids = picking_obj.search(cr, uid, [('name','=',vals.get('ref'))])
             if picking_ids:
-                acc = picking_obj.browse(cr, uid, picking_ids[0]).acc
-                if acc:
-                    vals['period_id'] = acc.id
+                # 获取转移日期
+                picking = picking_obj.browse(cr, uid, picking_ids[0])
+                date_done = picking.date_done
+                if not date_done:
+                    date_done = datetime.now()
+                # 根据转移日期计算会计区间
+                period_obj = self.pool.get('account.period')
+                period_ids = period_obj.search(cr, uid, [('company_id','=',picking.company_id.id),('date_start','<=',date_done),('date_stop','>=',date_done),('special','=',False)])
+                if not period_ids:
+                    raise osv.except_osv(_('错误!'), _('缺少正在使用的会计区间！'))
+                else:
+                    vals['period_id'] = period_ids[0]
         return super(qdodoo_account_move_tfs, self).create(cr, uid, vals, context=context)
 
 class qdodoo_stock_move_tfs(models.Model):
