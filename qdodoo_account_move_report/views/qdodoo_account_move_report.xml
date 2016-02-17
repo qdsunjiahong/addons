@@ -89,6 +89,28 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div class='row'>
+                        <div class='col-xs-2'>
+                            <span>财务主管:</span>
+                        </div>
+                        <div class='col-xs-2'>
+                            <span>记账:</span>
+                        </div>
+                        <div class='col-xs-2'>
+                            <span>复核:</span>
+                        </div>
+                        <div class='col-xs-2'>
+                            <span>出纳:</span>
+                        </div>
+                        <div class='col-xs-2'>
+                            <span>制单:</span>
+                            <span t-field='o.create_uid'/>
+                        </div>
+                        <div class='col-xs-2'>
+                            <span>经办人:</span>
+                        </div>
+
+                    </div>
                 </div>
             </t>
         </template>
