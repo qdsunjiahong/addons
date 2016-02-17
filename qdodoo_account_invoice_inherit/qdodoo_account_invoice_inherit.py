@@ -19,11 +19,25 @@ class qdodoo_account_invoice_inherit(models.Model):
     """
     _inherit = 'account.invoice'    # 继承
 
+    payment_state = fields.Char(u'付款申请状态',compute="_get_payment_state")
+
+    def _get_payment_state(self):
+        payment_line_obj = self.env['payment.line']
+        for ids in self:
+            if ids.move_id and ids.move_id.line_id:
+                inv_mv_lines = [x.id for x in ids.move_id.line_id]
+                pl_line_ids = payment_line_obj.search([('move_line_id','in',inv_mv_lines)])
+                if pl_line_ids:
+                    ids.payment_state = u'已申请'
+                else:
+                    ids.payment_state = u'未申请'
+            else:
+                ids.payment_state = u'未申请'
+
     def create(self, cr, uid, vals, context=None):
         if vals.get('origin', '') and vals.get('group_ref'):
             vals['origin'] = vals.get('origin', '') + ':' + vals.get('group_ref')
         return super(qdodoo_account_invoice_inherit, self).create(cr, uid, vals, context=context)
-
 
 class qdodoo_read_account_move_line(osv.osv_memory):
 
