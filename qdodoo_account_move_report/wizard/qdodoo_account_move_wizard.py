@@ -155,3 +155,17 @@ class account_move_report_line(models.Model):
     account_name = fields.Char(string=u'科目')
     debit = fields.Float(string=u'借方金额')
     credit = fields.Float(string=u'贷方金额')
+
+class qdodoo_account_account_tfs(models.Model):
+    _inherit = 'account.account'
+
+    all_name = fields.Char(u'全名',compute="_get_all_name")
+
+    def _get_all_name(self):
+        for ids in self:
+            ids.all_name = ids.name
+            acc = ids
+            while acc.parent_id:
+                ids.all_name = acc.parent_id.name +' / '+ ids.all_name
+                acc = acc.parent_id
+

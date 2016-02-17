@@ -49,6 +49,9 @@
                                     <strong>业务伙伴:</strong>
                                 </th>
                                 <th class="text-right">
+                                    <strong>销售团队:</strong>
+                                </th>
+                                <th class="text-right">
                                     <strong>科目:</strong>
                                 </th>
                                 <th class="text-right">
@@ -75,7 +78,10 @@
                                     <span t-field="line.partner_id.name"/>
                                 </td>
                                 <td class="text-right">
-                                    <span t-field="line.account_id.name"/>
+                                    <span t-field="line.sale_team_id.name"/>
+                                </td>
+                                <td class="text-right">
+                                    <span t-field="line.account_id.all_name"/>
                                 </td>
                                 <td class="text-right">
                                     <span t-field="line.debit"/>
