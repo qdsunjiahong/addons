@@ -1,0 +1,21 @@
+#-*- coding:utf-8 -*-
+{
+    'name':u"雨水采购扩展模块",
+    'category':'Other',
+    'summary':'开票情况添加',
+    'version':'1.0',
+    'website':'www.rainsoft.com',
+    'description':u"""
+雨水扩展模块描述
+=================
+1.添加开票情况字段
+2.增加税率种类
+3.必填的情况下显示税率选择
+    """,
+    'depends':['base'],
+    'demo':[],
+    'data':['views/shuilv_show.xml'],
+    'author':'UntilToMe',
+    'installable':True,
+    'application':True,
+}

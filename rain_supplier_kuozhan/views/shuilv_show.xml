@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="shuilv_form">
+            <field name="name">shuilv.form</field>
+            <field name="model">supplise.ex</field>
+            <field name="arch" type="xml">
+                <form string="开票规则">
+                    <group>
+                        <group >
+                            <field name="company_id" string="公司名称" />
+                            <field name="property_supplier_payment_term" string="供应商支付条款"/>
+                        </group>
+                        <group>
+                            <field name="open_supp" string="开票需求"/>
+                            <field name="shuilv"   string="税率"  attrs="{'invisible':['|',('open_supp','=','no'),('open_supp','=',False)]}"/>
+                        </group>
+                    </group>
+                    <separator string="关联供应商"/>
+                    <field name="partner_id" string="供应商名称"/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="shuilv_tree">
+            <field name="name">shuilv.tree</field>
+            <field name="model">supplise.ex</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="company_id" string="公司名称" />
+                    <field name="property_supplier_payment_term" string="供应商支付条款"/>
+                    <field name="open_supp" string="开票需求"/>
+                    <field name="shuilv"    string="税率"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="shuilv_act">
+            <field name="name">action.shuilv</field>
+            <field name="res_model">supplise.ex</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!--inhert form-->
+        <record model="ir.ui.view" id="show_open_piao">
+            <field name="name">open.piao</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="account.view_partner_property_form"/>
+            <field name="arch" type="xml">
+                <field name="bank_ids" position="after"  >
+                    <field name="show_supplise" nolabel="1" mode="tree" colspan="4" >
+                        <tree  editable="bottom">
+                            <field name="company_id" string="公司名称" />
+                            <field name="property_supplier_payment_term" string="供应商支付条款"/>
+                             <field name="open_supp" string="开票需求"/>
+                            <field name="shuilv"   string="税率" attrs="{'readonly':['|',('open_supp','=','no'),('open_supp','=',False)]}"/>
+                        </tree>
+                     </field>
+                </field>
+            </field>
+        </record>
+
+        <record id="ref_is_only" model="ir.ui.view">
+            <field name="name">ref_only</field>
+            <field name="model">res.partner</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='sales_purchases']/group/group/field[@name='ref']" position="replace">
+                    <field name="ref_new" />
+                </xpath>
+            </field>
+        </record>
+
+
+        <menuitem id="TaxRate"  name="开票规则" parent="purchase.menu_procurement_management_invoice" action="shuilv_act"/>
+
+
+        <record model="ir.ui.view" id="tree_supplier_information">
+            <field name="name">supplier.information.tree</field>
+            <field name="model">qdodoo.supplier.infor</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="supplier_id"/>
+                    <field name="addres"/>
+                    <field name="website"/>
+                    <field name="phone"/>
+                    <field name="mobile"/>
+                    <field name="QQ"/>
+                    <field name="fax"/>
+                    <field name="email"/>
+                    <field name="title"/>
+                    <field name="contact_people"/>
+                    <field name="acc_number"/>
+                    <field name="bank_name"/>
+                    <field name="company_id"/>
+                    <field name="property_supplier_payment_term"/>
+                    <field name="open_supp"/>
+                    <field name="shuilv"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="form_qdodoo_supplier_infor_search" model="ir.ui.view">
+            <field name="name">供应商信息查看</field>
+            <field name="model">qdodoo.supplier.infor.search</field>
+            <field name="arch" type="xml">
+                <form string="供应商信息查看">
+                    <div>
+                        *查看供应商信息
+                    </div>
+                    <footer>
+                        <button string="查询" name="btn_search" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_supplier_information">
+            <field name="name">supplier.information</field>
+            <field name="res_model">qdodoo.supplier.infor.search</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="form_qdodoo_supplier_infor_search"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_supplier_information"  name="供应商信息导出" parent="purchase.menu_procurement_management" action="action_supplier_information"/>
+    </data>
+</openerp>
