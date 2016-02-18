@@ -39,9 +39,6 @@
                     <table class="table table-condensed">
                         <thead>
                             <tr>
-                                <th class="text-left">
-                                    <strong>开发票:</strong>
-                                </th>
                                 <th class="text-center">
                                     <strong>名称:</strong>
                                 </th>
@@ -68,9 +65,6 @@
                         </thead>
                         <tbody>
                             <tr t-foreach="o.line_id" t-as="line">
-                                <td class="text-left">
-                                    <span t-field="line.invoice"/>
-                                </td>
                                 <td class="text-center">
                                     <span t-field="line.name"/>
                                 </td>

@@ -18,12 +18,6 @@
                                 <span t-field='o.min_number'/>-
                                 <span t-field='o.max_number'/>
                             </div>
-                            <!--<div class='col-xs-2 text-right'>-->
-                            <!--<span>页数:</span>-->
-                            <!--<span t-esc="1"/>-->
-                            <!--<span>/</span>-->
-                            <!--<sapn t-esc="2"/>-->
-                            <!--</div>-->
                         </div>
 
                         <table class="table table-condensed">

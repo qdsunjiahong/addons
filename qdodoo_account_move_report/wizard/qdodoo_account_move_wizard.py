@@ -161,11 +161,22 @@ class qdodoo_account_account_tfs(models.Model):
 
     all_name = fields.Char(u'全名',compute="_get_all_name")
 
+    # def _get_all_name(self):
+    #     for ids in self:
+    #         ids.all_name = ids.name
+    #         acc = ids
+    #         while acc.parent_id:
+    #             ids.all_name = acc.parent_id.name +' / '+ ids.all_name
+    #             acc = acc.parent_id
+
     def _get_all_name(self):
         for ids in self:
-            ids.all_name = ids.name
+            ids.all_name = ''
             acc = ids
             while acc.parent_id:
-                ids.all_name = acc.parent_id.name +' / '+ ids.all_name
+                if ids.all_name:
+                    ids.all_name = acc.name +' / '+ ids.all_name
+                else:
+                    ids.all_name = acc.name
                 acc = acc.parent_id
 
