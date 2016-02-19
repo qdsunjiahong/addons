@@ -10,10 +10,9 @@ from openerp import models, fields, api, _
 from openerp.exceptions import except_orm
 import xlrd, base64
 
-
 class qdodoo_product_import(models.Model):
     """
-    科目导入wizard
+        科目导入wizard
     """
     _name = 'qdodoo.product.import'
     _description = 'qdodoo.product.import'
@@ -35,10 +34,14 @@ class qdodoo_product_import(models.Model):
             partner_dict[(partner_id.name, partner_id.company_id.id)] = partner_id.id
         # 获取所有的产品分类
         category_ids = self.env['product.category'].search([])
-        # 循环所有的分类
         category_dict = {}
         for category_id in category_ids:
             category_dict[category_id.complete_name.replace(' ', '')] = category_id.id
+        # 获取所有的产品公开分类
+        category_public_ids = self.env['product.public.category'].search([])
+        category_public_dict = {}
+        for category_public_id in category_public_ids:
+            category_public_dict[category_public_id.complete_name.replace(' ', '')] = category_public_id.id
         # 获取所有用户
         user_ids = self.env['res.users'].search([])
         # 循环所有用户{(name,company):id}
@@ -79,6 +82,7 @@ class qdodoo_product_import(models.Model):
                 weight_net = sh.cell(row, 19).value
                 partner = sh.cell(row, 20).value
                 description = sh.cell(row, 21).value
+                public_category = sh.cell(row, 22).value
                 if not name:
                     raise except_orm(_(u'警告'), _(u'第%s行产品名称未填写') % row_n)
                 data['name'] = name
@@ -153,14 +157,15 @@ class qdodoo_product_import(models.Model):
                     if category.strip() not in category_dict:
                         raise except_orm(_(u'警告'), _(u'第%s行内部分类填写错误') % row_n)
                     data['categ_id'] = category_dict.get(category.strip())
+                if public_category:
+                    all_public_category_id = []
+                    for pca in public_category.split("|"):
+                        if pca.strip() not in category_public_dict:
+                            raise except_orm(_(u'警告'), _(u'第%s行公开的产品分类填写错误') % row_n)
+                        all_public_category_id.append(category_public_dict.get(pca.strip()))
+                    data['public_categ_ids'] = [[6, False, all_public_category_id]]
                 if description:
                     data['description'] = description
-                # if ean_13:
-                #     if isinstance(ean_13, float) or isinstance(ean_13, int):
-                #         ean_13 = str(int(ean_13))
-                #     if len(ean_13) != 13:
-                #         raise except_orm(_(u'警告'), _(u'第%s行ean13条码填写错误') % row_n)
-                #     data['ean13'] = ean_13
                 create_obj = product_obj.create(data)
                 create_id = create_obj.id
                 return_list.append(create_id)
