@@ -124,12 +124,13 @@ class qdodoo_stock_picking(models.Model):
                     break
                 else:
                     res = self.env['stock.picking'].search([('name','=',res.origin)])
-        # 获取到辅助核算项，更新对应的凭证中的辅助核算项
-        # 查询对应的凭证
-        account_id = self.env['account.move'].search([('ref','=',self.picking_id.name)])
-        for key in account_id:
-            for line in key.line_id:
-                line.write({'analytic_account_id':analytic})
+            # 获取到辅助核算项，更新对应的凭证中的辅助核算项
+            # 查询对应的凭证
+        if analytic:
+            account_id = self.env['account.move'].search([('ref','=',self.picking_id.name)])
+            for key in account_id:
+                for line in key.line_id:
+                    line.write({'analytic_account_id':analytic})
         #####创建发票
         ite_obj = self.item_ids[0]
         location_model_cus, lo_id = self.env['ir.model.data'].get_object_reference('stock', 'stock_location_suppliers')
