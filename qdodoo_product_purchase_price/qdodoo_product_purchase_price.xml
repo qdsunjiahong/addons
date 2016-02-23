@@ -9,6 +9,7 @@
                     <field name="name"/>
                     <field name="uom_po_id"/>
                     <field name="partner_id_one"/>
+                    <field name="product_qty_tfs"/>
                     <field name="product_price"/>
                 </tree>
             </field>
