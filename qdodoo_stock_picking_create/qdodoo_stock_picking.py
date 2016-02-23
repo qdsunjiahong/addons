@@ -19,7 +19,6 @@ class qdodoo_account_invoice(models.Model):
 
     invoice_date = fields.Date(string=u'发票日期', default=_compute_date)
 
-
 class stock_picking(models.Model):
     _inherit = 'stock.picking'
 
@@ -73,7 +72,6 @@ class stock_picking(models.Model):
                 'journal_id': journal_id,
                 'group_ref': move.picking_id.group_id.name
             }
-
 
 class qdodoo_stock_picking(models.Model):
     _inherit = 'stock.transfer_details'
@@ -165,7 +163,6 @@ class qdodoo_stock_picking(models.Model):
             onshipping_id = self.env['stock.invoice.onshipping'].create({'invoice_date': fields.date.today()})
             onshipping_id.create_invoice()
         return True
-
 
 class qdodoo_stock_move_inherit_tfs(models.Model):
     _inherit = 'stock.move'
