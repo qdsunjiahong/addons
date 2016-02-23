@@ -108,6 +108,21 @@ class qdodoo_stock_picking(models.Model):
             ['&', ('picking_id', '=', self.picking_id.id), '!', ('id', 'in', processed_ids)])
         packops.unlink()
         self.picking_id.do_transfer()
+        # 修改对应的凭证的金额
+        account_id = self.env['account.move'].search([('ref','=',self.picking_id.name)])
+        # 判断是否是产品费用产生的调拨单
+        expense_id = self.env['product.expense'].search([('name','=',self.picking_id.origin)])
+        if expense_id:
+            for line_key in account_id:
+                for line1 in line_key.line_id:
+                    # 获取对应的调拨明细
+                    stock_move_ids = self.env['stock.move'].search([('picking_id','=',self.picking_id.id),('product_id','=',line1.product_id.id)])
+                    if stock_move_ids:
+                        price = stock_move_ids[0].price_unit*stock_move_ids[0].product_uom_qty
+                        if line1.credit:
+                            line1.write({'credit':price})
+                        if line1.debit:
+                            line1.write({'debit':price})
         # 修改对应的凭证的辅助核算项
         # 先判断原单据如果是销售订单
         analytic = ''
@@ -127,7 +142,6 @@ class qdodoo_stock_picking(models.Model):
             # 获取到辅助核算项，更新对应的凭证中的辅助核算项
             # 查询对应的凭证
         if analytic:
-            account_id = self.env['account.move'].search([('ref','=',self.picking_id.name)])
             for key in account_id:
                 for line in key.line_id:
                     line.write({'analytic_account_id':analytic})
@@ -161,27 +175,50 @@ class qdodoo_stock_move_inherit_tfs(models.Model):
     def create(self, cr, uid, valus, context=None):
         product_obj = self.pool.get('product.product')
         users_obj = self.pool.get('res.users')
+        expense_obj = self.pool.get('product.expense')
+        expense_line_obj = self.pool.get('product.expense.line')
         if valus.get('product_id'):
-            # 获取产品公司id
-            company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
-            # 查询该公司的人
-            company_uid = users_obj.search(cr, uid, [('company_id', '=', company_id)])
-            if not company_uid:
-                raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+            expense_ids = expense_obj.search(cr, uid, [('name','=',valus.get('name'))])
+            if expense_ids:
+                # 获取对应的明细
+                expense_line_ids = expense_line_obj.search(cr, uid, [('expense_id','in',expense_ids),('product','=',valus.get('product_id'))])
+                if expense_line_ids:
+                    valus['tfs_price_unit'] = expense_line_obj.browse(cr, uid, expense_line_ids[0]).price
+                    valus['price_unit'] = expense_line_obj.browse(cr, uid, expense_line_ids[0]).price
             else:
-                valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
+                # 获取产品公司id
+                company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
+                # 查询该公司的人
+                company_uid = users_obj.search(cr, uid, [('company_id', '=', company_id)])
+                if not company_uid:
+                    raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+                else:
+                    valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
         return super(qdodoo_stock_move_inherit_tfs, self).create(cr, uid, valus, context=context)
 
     def write(self, cr, uid, ids, valus, context=None):
+        if isinstance(ids, (int,long)):
+            ids = [ids]
         product_obj = self.pool.get('product.product')
         users_obj = self.pool.get('res.users')
+        expense_obj = self.pool.get('product.expense')
+        expense_line_obj = self.pool.get('product.expense.line')
         if valus.get('product_id'):
-            # 获取产品公司id
-            company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
-            # 查询该公司的人
-            company_uid = users_obj.search(cr, uid, [('company_id', '=', company_id)])
-            if not company_uid:
-                raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+            name = self.browse(cr, uid, ids[0])
+            expense_ids = expense_obj.search(cr, uid, [('name','=',name)])
+            if expense_ids:
+                # 获取对应的明细
+                expense_line_ids = expense_line_obj.search(cr, uid, [('expense_id','in',expense_ids),('product','=',valus.get('product_id'))])
+                if expense_line_ids:
+                    valus['tfs_price_unit'] = expense_line_obj.browse(cr, uid, expense_line_ids[0]).price
+                    valus['price_unit'] = expense_line_obj.browse(cr, uid, expense_line_ids[0]).price
             else:
-                valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
+                # 获取产品公司id
+                company_id = product_obj.browse(cr, uid, valus.get('product_id')).company_id.id
+                # 查询该公司的人
+                company_uid = users_obj.search(cr, uid, [('company_id', '=', company_id)])
+                if not company_uid:
+                    raise osv.except_osv('错误', "该产品所属的公司没有用户!'")
+                else:
+                    valus['tfs_price_unit'] = product_obj.browse(cr, company_uid[0], valus.get('product_id')).standard_price
         return super(qdodoo_stock_move_inherit_tfs, self).write(cr, uid, ids, valus, context=context)
