@@ -29,108 +29,110 @@ class qdodoo_stock_inventory_wizard(models.Model):
 
     @api.multi
     def action_inventory(self):
+        # 组织过滤条件数据
         datetime_start = self.date + " 00:00:01"
         datetime_end = self.date + " 23:59:59"
+        # 获取数据模型定义
         production_obj = self.env['mrp.production']
-        product_inventory = {}
-        product_list = []
-        mrp_list = []
-        mrp_dict = {}
-        product_dict = {}
-        return_list = []
-        end_product_list = []
-        end_product_dict = {}
-        report_obj = self.env['qdodoo.stock.inventory.report2']
         account_move_line_obj = self.env['account.move.line']
-        account_move_obj = self.env['account.move']
-        product_obj = self.env['product.product']
+        report_obj = self.env['qdodoo.stock.inventory.report2']
+        # 审核盘点
+        # 根据盘点表中辅助核算项修改明细中辅助核算项
         res_inventory = self.inventory_id.action_done()
-        if self.inventory_id.line_ids:
-            for move_id in self.inventory_id.move_ids:
-                product_list.append(move_id.product_id.id)
-                if move_id.location_id.id == self.inventory_id.location_id.id:
-                    product_inventory[move_id.product_id.id] = -move_id.product_uom_qty
-
-                else:
-                    product_inventory[move_id.product_id.id] = move_id.product_uom_qty
+        # 获取盘点的所有的产品id、根据库位获取产品对应数量
+        product_list = []
+        product_inventory = {}
+        for move_id in self.inventory_id.move_ids:
+            product_list.append(move_id.product_id.id)
+            if move_id.location_id.id == self.inventory_id.location_id.id:
+                product_inventory[move_id.product_id] = -move_id.product_uom_qty
+            else:
+                product_inventory[move_id.product_id] = move_id.product_uom_qty
+        # 查询满足条件的
         mrp_ids = production_obj.search(
             [('state', '=', 'done'), ('company_id', '=', self.company_id.id), ('date_planned', '>=', datetime_start),
              ('date_planned', '<=', datetime_end)])
         if not mrp_ids:
             raise except_orm(_(u'警告'), _(u'未找到生产单'))
-        # 成品数量
+        # 获取已投料数量（盘点表中存在的产品）
+        # 获取产品的所有数量
+        # 获取所有生产单名字{id:名字}
+        # 获取所有的产品明细{id:名字}
+        mrp_dict = {} #{move_id:{产品:数量}}
+        product_dict = {} #{产品:数量}
+        mrp_name = {}
         for mrp_id in mrp_ids:
-            # if mrp_id.product_id.id in product_list:
-            #     for mrp_cre_id in mrp_id.move_created_ids2:
-            #         k = (mrp_cre_id, mrp_cre_id.product_id.id)
-            #         mrp_list.append(k)
-            #         mrp_dict[k] = mrp_id.product_qty
-            #         product_id = mrp_cre_id.product_id.id
-            #         product_dict[product_id] = product_dict.get(product_id, 0) + mrp_id.product_qty
-            # else:
-            # 原料数量
-            if mrp_id.move_lines2:
-                for move_l in mrp_id.move_lines2:
-                    if move_l.product_id.id in product_list:
-                        k = (move_l, move_l.product_id.id)
-                        mrp_list.append(k)
-                        mrp_dict[k] = move_l.product_uom_qty
-                        product_id = move_l.product_id.id
-                        product_dict[product_id] = product_dict.get(product_id, 0) + move_l.product_qty
-        for mrp_l in mrp_list:
-            difference_quantity = mrp_dict.get(mrp_l, 0) / product_dict.get(mrp_l[1], 0) * product_inventory.get(
-                mrp_l[1], 0)
-            k = (mrp_l[0].raw_material_production_id.id or mrp_l[0].production_id.id, mrp_l[1], self.inventory_id.id)
-            if k in end_product_list:
-                end_product_dict[k] += difference_quantity
-            else:
-                end_product_dict[k] = difference_quantity
-                end_product_list.append(k)
+            mrp_name[mrp_id.id] = mrp_id.name
+            mrp_dict[mrp_id] = {}
+            for move_l in mrp_id.move_lines2:
+                if move_l.product_id.id in product_list:
+                    if move_l.product_id in mrp_dict[mrp_id]:
+                        mrp_dict[mrp_id][move_l.product_id] += move_l.product_uom_qty
+                    else:
+                        mrp_dict[mrp_id][move_l.product_id] = move_l.product_uom_qty
+                    product_dict[move_l.product_id] = product_dict.get(move_l.product_id, 0) + move_l.product_uom_qty
+        # 组织均摊后的数据（按照生产单的比例计算）
+        end_product_dict = {}
+        for key,value in mrp_dict.items():
+            end_product_dict[key] = {}
+            for key1,value1 in value.items():
+                end_product_dict[key][key1] = value1 / product_dict.get(key1) * product_inventory.get(key1)
+        # 如果审核成功(获取所有凭证)
+        # 获取创建的数据id
+        return_list = []
         if res_inventory:
             # 查询对应的盘点明细
             account_move_lines = account_move_line_obj.search([('name', '=', 'INV:' + self.inventory_id.name)])
-            # 删除所有的会计凭证
+            # 删除已存在的会计凭证明细
             account_lst = []
-            account_line_lst = []
-            if account_move_lines:
-                for move_line in account_move_lines:
-                    if move_line.move_id.id not in account_lst:
-                        if move_line.move_id not in account_lst:
-                            account_lst.append(move_line.move_id)
-                        sql_d = """delete from account_move_line where id=%s"""%move_line.id
-                        self._cr.execute(sql_d)
-            for key_ll in end_product_list:
-                if account_lst:
-                    account_id = account_lst[0].copy({'ref':production_obj.browse(key_ll[0]).name})
-                    val = {}
-                    val['move_id'] = account_id.id
-                    val['name'] = product_obj.browse(key_ll[1]).name
-                    val['ref'] = product_obj.browse(key_ll[1]).name
-                    val['journal_id'] = account_lst[0].journal_id.id
-                    val['period_id'] = account_lst[0].period_id.id
-                    val['account_id'] = self.debit_account.id
-                    val['debit'] = abs(end_product_dict.get(key_ll, 0) * product_obj.browse(key_ll[1]).standard_price)
-                    val['credit'] = 0
-                    val['quantity'] = 1
-                    val['date'] = datetime.now().date()
-                    val['location_in_id'] = self.inventory_id.location_id.id
-                    account_move_line_obj.create(val)
-                    val['location_in_id'] = product_obj.browse(key_ll[1]).property_stock_production.id
-                    val['account_id'] = self.credit_account.id
-                    val['debit'] = 0
-                    val['credit'] = abs(end_product_dict.get(key_ll, 0) * product_obj.browse(key_ll[1]).standard_price)
-                    account_move_line_obj.create(val)
-                data = {
-                    'mo_id': key_ll[0],
-                    'product_id': key_ll[1],
-                    'product_qty': end_product_dict.get(key_ll, 0),
-                    'inventory_id': key_ll[2],
-                    'date': fields.Date.today(),
-                    'debit_account': self.debit_account.id,
-                    'credit_account': self.credit_account.id
-                }
-                res_obj = report_obj.create(data)
-                return_list.append(res_obj.id)
+            for move_line in account_move_lines:
+                if move_line.move_id not in account_lst:
+                    account_lst.append(move_line.move_id)
+                    sql_d = """delete from account_move_line where id=%s"""%move_line.id
+                    self._cr.execute(sql_d)
+
+            for key_ll,value_ll in end_product_dict.items():
+                for key_ll1,value_ll1 in value_ll.items():
+                    # 如果有凭证，生成对应的凭证明细
+                    if account_lst:
+                        account_id = account_lst[0].copy({'ref':mrp_name.get(key_ll)})
+                        val = {}
+                        val['move_id'] = account_id.id
+                        val['name'] = key_ll1.name
+                        val['ref'] = key_ll1.name
+                        val['journal_id'] = account_lst[0].journal_id.id
+                        val['period_id'] = account_lst[0].period_id.id
+                        if value_ll1 * key_ll1.standard_price >= 0:
+                            val['account_id'] = self.debit_account.id
+                        else:
+                            val['account_id'] = self.credit_account.id
+                        val['debit'] = abs(value_ll1 * key_ll1.standard_price)
+                        val['credit'] = 0
+                        val['quantity'] = 1
+                        val['date'] = datetime.now().date()
+                        val['analytic_account_id'] = self.inventory_id.account_assistant.id
+                        val['location_in_id'] = self.inventory_id.location_id.id
+                        account_move_line_obj.create(val)
+                        val['location_in_id'] = key_ll1.property_stock_production.id
+                        if value_ll1 * key_ll1.standard_price <= 0:
+                            val['account_id'] = self.debit_account.id
+                        else:
+                            val['account_id'] = self.credit_account.id
+                        val['debit'] = 0
+                        val['credit'] = abs(value_ll1 * key_ll1.standard_price)
+                        val['analytic_account_id'] = self.inventory_id.account_assistant.id
+                        account_move_line_obj.create(val)
+                    data = {
+                        'mo_id': key_ll.id,
+                        'product_id': key_ll1.id,
+                        'product_qty': value_ll1,
+                        'inventory_id': self.inventory_id.id,
+                        'date': fields.Date.today(),
+                        'debit_account': self.debit_account.id,
+                        'credit_account': self.credit_account.id
+                    }
+                    res_obj = report_obj.create(data)
+                    return_list.append(res_obj.id)
         else:
             raise except_orm(_(u'警告'), _(u'盘点失败'))
         # 删除原有的会计凭证、明细
