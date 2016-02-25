@@ -51,6 +51,8 @@ class qdodoo_account_move_line(models.Model):
     def write(self, cr, uid, ids, vals, context=None, check=True):
         res = super(qdodoo_account_move_line, self).write(cr, uid, ids, vals, context=context, check=True)
         for obj in self.browse(cr, uid, ids):
+            if obj.create_uid.id != uid and uid != 1:
+                raise except_orm(_(u'警告'), _(u'只能修改自己创建的凭证！'))
             required_assistant = obj.account_id.required_assistant
             analytic_account_id = obj.analytic_account_id
             if required_assistant:
@@ -60,6 +62,12 @@ class qdodoo_account_move_line(models.Model):
                 if analytic_account_id:
                     raise except_orm(_(u'警告'), _(u'此科目不能录入辅助核算项！'))
         return res
+
+    def unlink(self, cr, uid, ids, context=None):
+        for obj in self.browse(cr, uid, ids):
+            if obj.create_uid.id != uid and uid != 1:
+                raise except_orm(_(u'警告'), _(u'只能删除自己创建的凭证！'))
+        return super(qdodoo_account_move_line, self).unlink(cr, uid, ids, context=context)
 
 class qdodoo_stock_move(models.Model):
     _inherit = 'stock.quant'
