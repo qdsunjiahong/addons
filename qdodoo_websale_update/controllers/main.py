@@ -91,7 +91,7 @@ class qdodooo_website_update(website_sale):
     """
 
     @http.route(['/shop/bat/cart'], type='http', auth="public", methods=['POST'], website=True)
-    def add_all_product(self, add_qty=1, set_qty=0,**kw):
+    def add_all_product(self, add_qty=1, set_qty=0, search='',**kw):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # 判断产品赠品问题
         # 获取选择的产品列表
@@ -144,7 +144,6 @@ class qdodooo_website_update(website_sale):
             pool.get('sale.order').write(cr, uid, int(sale_order), {'warehouse_id': int(output_warehouse)})
         return request.redirect("/shop/cart")
 
-
     @http.route(['/shop/cart'], type='http', auth="public", website=True)
     def cart(self, **post):
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
@@ -178,7 +177,7 @@ class qdodooo_website_update(website_sale):
                  ], type='http', auth="public", website=True)
     # 用shop方法处理URL请求 页面数为0 分类为空  搜索为空
     def shop(self, page=0, category=None, search='', **post):
-        PPG = 150
+        PPG = 300
         # 得到网页相关对象
         cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
         # 得到搜索区间
@@ -309,8 +308,6 @@ class qdodooo_website_update(website_sale):
                 break
         request.session['taylor_session']=key
         # domain += [('id', 'in', pricelist_procuct_ids)]
-
-
         # 更改查询数据
         url = "/shop"
         # product_count 为过滤产品总数
