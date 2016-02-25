@@ -88,8 +88,8 @@ class qdodoo_stock_inventory_wizard(models.Model):
             for move_line in account_move_lines:
                 if move_line.move_id not in account_lst:
                     account_lst.append(move_line.move_id)
-                    sql_d = """delete from account_move_line where id=%s"""%move_line.id
-                    self._cr.execute(sql_d)
+                sql_d = """delete from account_move_line where id=%s"""%move_line.id
+                self._cr.execute(sql_d)
 
             for key_ll,value_ll in end_product_dict.items():
                 for key_ll1,value_ll1 in value_ll.items():
@@ -103,9 +103,9 @@ class qdodoo_stock_inventory_wizard(models.Model):
                         val['journal_id'] = account_lst[0].journal_id.id
                         val['period_id'] = account_lst[0].period_id.id
                         if value_ll1 * key_ll1.standard_price >= 0:
-                            val['account_id'] = self.debit_account.id
-                        else:
                             val['account_id'] = self.credit_account.id
+                        else:
+                            val['account_id'] = self.debit_account.id
                         val['debit'] = abs(value_ll1 * key_ll1.standard_price)
                         val['credit'] = 0
                         val['quantity'] = value_ll1
@@ -115,9 +115,9 @@ class qdodoo_stock_inventory_wizard(models.Model):
                         account_move_line_obj.create(val)
                         val['location_in_id'] = key_ll1.property_stock_production.id
                         if value_ll1 * key_ll1.standard_price <= 0:
-                            val['account_id'] = self.debit_account.id
-                        else:
                             val['account_id'] = self.credit_account.id
+                        else:
+                            val['account_id'] = self.debit_account.id
                         val['debit'] = 0
                         val['credit'] = abs(value_ll1 * key_ll1.standard_price)
                         val['analytic_account_id'] = self.inventory_id.account_assistant.id
