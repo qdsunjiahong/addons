@@ -15,12 +15,14 @@ from openerp.exceptions import except_orm
 class qdodoo_search_balance_statement(models.Model):
     _name = "qdodoo.search.balance.statement"
     _description = "search.balance.statement"
+    """
+        库存查询报表
+    """
 
     def start_date(self):
         """
-            本月初
+            今天
         """
-
         now_date = fields.Date.today()
         return now_date
 
@@ -32,154 +34,115 @@ class qdodoo_search_balance_statement(models.Model):
 
     @api.multi
     def balance_statement_open_window(self):
-        unlink_ids = self.env["qdodoo.result.balance.statement"].search([])
-        unlink_ids.unlink()
+        print datetime.datetime.now(),'1111111111111111'
+        # 获取数据模型
+        product_obj = self.env['product.product']
+        statement_obj = self.env["qdodoo.result.balance.statement"]
         mod_obj = self.env['ir.model.data']
-        result_list = []
+        move_obj = self.env["stock.move"]
+        balance_obj = self.env["qdodoo.previous.balance"]
+        quant_obj = self.env['stock.quant']
+        # 清理原有表中数据
+        unlink_ids = statement_obj.search([])
+        unlink_ids.unlink()
+        # 判断查询条件是否合理
         if self.end_date and self.start_date > self.end_date:
             raise except_orm(_(u'对不起'), _(u'开始日期不能大于结束日期！'))
-        # 获取所有库位id
-        location_list = []
-        location_name_dict = {}
+        # 查询产品的过滤条件
+        domain = []
+        # 如果按照公司获取对应库位
         if self.company_id:
-            location_ids = self.env['stock.location'].search([('company_id', '=', self.company_id.id)])
-            for location_id in location_ids:
-                location_name_dict[location_id.id] = location_id.complete_name.split('/', 1)[
-                    1] if location_id.location_id else location_id.complete_name
-                location_list.append(location_id.id)
+            domain.append(('company_id','=',self.company_id.id))
+            # 获取该公司的所有库位
+            location_list = self.env['stock.location'].search([('company_id', '=', self.company_id.id),('usage','=','internal')])
+        # 如果按照库位查询
         if self.location_id:
-            location_list.append(self.location_id.id)
-            location_name_dict[self.location_id.id] = self.location_id.complete_name.split('/', 1)[
-                1] if self.location_id.location_id else self.location_id.complete_name
+            location_list = [self.location_id]
         # 获取查询条件中的开始时间和结束时间
-        balance_obj = self.env["qdodoo.previous.balance"]
         now_date = fields.Date.today()
         start_date = self.start_date + " 00:00:01"
-        read_dict = balance_obj.browse(1)
-        if start_date <= read_dict.date:
-            date_start_limit = (
-                datetime.datetime.strptime(read_dict.date, DEFAULT_SERVER_DATE_FORMAT) - datetime.timedelta(
-                    days=-1)).strftime(
-                DEFAULT_SERVER_DATE_FORMAT)
-            raise except_orm(_(u'警告'), _(u'开始时间超出查询范围，开始时间最早只能为%s') % (date_start_limit))
-
         end_date = (self.end_date if self.end_date else now_date) + " 23:59:59"
-
-        # 每个公司取出一个用户
-        # 根据id获取产品名字、内部编号、分类id
-        product_obj = self.pool.get('product.product')
-        dict_product = {}
-        dict_product_name = {}
-        dict_category_id = {}
-        product_list_l = []
-        product_price_dict = {}
-        product_company_dict = {}
-        for company_id in self.env['res.company'].search([]):
-            user_ids = self.env['res.users'].search([('company_id', '=', company_id.id)])
-            if user_ids:
-                user_id = user_ids[0].id
-                product_list = product_obj.search(self.env.cr, user_id,
-                                                  [('type', '=', 'product'), ('company_id', '=', company_id.id)])
-                for product_brw in product_obj.browse(self.env.cr, user_id, product_list):
-                    product_price_dict[product_brw.id] = product_brw.standard_price
-                    dict_product[product_brw.id] = product_brw.name
-                    dict_product_name[product_brw.id] = product_brw.default_code
-                    dict_category_id[product_brw.id] = product_brw.categ_id.id
-                    product_list_l.append(product_brw.id)
-                    product_company_dict[product_brw.id] = company_id.id
-
-        product_dict = {}  # 本期结余数量
-        product_amount_dict = {}  # 本期结余金额
-        quant_obj = self.env['stock.quant']
-        quant_ids = quant_obj.search([('location_id', 'in', location_list)])
-        if quant_ids:
-            for quant_id in quant_ids:
-                qant_key = (quant_id.location_id.id, quant_id.product_id.id)
-                if qant_key in product_dict:
-                    product_dict[qant_key] += quant_id.qty
-                    product_amount_dict[qant_key] += quant_id.qty * product_price_dict.get(quant_id.product_id.id, 0)
-                else:
-                    product_dict[qant_key] = quant_id.qty
-                    product_amount_dict[qant_key] = quant_id.qty * product_price_dict.get(quant_id.product_id.id, 0)
-        # 前期结余
+        # 获取所有的产品
+        product_ids = product_obj.search(domain)
+        # 前期结余数量、金额
         balance_num_dict = {}
         balance_mount_dict = {}
         # 获取昨天的日期
-        yesterday = (datetime.datetime.strptime(self.start_date, DEFAULT_SERVER_DATE_FORMAT) - datetime.timedelta(
-            days=1)).strftime(
-            DEFAULT_SERVER_DATE_FORMAT)
-        balance_ids = balance_obj.search([('date', '=', yesterday), ('product_id', 'in', product_list_l),
-                                          ('location_id', 'in', location_list)])
+        yesterday = (datetime.datetime.strptime(self.start_date, DEFAULT_SERVER_DATE_FORMAT) - datetime.timedelta(days=1)).strftime(DEFAULT_SERVER_DATE_FORMAT)
+        balance_ids = balance_obj.search([('date', '=', yesterday), ('product_id', 'in', product_ids.ids),
+                                          ('location_id', 'in', location_list.ids)])
         for balance_brw in balance_ids:
-            key_balance = (balance_brw.location_id.id, balance_brw.product_id.id)
-            balance_num_dict[key_balance] = balance_brw.balance_num
-            balance_mount_dict[key_balance] = balance_brw.balance_money
-        if end_date:
-            balance_ids_new = balance_obj.search([('date', '=', end_date), ('location_id', 'in', location_list),
-                                                  ('product_id', 'in', product_list_l)])
+            balance_num_dict[balance_brw.product_id.id] = {balance_brw.location_id.id:balance_brw.balance_num}
+            balance_mount_dict[balance_brw.product_id.id] = {balance_brw.location_id.id:balance_brw.balance_money}
+        # 本期结余数量、金额
+        balance_num_end_dict = {}
+        balance_mount_end_dict = {}
+        if self.end_date and self.end_date < now_date:
+            balance_ids_new = balance_obj.search([('date', '=', end_date), ('location_id', 'in', location_list.ids),
+                                                  ('product_id', 'in', product_ids.ids)])
             if balance_ids_new:
-                product_dict = {}
-                for balance_brw_new in balance_ids_new:
-                    key_balance_new = (balance_brw_new.location_id.id, balance_brw_new.product_id.id)
-                    product_dict[key_balance_new] = balance_brw_new.balance_num
-                    product_amount_dict[key_balance_new] = balance_brw_new.balance_money
-
-
-        # 入库数量
-        num_dict = {}
-        move_in_mount = {}
-        move_in_list = []
-        move_obj = self.env["stock.move"]
-
-        move_ids = move_obj.search([('product_id', 'in', product_list_l), ('state', '=', 'done'),
-                                    ('date', '>=', start_date), ('date', '<=', end_date),
-                                    ('location_dest_id', 'in', location_list)])
-        for move_brw in move_ids:
-            key_in = (move_brw.location_dest_id.id, move_brw.product_id.id)
-            if key_in in move_in_list:
-                num_dict[key_in] += move_brw.product_uom_qty
-                move_in_mount[key_in] += move_brw.product_uom_qty * move_brw.tfs_price_unit
-            else:
-                num_dict[key_in] = move_brw.product_uom_qty
-                move_in_mount[key_in] = move_brw.product_uom_qty * move_brw.tfs_price_unit
-                move_in_list.append(key_in)
-        # 查询产品的出库数量
-        move_out_dict = {}
-        move_out_mount = {}
-        move_out_list = []
-        move_out_ids = move_obj.search([('product_id', 'in', product_list_l), ('state', '=', 'done'),
-                                        ('date', '>=', start_date), ('date', '<=', end_date),
-                                        ('location_id', 'in', location_list)])
-        for move_out_id in move_out_ids:
-            key_out = (move_out_id.location_id.id, move_out_id.product_id.id)
-            if key_out in move_out_list:
-                move_out_dict[key_out] += move_out_id.product_uom_qty
-                move_out_mount[key_out] += move_out_id.product_uom_qty * move_out_id.tfs_price_unit
-            else:
-                move_out_dict[key_out] = move_out_id.product_uom_qty
-                move_out_mount[key_out] = move_out_id.product_uom_qty * move_out_id.tfs_price_unit
-                move_out_list.append(key_out)
-
-        product_list_new = list(set(move_in_list + move_out_list + product_dict.keys() + product_amount_dict.keys()))
-        # 循环所有查询出来的数据
-        for product_l in product_list_new:
-            result = {
-                'name': location_name_dict.get(product_l[0], ''),  # 库位名称
-                'product_name': dict_product.get(product_l[1], ''),  # 产品名称
-                'product_id': product_l[1],
-                'pre_balance': balance_num_dict.get(product_l, 0.0),  # 前期结余数量
-                'pre_balance_amount': balance_mount_dict.get(product_l, 0),  # 前期结余金额
-                'storage_quantity_amount': move_in_mount.get(product_l, 0),  # 入库金额
-                'storage_quantity_period': num_dict.get(product_l, 0.0),  # 本期入库数量
-                'number_of_library': move_out_dict.get(product_l, 0.0),  # 本期出库数量
-                'number_of_library_amount': move_out_mount.get(product_l, 0),  # 出库金额
-                'current_balance': product_dict.get(product_l, 0.0),  # 本期结余数量
-                'current_balance_amount': product_amount_dict.get(product_l, 0),  # 本期结余金额
-                'company_id': product_company_dict.get(product_l[1], False)
-            }
-            cre_obj = self.env["qdodoo.result.balance.statement"].create(result)
-            result_list.append(cre_obj.id)
-
+                for balance_id_new in balance_ids_new:
+                    balance_num_end_dict[balance_id_new.product_id.id] = {balance_id_new.location_id.id:balance_id_new.balance_num}
+                    balance_mount_end_dict[balance_id_new.product_id.id] = {balance_id_new.location_id.id:balance_id_new.balance_money}
+        else:
+            # 查询当前的库存
+            for quant in quant_obj.search([('location_id','=',self.location_id.id),('product_id', 'in', product_ids.ids)]):
+                if quant.product_id.id in balance_num_end_dict and quant.location_id.id in balance_num_end_dict.get(quant.product_id.id):
+                    balance_num_end_dict[quant.product_id.id][quant.location_id.id] += quant.qty
+                    balance_mount_end_dict[quant.product_id.id][quant.location_id.id] += quant.inventory_value
+                elif quant.product_id.id in balance_num_end_dict and quant.location_id.id not in balance_num_end_dict.get(quant.product_id.id):
+                    balance_num_end_dict[quant.product_id.id][quant.location_id.id] = quant.qty
+                    balance_mount_end_dict[quant.product_id.id][quant.location_id.id] = quant.inventory_value
+                else:
+                    balance_num_end_dict[quant.product_id.id] = {quant.location_id.id:quant.qty}
+                    balance_mount_end_dict[quant.product_id.id] = {quant.location_id.id:quant.inventory_value}
+        # 组织数据{产品:{库位：{前期结余数量、前期结余金额、本期入库数量、本期入库金额、本期出库数量、本期出库金额、本期结余数量、本期结余金额}}}
+        info_dict = {}
+        print len(product_ids),'333333333333333',len(location_list)
+        for product_id in product_ids:
+            # 循环所有的库位
+            location_dict = {}
+            for location_id in location_list:
+                location_dict[location_id] = {}
+                # 前期结余数量、前期金额、本期数量、本期金额
+                location_dict[location_id]['pre_balance'] = balance_num_dict[product_id.id].get(location_id.id) if balance_num_dict.get(product_id.id) else 0.0
+                location_dict[location_id]['pre_balance_amount'] = balance_mount_dict[product_id.id].get(location_id.id) if balance_mount_dict.get(product_id.id) else 0.0
+                location_dict[location_id]['current_balance'] = balance_num_end_dict[product_id.id].get(location_id.id) if balance_num_end_dict.get(product_id.id) else 0.0
+                location_dict[location_id]['current_balance_amount'] = balance_mount_end_dict[product_id.id].get(location_id.id) if balance_mount_end_dict.get(product_id.id) else 0.0
+                # 查询满足条件的调拨单
+                # 本期入库数量、金额
+                move_ids = move_obj.search([('state','=','done'),('product_id','=',product_id.id),('location_dest_id','=',location_id.id),('date','>=',start_date),('date','<=',end_date)])
+                for move_id in move_ids:
+                    location_dict[location_id]['storage_quantity_period'] = location_dict.get('storage_quantity_period',0.0) + move_id.product_uom_qty
+                    location_dict[location_id]['storage_quantity_amount'] = location_dict.get('storage_quantity_amount',0.0) + (move_id.product_uom_qty * move_id.tfs_price_unit)
+                # 本期出库数量、金额
+                move_out_ids = move_obj.search([('state','=','done'),('product_id','=',product_id.id),('location_id','=',location_id.id),('date','>=',start_date),('date','<=',end_date)])
+                for move_id in move_out_ids:
+                    location_dict[location_id]['number_of_library'] = location_dict.get('number_of_library',0.0) + move_id.product_uom_qty
+                    location_dict[location_id]['number_of_library_amount'] = location_dict.get('number_of_library_amount',0.0) + (move_id.product_uom_qty * move_id.tfs_price_unit)
+            info_dict[product_id] = location_dict
+        print datetime.datetime.now(),'666666666666666666666'
+        # 创建报表展示中数据
+        result_list = []
+        for key,value in info_dict.items():
+            for key1,value1 in value.items():
+                result = {
+                    'name': key1.name,  # 库位名称
+                    'product_name': key.name,  # 产品名称
+                    'product_id': key.id,
+                    'pre_balance': value1.get('pre_balance'),  # 前期结余数量
+                    'pre_balance_amount': value1.get('pre_balance_amount'),  # 前期结余金额
+                    'storage_quantity_amount': value1.get('storage_quantity_amount'),  # 入库金额
+                    'storage_quantity_period': value1.get('storage_quantity_period'), # 本期入库数量
+                    'number_of_library': value1.get('number_of_library'),  # 本期出库数量
+                    'number_of_library_amount': value1.get('number_of_library_amount'),  # 出库金额
+                    'current_balance': value1.get('current_balance'),  # 本期结余数量
+                    'current_balance_amount': value1.get('current_balance_amount'),  # 本期结余金额
+                    'company_id': key1.company_id.id
+                }
+                cre_obj = statement_obj.create(result)
+                result_list.append(cre_obj.id)
+        print datetime.datetime.now(),'2222222222222222'
         if self.location_id:
             view_model, view_id = mod_obj.get_object_reference('qdodoo_previous_balance_oe8',
                                                                'view_result_balance_statement_tree')
@@ -211,6 +174,7 @@ class qdodoo_search_balance_statement(models.Model):
 class qdodoo_result_balance_statement(models.Model):
     _name = 'qdodoo.result.balance.statement'
     _description = 'qdodoo.result.balance.statement'
+
     product_name = fields.Char(u'产品')
     product_id = fields.Many2one('product.product', u'产品')
     name = fields.Char(u'库位')
