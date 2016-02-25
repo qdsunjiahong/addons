@@ -108,7 +108,7 @@ class qdodoo_stock_inventory_wizard(models.Model):
                             val['account_id'] = self.credit_account.id
                         val['debit'] = abs(value_ll1 * key_ll1.standard_price)
                         val['credit'] = 0
-                        val['quantity'] = 1
+                        val['quantity'] = value_ll1
                         val['date'] = datetime.now().date()
                         val['analytic_account_id'] = self.inventory_id.account_assistant.id
                         val['location_in_id'] = self.inventory_id.location_id.id
