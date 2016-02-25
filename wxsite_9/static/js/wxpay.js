@@ -26,29 +26,36 @@ function jsApiCall(){
 function callpay(){
     var deskNo = $('input[name="deskno"]').val();  //桌号
     var orderNote = $('input[name="onote"]').val();  //备注/要求
+    var taste = $('select[name="taste"]').val();  //备注/要求
     var res_order_id = wxpay_json.res_order_id;  //商户订单号
-    //更新订单中信息
-    $.ajax({
-            url: '/onchange/order',  //Ajax请求地址
-            type: 'POST',
-            data: {
-                deskNo: deskNo,
-                orderNote: orderNote,
-                res_order_id_new: res_order_id
-            }}).done(function(msg){
-                if(msg == '1'){  //处理成功
-                    if (typeof WeixinJSBridge == "undefined"){
-                        if( document.addEventListener ){
-                            document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
-                        }else if (document.attachEvent){
-                            document.attachEvent('WeixinJSBridgeReady', jsApiCall);
-                            document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+    if (deskNo == ''){
+        alert("请输入桌号！");
+    }else{
+        //更新订单中信息
+        $.ajax({
+                url: '/onchange/order',  //Ajax请求地址
+                type: 'POST',
+                data: {
+                    deskNo: deskNo,
+                    orderNote: orderNote,
+                    res_order_id_new: res_order_id,
+                    taste: taste
+                }}).done(function(msg){
+                    if(msg == '1'){  //处理成功
+                        if (typeof WeixinJSBridge == "undefined"){
+                            if( document.addEventListener ){
+                                document.addEventListener('WeixinJSBridgeReady', jsApiCall, false);
+                            }else if (document.attachEvent){
+                                document.attachEvent('WeixinJSBridgeReady', jsApiCall);
+                                document.attachEvent('onWeixinJSBridgeReady', jsApiCall);
+                            }
+                        }else{
+                            jsApiCall();
                         }
                     }else{
-                        jsApiCall();
+                        alert("操作失败，请联系管理员！");
                     }
-                }else{
-                    alert("操作失败，请联系管理员！");
-                }
-            });
+                });
+    }
+
 }

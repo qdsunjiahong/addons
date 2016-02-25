@@ -1,40 +1,4 @@
 //左侧菜单拖拽
-var dragY = 0,  //拖拽的Y坐标
-	lastDragY = 0,  //步步紧随的Y坐标
-	currPositionY = 30,  //当前页面位置的Y坐标
-	dragDistance = 0;  //拖拽的距离
-
-$('.top-cats').drag({
-    process: function(e){
-        dragY = parseInt(e.pageY);
-		if(lastDragY==0)lastDragY = dragY - 1;
-		dragDistance = dragY - lastDragY;
-		lastDragY = dragY;
-
-		currPositionY += dragDistance;
-
-		$('.top-cats').css({
-			'left': '1%',
-			'top': currPositionY+'px'
-		});
-
-    },
-    end: function(e){
-		lastDragY = 0;
-
-		if(currPositionY > 30){
-			var stepLong = parseInt((currPositionY-30)/25);
-			var recoverY = setInterval(function(){
-				currPositionY -= stepLong;
-				$('.top-cats').css('top', currPositionY+'px');
-
-				if(currPositionY < 31){
-					clearInterval(recoverY);
-				}
-			},10)
-		}
-    }
-});
 //左侧菜单拖拽结束
 
 function chQuantity(pid, addOrReduce){
@@ -50,7 +14,7 @@ function chQuantity(pid, addOrReduce){
 	    }
     }
 
-	if(quantity > 0){
+	if(quantity >= 0){
 		$.ajax({
 			url: '/shop/wx/onchange',
 			type: 'POST',
@@ -62,6 +26,9 @@ function chQuantity(pid, addOrReduce){
 		}).done(function(msg){  //msg是更改后该产品在购物车内数量，-1表示操作失败
 			var chedQuantity = quantity;
             var res = eval("("+msg+")");
+            if(chedQuantity == 0 && thisDiv.find('a.quantity-reduce').length>0){
+                thisDiv.find('a.quantity-reduce').remove();
+            }
 			if(res.key == '1'){
 				if(thisDiv.find('span').text()=='0'){  //如果没有减号和数量，则添加
 					thisDiv.append('<a href="javascript:void(0)" name="reduce" class="quantity-reduce" title="减少购买数量" onclick="chQuantity('+pid+', \'reduce\')"></a>');

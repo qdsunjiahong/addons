@@ -9,7 +9,7 @@
 
 /*顶部分类*/
 .top-cats{position: fixed; width:25%; min-width: 4em; font-size: 14px; background-color: #f2f2f2; min-height: 600px; border-right: solid 1px #cfcace; overflow: hidden;}
-.top-cats ul{display: block; list-style: none; margin: 0; padding: 0; height: 3em; }
+.top-cats ul{display: block; list-style: none; margin: 0; padding: 0; }
 .top-cats ul li{display: block; color: #444; line-height: 3em; font-size: 1em; padding: 0 0.5em;}
 .top-cats ul li a{color: #666666;}
 .top-cats ul li.active{background-color: white;}

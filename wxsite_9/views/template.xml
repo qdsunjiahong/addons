@@ -295,8 +295,15 @@
                     <div class="main">
                         <!--已选菜品列表-->
                         <div class="wxpay-title">支付菜单</div>
-                        <div class="desk">您是：<input class="deskno" name="deskno" value="" />号桌</div>
-                        <div class="order-note">备注：<input class="onote" name="onote" value="" placeholder="您可以提一些建议或要求" /></div>
+                        <div class="desk">您是：<input type="tel" class="deskno" name="deskno" value=""/>号桌</div>
+                        <div class="order-note">备注：
+                            <select name="taste" class="form-control">
+                                <option value="">口味...</option>
+                                <t t-foreach="tastes or []" t-as="taste">
+                                <option t-att-value="taste.name"><t t-esc="taste.name"/></option>
+                                </t>
+                            </select>
+                            <br/><input class="onote" name="onote" value="" placeholder="您可以提一些建议或要求" /></div>
                         <div class="pay-sum">￥<span t-esc="all_money"/></div>
                         <button class="pay-btn" onclick="callpay()">立即支付</button>
                     </div>
@@ -321,7 +328,6 @@
 
                 </body>
             </html>
-
 
         </template>
 
@@ -394,7 +400,7 @@
                         <!--第一笔订单-->
                         <div class="order" t-foreach="orders" t-as="order">
                             <div a-att-id="order.name">
-                                <div class="oid">订单：<span t-esc="order.name"></span><span class="ostatus oflag15" t-esc="'未付' if order.state=='draft' else '已付'"></span></div>
+                                <div class="oid">订单：<span t-esc="order.name"></span><span class="ostatus oflag15" t-esc="'未付' if order.is_payment!=True else '已付'"></span></div>
 
                                 <!--商品列表-->
                                 <table class="products" cellspacing="1">
@@ -425,7 +431,7 @@
                                 <div class="clear"></div>
                                 <!--<div class="addr"></div>-->
                                 <div class="osum">饭金:<b t-esc="order.amount_total"></b>元
-                                    <a t-if="order.state=='draft'" class="ops obtn ocancel" t-att-id="order.id" t-att-pid="order.amount_total" href="javascript:void(0)">付款</a><!--id为单号-->
+                                    <a t-if="order.is_payment!=True" class="ops obtn ocancel" t-att-id="order.id" t-att-pid="order.amount_total" href="javascript:void(0)">付款</a><!--id为单号-->
                                 </div>
                             </div>
                         </div>
@@ -491,6 +497,69 @@
                     </div>
                 </body>
             </html>
+        </template>
+
+        <template id="order_list" name="订单详情">
+
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=0;" />
+                    <title>订单列表</title>
+
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/global.css" />
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/orders.css" />
+                </head>
+                <body>
+                    <div class="main" style="margin-top: 0;">
+                        <div class="orders-title">订单列表</div><a href="javascript:void(0)" onclick="location.reload(true);" style="display: inline-block; float: right; margin-right: 0; font-size: 0.8em; background-color: #ffffbb; border-radius: 5px; padding: 0 1em; color: #ff3333;">刷新</a>
+
+                        <!--第一笔订单-->
+                        <div class="order" t-foreach="orders" t-as="order">
+                            <div a-att-id="order.name">
+                                <div class="oid">订单：<span t-esc="order.name"></span></div>
+                                <div class="oid">时间：<span t-esc="order.date_order"></span></div>
+                                <table class="products" cellspacing="1">
+                                    <tr>
+                                        <th class="txtl">菜品</th>
+                                        <th>单价</th>
+                                        <th>数量</th>
+                                        <th>小计</th>
+                                        <th>        </th>
+                                        <th>        </th>
+                                    </tr>
+
+                                    <tr t-foreach="order.lines" t-as="line">
+                                        <td>
+                                            <div class="product">
+                                                <div class="pname"><span t-esc="line.product_id.name"/></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="price"><span t-esc="line.price_unit"/></div>
+                                        </td>
+                                        <td><div class="quantity"><span t-esc="line.qty"/></div></td>
+                                        <td><div class="amount"><span t-esc="line.price_subtotal_incl"/></div></td>
+                                        <td><a t-if="line.is_make==False" class="ops obtn ocancel" t-att-href="'/shop/wx/order/list/make?is_make=True&amp;line_id=%s'%line.id">制菜</a><div t-if="line.is_make==True">已制菜</div></td>
+                                        <td><a t-if="line.is_out==False" class="ops obtn ocancel" t-att-href="'/shop/wx/order/list/make?is_out=True&amp;line_id=%s'%line.id">传菜</a><div t-if="line.is_out==True">已传菜</div></td>
+                                    </tr>
+
+                                </table>
+                                <div class="clear"></div>
+                                <!--<div class="addr"></div>-->
+                                <div class="osum">合计:<b t-esc="order.amount_total"></b>元</div>
+                                <div class="osum">备注:<b t-esc="order.customer_count"/>号桌  <b t-esc="order.note"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
+                    <script type="text/javascript" src="/wxsite/static/js/orders.js"></script>
+                </body>
+            </html>
+
         </template>
 
     </data>

@@ -35,3 +35,28 @@ class qdodoo_pos_config(models.Model):
     _inherit = 'pos.config'
 
     front_desk = fields.Char(u'前台打印机地址')
+
+class qdodoo_pos_order_inherit(models.Model):
+    _inherit = 'pos.order'
+
+    is_payment = fields.Boolean(u'是否已付款')
+
+    _defaults = {
+        'is_payment':False,
+    }
+
+class qdodoo_pos_order_line_inherit(models.Model):
+    _inherit = 'pos.order.line'
+
+    is_make = fields.Boolean(u'是否制菜')
+    is_out = fields.Boolean(u'是否传菜')
+
+    _defaults = {
+        'is_make':False,
+        'is_out':False,
+    }
+
+class qdodoo_product_taste(models.Model):
+    _name = "qdodoo.product.taste"
+
+    name = fields.Char(u'口味')

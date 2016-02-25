@@ -20,5 +20,26 @@
             </field>
         </record>
 
+        <record model="ir.ui.view" id="tree_qdodoo_product_taste">
+            <field name="name">qdodoo.product.taste.tree</field>
+            <field name="model">qdodoo.product.taste</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_qdodoo_product_taste">
+            <field name="name">口味</field>
+            <field name="res_model">qdodoo.product.taste</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="tree_qdodoo_product_taste"/>
+        </record>
+        <menuitem
+            name='口味'
+            id='menu_qdodoo_product_taste' action="action_qdodoo_product_taste"
+            parent='point_of_sale.menu_point_config_product' sequence="11"/>
+
     </data>
 </openerp>
