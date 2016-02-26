@@ -31,7 +31,8 @@ class qdodoo_account_move_line(models.Model):
             required_assistant = account_obj.browse(cr, uid, valus.get('account_id')).required_assistant
             if required_assistant:
                 if not valus.get('analytic_account_id'):
-                    raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
+                    pass
+                    # raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
             else:
                 if valus.get('analytic_account_id'):
                     valus.pop('analytic_account_id')
@@ -57,10 +58,12 @@ class qdodoo_account_move_line(models.Model):
             analytic_account_id = obj.analytic_account_id
             if required_assistant:
                 if not analytic_account_id:
-                    raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
+                    pass
+                    # raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
             else:
                 if analytic_account_id:
-                    raise except_orm(_(u'警告'), _(u'此科目不能录入辅助核算项！'))
+                    pass
+                    # raise except_orm(_(u'警告'), _(u'此科目不能录入辅助核算项！'))
         return res
 
     def unlink(self, cr, uid, ids, context=None):
