@@ -48,7 +48,7 @@ class qdodoo_stock_inventory_wizard(models.Model):
                 product_inventory[move_id.product_id] = -move_id.product_uom_qty
             else:
                 product_inventory[move_id.product_id] = move_id.product_uom_qty
-        # 查询满足条件的
+        # 查询满足条件的生产单
         mrp_ids = production_obj.search(
             [('state', '=', 'done'), ('company_id', '=', self.company_id.id), ('date_planned', '>=', datetime_start),
              ('date_planned', '<=', datetime_end)])
@@ -56,13 +56,10 @@ class qdodoo_stock_inventory_wizard(models.Model):
             raise except_orm(_(u'警告'), _(u'未找到生产单'))
         # 获取已投料数量（盘点表中存在的产品）
         # 获取产品的所有数量
-        # 获取所有生产单名字{id:名字}
         # 获取所有的产品明细{id:名字}
         mrp_dict = {} #{move_id:{产品:数量}}
         product_dict = {} #{产品:数量}
-        mrp_name = {}
         for mrp_id in mrp_ids:
-            mrp_name[mrp_id.id] = mrp_id.name
             mrp_dict[mrp_id] = {}
             for move_l in mrp_id.move_lines2:
                 if move_l.product_id.id in product_list:
@@ -90,16 +87,18 @@ class qdodoo_stock_inventory_wizard(models.Model):
                     account_lst.append(move_line.move_id)
                 sql_d = """delete from account_move_line where id=%s"""%move_line.id
                 self._cr.execute(sql_d)
-
+            print end_product_dict,'22222222'
             for key_ll,value_ll in end_product_dict.items():
                 for key_ll1,value_ll1 in value_ll.items():
                     # 如果有凭证，生成对应的凭证明细
                     if account_lst:
-                        account_id = account_lst[0].copy({'ref':mrp_name.get(key_ll)})
+                        print key_ll.name,'11111111'
+                        account_id = account_lst[0].copy({'ref':key_ll.name})
                         val = {}
                         val['move_id'] = account_id.id
-                        val['name'] = key_ll1.name
+                        val['name'] = key_ll.name
                         val['ref'] = key_ll1.name
+                        val['product_id'] = key_ll1.id
                         val['journal_id'] = account_lst[0].journal_id.id
                         val['period_id'] = account_lst[0].period_id.id
                         if value_ll1 * key_ll1.standard_price >= 0:
