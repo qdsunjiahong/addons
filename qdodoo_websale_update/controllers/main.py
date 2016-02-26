@@ -423,10 +423,9 @@ class qdodooo_website_update(website_sale):
         # 查询组合品模板id
         mrp_dict = []
         mrp_obj = pool.get('mrp.bom')
-        mrp_ids = mrp_obj.search(cr, uid, [('type','=','phantom')])
+        mrp_ids = mrp_obj.search(cr, uid, [('product_tmpl_id','in',template_ids),('type','=','phantom')])
         for mrp_id in mrp_obj.browse(cr, uid, mrp_ids):
             mrp_dict.append(mrp_id.product_tmpl_id.id)
-
         # 获取产品的库存数量
         quant_product_dict = {}
         quant_ids = quant_obj.search(cr, uid, [('location_id','=',local_id)])
@@ -442,7 +441,6 @@ class qdodooo_website_update(website_sale):
                         re_dict[temp_id] += quant_product_dict.get(product_id)
                     else:
                         re_dict[temp_id] = quant_product_dict.get(product_id)
-
         # 获取被占用的库存
         quant_dict = {}
         move_ids = move_obj.search(cr, uid, [('product_id.product_tmpl_id','in',template_ids),('state','in',('confirmed','assigned')),('location_id','=',local_id)])
@@ -458,6 +456,8 @@ class qdodooo_website_update(website_sale):
                 re_dict[key_line] = 3000
             else:
                 re_dict[key_line] = values_line - quant_dict.get(key_line,0.0)
+        for mrp_pro in mrp_dict:
+            re_dict[mrp_pro] = 3000
         return re_dict
 
     def checkout_values(self, data=None):
