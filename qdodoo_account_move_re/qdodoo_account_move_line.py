@@ -35,7 +35,8 @@ class qdodoo_account_move_line(models.Model):
                     # raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
             else:
                 if valus.get('analytic_account_id'):
-                    valus.pop('analytic_account_id')
+                    pass
+                    # valus.pop('analytic_account_id')
                     # raise except_orm(_(u'警告'), _(u'此科目不能录入辅助核算项！'))
         if ref:
             # 获取关联的库存调拨单
@@ -53,24 +54,26 @@ class qdodoo_account_move_line(models.Model):
     #     res = super(qdodoo_account_move_line, self).write(cr, uid, ids, vals, context=context, check=True)
     #     for obj in self.browse(cr, uid, ids):
     #         if obj.create_uid.id != uid and uid != 1:
-    #             raise except_orm(_(u'警告'), _(u'只能修改自己创建的凭证！'))
-    #         required_assistant = obj.account_id.required_assistant
-    #         analytic_account_id = obj.analytic_account_id
-    #         if required_assistant:
-    #             if not analytic_account_id:
-    #                 pass
-    #                 # raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
-    #         else:
-    #             if analytic_account_id:
-    #                 pass
-    #                 # raise except_orm(_(u'警告'), _(u'此科目不能录入辅助核算项！'))
-    #     return res
-
+    #             pass
+                # raise except_orm(_(u'警告'), _(u'只能修改自己创建的凭证！'))
+            # required_assistant = obj.account_id.required_assistant
+            # analytic_account_id = obj.analytic_account_id
+            # if required_assistant:
+            #     if not analytic_account_id:
+            #         pass
+            #         # raise except_orm(_(u'警告'), _(u'辅助核算项必填！'))
+            # else:
+            #     if analytic_account_id:
+            #         pass
+                    # raise except_orm(_(u'警告'), _(u'此科目不能录入辅助核算项！'))
+        # return res
+    #
     # def unlink(self, cr, uid, ids, context=None):
     #     for obj in self.browse(cr, uid, ids):
     #         if obj.create_uid.id != uid and uid != 1:
-    #             raise except_orm(_(u'警告'), _(u'只能删除自己创建的凭证！'))
-    #     return super(qdodoo_account_move_line, self).unlink(cr, uid, ids, context=context)
+    #             pass
+                # raise except_orm(_(u'警告'), _(u'只能删除自己创建的凭证！'))
+        # return super(qdodoo_account_move_line, self).unlink(cr, uid, ids, context=context)
 
 class qdodoo_stock_move(models.Model):
     _inherit = 'stock.quant'
