@@ -131,12 +131,12 @@ class qdodoo_stock_picking(models.Model):
             # 判断是否仍然是出库单
             res = self.env['stock.picking'].search([('name','=',self.picking_id.origin)])
             while res:
-                sale_id = self.env['sale.order'].search([('name','=',res.origin)])
+                sale_id = self.env['sale.order'].search([('name','=',res[0].origin)])
                 if sale_id:
                     analytic = sale_id.project_id.id
                     break
                 else:
-                    res = self.env['stock.picking'].search([('name','=',res.origin)])
+                    res = self.env['stock.picking'].search([('name','=',res[0].origin)])
             # 获取到辅助核算项，更新对应的凭证中的辅助核算项
             # 查询对应的凭证
         if analytic:
