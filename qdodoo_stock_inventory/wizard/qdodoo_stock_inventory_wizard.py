@@ -87,12 +87,10 @@ class qdodoo_stock_inventory_wizard(models.Model):
                     account_lst.append(move_line.move_id)
                 sql_d = """delete from account_move_line where id=%s"""%move_line.id
                 self._cr.execute(sql_d)
-            print end_product_dict,'22222222'
             for key_ll,value_ll in end_product_dict.items():
                 for key_ll1,value_ll1 in value_ll.items():
                     # 如果有凭证，生成对应的凭证明细
                     if account_lst:
-                        print key_ll.name,'11111111'
                         account_id = account_lst[0].copy({'ref':key_ll.name})
                         val = {}
                         val['move_id'] = account_id.id
@@ -103,20 +101,22 @@ class qdodoo_stock_inventory_wizard(models.Model):
                         val['period_id'] = account_lst[0].period_id.id
                         if value_ll1 * key_ll1.standard_price >= 0:
                             val['account_id'] = self.credit_account.id
+                            val['location_in_id'] = self.inventory_id.location_id.id
                         else:
                             val['account_id'] = self.debit_account.id
+                            val['location_in_id'] = key_ll1.property_stock_production.id
                         val['debit'] = abs(value_ll1 * key_ll1.standard_price)
                         val['credit'] = 0
-                        val['quantity'] = value_ll1
+                        val['quantity'] = abs(value_ll1)
                         val['date'] = datetime.now().date()
                         val['analytic_account_id'] = self.inventory_id.account_assistant.id
-                        val['location_in_id'] = self.inventory_id.location_id.id
                         account_move_line_obj.create(val)
-                        val['location_in_id'] = key_ll1.property_stock_production.id
                         if value_ll1 * key_ll1.standard_price <= 0:
                             val['account_id'] = self.credit_account.id
+                            val['location_in_id'] = key_ll1.property_stock_production.id
                         else:
                             val['account_id'] = self.debit_account.id
+                            val['location_in_id'] = self.inventory_id.location_id.id
                         val['debit'] = 0
                         val['credit'] = abs(value_ll1 * key_ll1.standard_price)
                         val['analytic_account_id'] = self.inventory_id.account_assistant.id
