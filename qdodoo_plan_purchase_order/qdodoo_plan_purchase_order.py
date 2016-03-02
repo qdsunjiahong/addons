@@ -8,7 +8,7 @@
 
 from openerp import fields, models, api
 from openerp.osv import osv
-import xlrd, base64
+import xlrd,base64
 from openerp.tools.translate import _
 from datetime import timedelta, datetime
 import logging
@@ -17,36 +17,34 @@ from openerp import SUPERUSER_ID
 
 _logger = logging.getLogger(__name__)
 
-
 class qdodoo_plan_purchase_order(models.Model):
     """
         计划转采购单
     """
-    _name = 'qdodoo.plan.purchase.order'  # 模型名称
-    _description = 'qdodoo.plan.purchase.order'  # 模型描述
+    _name = 'qdodoo.plan.purchase.order'    # 模型名称
+    _description = 'qdodoo.plan.purchase.order'    # 模型描述
     _order = 'id desc'
     _inherit = ['mail.thread']
 
-    name = fields.Char(u'单号', copy=False)
-    location_name = fields.Many2one('stock.warehouse', u'仓库', required=True)
-    company_id = fields.Many2one('res.company', u'公司')
+    name = fields.Char(u'单号',copy=False)
+    location_name = fields.Many2one('stock.warehouse',u'仓库', required=True)
+    company_id = fields.Many2one('res.company',u'公司')
     create_date_new = fields.Datetime(u'创建日期')
     minimum_planned_date = fields.Date(u'预计日期')
-    location_id = fields.Many2one('stock.location', u'入库库位')
-    order_line = fields.One2many('qdodoo.plan.purchase.order.line', 'order_id', u'产品明细', required=True)
+    location_id = fields.Many2one('stock.location',u'入库库位')
+    order_line = fields.One2many('qdodoo.plan.purchase.order.line', 'order_id', u'产品明细',required=True)
     import_file = fields.Binary(string="导入的Excel文件")
-    state = fields.Selection(
-        [('draft', u'草稿'), ('sent', u'待确认'), ('apply', u'待审批'), ('confirmed', u'转换采购单'), ('done', u'完成')], u'状态',
-        track_visibility='onchange')
-    origin = fields.Many2one('qdodoo.plan.purchase.order', u'源单据')
+    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态',track_visibility='onchange')
+    origin = fields.Many2one('qdodoo.plan.purchase.order',u'源单据')
     notes = fields.Text(u'采购单号')
     notes_new = fields.Text(u'备注')
+
 
     _defaults = {
         'minimum_planned_date': datetime.now().date(),
         'create_date_new': datetime.now(),
         'state': 'draft',
-        'company_id': lambda self, cr, uid, ids: self.pool.get('res.users').browse(cr, uid, uid).company_id.id,
+        'company_id': lambda self, cr, uid, ids:self.pool.get('res.users').browse(cr, uid, uid).company_id.id,
     }
 
     # 退回
@@ -62,14 +60,14 @@ class qdodoo_plan_purchase_order(models.Model):
                 log += 1
         plan_line = self.pool.get('qdodoo.plan.purchase.order.line')
         if log:
-            res_id = self.copy(cr, uid, ids[0], {'state': 'sent', 'origin': ids[0]})
+            res_id = self.copy(cr, uid, ids[0],{'state':'sent','origin':ids[0]})
             for line_id in line_lst:
-                plan_line.copy(cr, uid, line_id, {'order_id': res_id, 'is_cancel': False})
+                plan_line.copy(cr, uid, line_id,{'order_id':res_id,'is_cancel':False})
             plan_line.unlink(cr, uid, line_lst)
             return True
         else:
-            plan_line.write(cr, uid, all_line_lst, {'is_cancel': False})
-            return self.write(cr, uid, ids, {'state': 'sent'})
+            plan_line.write(cr, uid, all_line_lst, {'is_cancel':False})
+            return self.write(cr, uid, ids, {'state':'sent'})
 
     # 退回
     def btn_cancel_draft(self, cr, uid, ids, context=None):
@@ -84,14 +82,14 @@ class qdodoo_plan_purchase_order(models.Model):
                 log += 1
         plan_line = self.pool.get('qdodoo.plan.purchase.order.line')
         if log:
-            res_id = self.copy(cr, uid, ids[0], {'state': 'draft', 'origin': ids[0]})
+            res_id = self.copy(cr, uid, ids[0],{'state':'draft','origin':ids[0]})
             for line_id in line_lst:
-                plan_line.copy(cr, uid, line_id, {'order_id': res_id, 'is_cancel': False})
+                plan_line.copy(cr, uid, line_id,{'order_id':res_id,'is_cancel':False})
             plan_line.unlink(cr, uid, line_lst)
             return True
         else:
-            plan_line.write(cr, uid, all_line_lst, {'is_cancel': False})
-            return self.write(cr, uid, ids, {'state': 'draft'})
+            plan_line.write(cr, uid, all_line_lst, {'is_cancel':False})
+            return self.write(cr, uid, ids, {'state':'draft'})
 
     # 退回
     def btn_cancel_approve(self, cr, uid, ids, context=None):
@@ -106,14 +104,14 @@ class qdodoo_plan_purchase_order(models.Model):
                 log += 1
         plan_line = self.pool.get('qdodoo.plan.purchase.order.line')
         if log:
-            res_id = self.copy(cr, uid, ids[0], {'state': 'apply', 'origin': ids[0]})
+            res_id = self.copy(cr, uid, ids[0],{'state':'apply','origin':ids[0]})
             for line_id in line_lst:
-                plan_line.copy(cr, uid, line_id, {'order_id': res_id, 'is_cancel': False})
+                plan_line.copy(cr, uid, line_id,{'order_id':res_id,'is_cancel':False})
             plan_line.unlink(cr, uid, line_lst)
             return True
         else:
-            plan_line.write(cr, uid, all_line_lst, {'is_cancel': False})
-            return self.write(cr, uid, ids, {'state': 'apply'})
+            plan_line.write(cr, uid, all_line_lst, {'is_cancel':False})
+            return self.write(cr, uid, ids, {'state':'apply'})
 
     # 导入方法
     def btn_import_data(self, cr, uid, ids, context=None):
@@ -132,7 +130,7 @@ class qdodoo_plan_purchase_order(models.Model):
                 # 获取产品编号
                 default_code = product_info.cell(obj, 0).value
                 if not default_code:
-                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品编号不能为空') % obj)
+                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品编号不能为空')%obj)
                 # 获取计划日期
                 if product_info.cell(obj, 2).value:
                     plan_date = datetime.strptime(product_info.cell(obj, 2).value, '%Y-%m-%d')
@@ -141,13 +139,12 @@ class qdodoo_plan_purchase_order(models.Model):
                 # 获取产品数量
                 product_qty = product_info.cell(obj, 3).value
                 if not product_qty:
-                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品数量不能为空') % obj)
+                    raise osv.except_osv(_(u'提示'), _(u'第%s行，产品数量不能为空')%obj)
                 # 查询系统中对应的产品id
                 product_id = product_obj.search(cr, uid,
-                                                [('default_code', '=', default_code),
-                                                 ('company_id', '=', wiz.company_id.id)])
+                                                [('default_code', '=', default_code), ('company_id', '=', wiz.company_id.id)])
                 if not product_id:
-                    raise osv.except_osv(_(u'提示'), _(u'%s公司没有编号为%s的产品') % (wiz.company_id.name, default_code))
+                    raise osv.except_osv(_(u'提示'), _(u'%s公司没有编号为%s的产品') % (wiz.company_id.name,default_code))
                 product = product_obj.browse(cr, uid, product_id[0])
                 val['product_id'] = product.id
                 val['price_unit'] = product.standard_price
@@ -166,7 +163,7 @@ class qdodoo_plan_purchase_order(models.Model):
     # 获取序列号
     def create(self, cr, uid, vals, context=None):
         if not vals.get('name'):
-            vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'qdodoo.plan.purchase.order')
+            vals['name'] = self.pool.get('ir.sequence').get( cr, uid, 'qdodoo.plan.purchase.order')
         return super(qdodoo_plan_purchase_order, self).create(cr, uid, vals, context=context)
 
     # 获取目的库位
@@ -179,23 +176,23 @@ class qdodoo_plan_purchase_order(models.Model):
     # 提交
     def btn_draft_confirmed(self, cr, uid, ids, context=None):
         line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
-        line_id = line_obj.search(cr, uid, [('order_id', '=', ids[0])])
-        line_obj.write(cr, uid, line_id, {'state': 'sent'})
-        return self.write(cr, uid, ids, {'state': 'sent'})
+        line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
+        line_obj.write(cr, uid, line_id, {'state':'sent'})
+        return self.write(cr, uid, ids, {'state':'sent'})
 
     # 确认
     def btn_confirmed(self, cr, uid, ids, context=None):
         line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
-        line_id = line_obj.search(cr, uid, [('order_id', '=', ids[0])])
-        line_obj.write(cr, uid, line_id, {'state': 'apply'})
-        return self.write(cr, uid, ids, {'state': 'apply'})
+        line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
+        line_obj.write(cr, uid, line_id, {'state':'apply'})
+        return self.write(cr, uid, ids, {'state':'apply'})
 
     # 审批
     def btn_approve(self, cr, uid, ids, context=None):
         line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
-        line_id = line_obj.search(cr, uid, [('order_id', '=', ids[0])])
-        line_obj.write(cr, uid, line_id, {'state': 'confirmed'})
-        return self.write(cr, uid, ids, {'state': 'confirmed'})
+        line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
+        line_obj.write(cr, uid, line_id, {'state':'confirmed'})
+        return self.write(cr, uid, ids, {'state':'confirmed'})
 
     # 转换采购单
     def btn_confirmed_done(self, cr, uid, ids, context=None):
@@ -208,84 +205,68 @@ class qdodoo_plan_purchase_order(models.Model):
             for line in obj.order_line:
                 # 组织采购订单数据
                 # 判断是否是同一到货日期和供应商
-                if (line.plan_date, line.partner_id.id) in purchase_id:
+                if (line.plan_date,line.partner_id.id) in purchase_id:
                     # 如果存在重复的产品
-                    all = purchase_id[(line.plan_date, line.partner_id.id)][:]
+                    all = purchase_id[(line.plan_date,line.partner_id.id)][:]
                     log = False
                     for key in all:
                         if line.product_id.id == key[0]:
                             log = True
                             key_new = key
-                            purchase_id[(line.plan_date, line.partner_id.id)].remove(key)
+                            purchase_id[(line.plan_date,line.partner_id.id)].remove(key)
                             if line.qty_jh > line.qty:
-                                purchase_id[(line.plan_date, line.partner_id.id)].append(
-                                    (key_new[0], key_new[1] + line.qty_jh, key_new[2], key_new[3], key_new[4]))
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty_jh,key_new[2],key_new[3],key_new[4]))
                             else:
-                                purchase_id[(line.plan_date, line.partner_id.id)].append(
-                                    (key_new[0], key_new[1] + line.qty, key_new[2], key_new[3], key_new[4]))
+                                purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty,key_new[2],key_new[3],key_new[4]))
                             break
                     if not log:
                         if line.qty_jh > line.qty:
-                            purchase_id[(line.plan_date, line.partner_id.id)].append(
-                                (line.product_id.id, line.qty_jh, line.price_unit, line.name, line.uom_id.id))
+                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id))
                         else:
-                            purchase_id[(line.plan_date, line.partner_id.id)].append(
-                                (line.product_id.id, line.qty, line.price_unit, line.name, line.uom_id.id))
+                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
                 else:
                     if line.qty_jh > line.qty:
-                        purchase_id[(line.plan_date, line.partner_id.id)] = [
-                            (line.product_id.id, line.qty_jh, line.price_unit, line.name, line.uom_id.id)]
+                        purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id)]
                     else:
-                        purchase_id[(line.plan_date, line.partner_id.id)] = [
-                            (line.product_id.id, line.qty, line.price_unit, line.name, line.uom_id.id)]
+                        purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
             notes = ''
             # 创建采购单
-            for key_line, value_line in purchase_id.items():
+            for key_line,value_line in purchase_id.items():
                 # picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id.company_id', '=', obj.company_id.id)])
                 # if not picking_type_ids:
                 #     picking_type_ids = self.pool.get('stock.picking.type').search(cr, uid, [('code', '=', 'incoming'), ('warehouse_id', '=', False)])
                 picking_type_id = obj.location_name.in_type_id
-                res_id = purchase_obj.create(cr, uid, {
-                    'pricelist_id': partner_obj.browse(cr, uid, key_line[1]).property_product_pricelist_purchase.id,
-                    'plan_id': obj.id, 'partner_id': key_line[1], 'location_name': obj.location_name.id,
-                    'date_order': obj.create_date_new, 'company_id': obj.company_id.id,
-                    'picking_type_id': picking_type_id.id, 'notes': obj.notes_new,
-                    'location_id': picking_type_id.default_location_dest_id.id,
-                    'minimum_planned_date': obj.minimum_planned_date, 'deal_date': key_line[0],
-                })
+                res_id = purchase_obj.create(cr, uid, {'pricelist_id':partner_obj.browse(cr, uid, key_line[1]).property_product_pricelist_purchase.id,'plan_id':obj.id,'partner_id':key_line[1],'location_name':obj.location_name.id,
+                                              'date_order':obj.create_date_new,'company_id':obj.company_id.id,'picking_type_id':picking_type_id.id,'notes':obj.notes_new,
+                                              'location_id':picking_type_id.default_location_dest_id.id,'minimum_planned_date':obj.minimum_planned_date,'deal_date':key_line[0],
+                                              })
                 notes = notes + purchase_obj.browse(cr, uid, res_id).name + ';'
                 # 创建采购订单明细
                 for line_va in value_line:
-                    purchase_line_obj.create(cr, uid, {'name': line_va[3], 'order_id': res_id, 'product_id': line_va[0],
-                                                       'date_planned': key_line[0],
-                                                       'company_id': obj.company_id.id, 'product_qty': line_va[1],
-                                                       'product_uom': line_va[4],
-                                                       'price_unit': line_va[2]})
-        return self.write(cr, uid, ids, {'state': 'done', 'notes': notes})
-
+                    purchase_line_obj.create(cr, uid, {'name':line_va[3],'order_id':res_id,'product_id':line_va[0],'date_planned':key_line[0],
+                                                       'company_id':obj.company_id.id,'product_qty':line_va[1],'product_uom':line_va[4],
+                                                       'price_unit':line_va[2]})
+        return self.write(cr, uid, ids, {'state':'done','notes':notes})
 
 class qdodoo_purchase_order_tfs(models.Model):
     _inherit = 'purchase.order'
 
-    plan_id = fields.Many2one('qdodoo.plan.purchase.order', u'计划单')
-
+    plan_id = fields.Many2one('qdodoo.plan.purchase.order',u'计划单')
 
 class qdodoo_plan_purchase_order_line(models.Model):
     _name = 'qdodoo.plan.purchase.order.line'
 
-    order_id = fields.Many2one('qdodoo.plan.purchase.order', u'计划转采购单')
-    product_id = fields.Many2one('product.product', u'产品', required=True)
-    plan_date_jh = fields.Date(u'到货日期(计划)', required=True)
+    order_id = fields.Many2one('qdodoo.plan.purchase.order',u'计划转采购单')
+    product_id = fields.Many2one('product.product',u'产品',required=True)
+    plan_date_jh = fields.Date(u'到货日期(计划)',required=True)
     plan_date = fields.Date(u'到货日期(采购)')
     name = fields.Char(u'备注')
     price_unit = fields.Float(u'单价')
-    price_unit2 = fields.Float(raleted='price_unit', string=u'单价')
-    qty_jh = fields.Float(u'数量(计划)', required=True)
+    qty_jh = fields.Float(u'数量(计划)',required=True)
     qty = fields.Float(u'数量(采购)')
-    uom_id = fields.Many2one('product.uom', u'单位')
-    partner_id = fields.Many2one('res.partner', u'供应商')
-    state = fields.Selection(
-        [('draft', u'草稿'), ('sent', u'待确认'), ('apply', u'待审批'), ('confirmed', u'转换采购单'), ('done', u'完成')], u'状态')
+    uom_id = fields.Many2one('product.uom',u'单位')
+    partner_id = fields.Many2one('res.partner',u'供应商')
+    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
     colors = fields.Char(string=u'颜色', compute='_get_colors')
     is_cancel = fields.Boolean(u'需要回退')
 
@@ -319,10 +300,12 @@ class qdodoo_plan_purchase_order_line(models.Model):
             sql = """ select uid from res_groups_users_rel where gid = 10"""
             cr.execute(sql)
             uid_ids = [r[0] for r in cr.fetchall()]
-            users_ids = users_obj.search(cr, uid, [('company_id', '=', company_id), ('id', 'in', uid_ids)])
+            print company_id,'1111111111111'
+            users_ids = users_obj.search(cr, uid, [('company_id','=',company_id),('id','in',uid_ids)])
+            print users_ids,'2222222222'
             if not users_ids:
                 raise osv.except_osv(_(u'错误'), _(u'对应公司缺少销售经理！'))
-            product_obj = self.pool.get('product.product').browse(cr, uid, product_id, context=context)
+            product_obj = self.pool.get('product.product').browse(cr, users_ids[0], product_id, context=context)
             # 获取产品对应的供应商和送货周期\数量
             purchase_dict = {}
             purchase_num_dict = {}
@@ -332,13 +315,11 @@ class qdodoo_plan_purchase_order_line(models.Model):
             if partner_id:
                 pricelist_id = partner_obj.browse(cr, users_ids[0], partner_id).property_product_pricelist_purchase.id
                 date_order_str = date_order.strftime(DEFAULT_SERVER_DATE_FORMAT)
-                price = product_pricelist.price_get(cr, uid, [pricelist_id],
-                                                    product_id, qty or 1.0, partner_id or False,
-                                                    {'uom': uom_id, 'date': date_order_str})[pricelist_id]
+                price = product_pricelist.price_get(cr, users_ids[0], [pricelist_id],
+                        product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
                 res['value']['price_unit'] = price
-                res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id, 0))
-                res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(
-                    partner_id) else obj.qty_jh
+                res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
+                res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(partner_id) else obj.qty_jh
             else:
                 res['value']['price_unit'] = product_obj.standard_price
             res['value']['name'] = product_obj.product_tmpl_id.name
@@ -348,6 +329,6 @@ class qdodoo_plan_purchase_order_line(models.Model):
             return {}
 
     _defaults = {
-        'state': 'draft',
-        'is_cancel': False,
+        'state':'draft',
+        'is_cancel':False,
     }
