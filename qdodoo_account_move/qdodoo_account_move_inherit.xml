@@ -30,5 +30,17 @@
         key2="client_action_multi"
         id="action_qdodoo_account_move"/>
 
+        <!--分录明细增加辅助核算项分组-->
+        <record id="qdodoo_view_account_move_line_filter" model="ir.ui.view">
+            <field name="name">Journal Items</field>
+            <field name="model">account.move.line</field>
+            <field name="inherit_id" ref="account.view_account_move_line_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@string='Period']" position="after">
+                    <filter string="辅助核算项" icon="terp-go-month" domain="[]" context="{'group_by':'analytic_account_id'}"/>
+                </xpath>
+            </field>
+        </record>
+
     </data>
 </openerp>
