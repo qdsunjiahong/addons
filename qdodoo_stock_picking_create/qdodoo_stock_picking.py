@@ -119,8 +119,8 @@ class qdodoo_stock_picking(models.Model):
                 for line1 in line_key.line_id:
                     # 获取对应的调拨明细
                     stock_move_ids = self.env['stock.move'].search([('picking_id','=',self.picking_id.id),('product_id','=',line1.product_id.id)])
-                    if stock_move_ids:
-                        price = stock_move_ids[0].price_unit*stock_move_ids[0].product_uom_qty
+                    for stock_move_ids in stock_move_ids:
+                        price = stock_move_ids.price_unit*line1.quantity
                         if line1.credit:
                             line1.write({'credit':price})
                         if line1.debit:
