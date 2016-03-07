@@ -54,14 +54,15 @@ class taylor_pricce_list(models.Model):
     # 倍数限制
     @api.constrains('multipl')
     def _check_quantity_price(self):
-        if self.multipl<0:
-            raise except_orm(_('Warning!'),_('警告,倍数必须大于0！'))
+        for ids in self:
+            if ids.multipl<0:
+                raise except_orm(_('Warning!'),_('警告,倍数必须大于0！'))
 
     # 创建价格表关联到产品中对应数据
     def create(self, cr, uid, vals, context=None):
         res_id = super(taylor_pricce_list, self).create(cr, uid, vals, context=context)
-        obj = self.browse(cr, uid, res_id)
         relation_id = self.pool.get('pricelist.prolate.relation')
+        obj = self.browse(cr, uid, res_id)
         # 如果选择了产品模板
         if vals.get('product_tmpl_id'):
             # 在产品中创建对应数据
@@ -72,6 +73,7 @@ class taylor_pricce_list(models.Model):
 
     # 修改明细修改关联到产品中对应数据
     def write(self, cr, uid, ids, value, context=None):
+        print ids,'1111111111',value
         super(taylor_pricce_list, self).write(cr, uid, ids, value, context=context)
         if not value.get('price_version_item_id'):
             relation_obj = self.pool.get('pricelist.prolate.relation')
