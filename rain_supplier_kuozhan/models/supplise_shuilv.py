@@ -17,7 +17,6 @@ class rain_supplise_ex(models.Model):
             self.complete_name = result[0][1]
 
     name=fields.Char('公司名称',required=False)
-    company_id = fields.Many2one('res.company',u'公司名称',required=False)
     company_id_new = fields.Many2one('contract.company',u'公司名称',required=True)
     property_supplier_payment_term=fields.Many2one('account.payment.term',u'供应商支付条款')
     open_supp=fields.Selection([('yes','必选'),('no','不需要')],u'开票需求')
