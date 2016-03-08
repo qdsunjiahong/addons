@@ -300,9 +300,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
             sql = """ select uid from res_groups_users_rel where gid = 10"""
             cr.execute(sql)
             uid_ids = [r[0] for r in cr.fetchall()]
-            print company_id,'1111111111111'
             users_ids = users_obj.search(cr, uid, [('company_id','=',company_id),('id','in',uid_ids)])
-            print users_ids,'2222222222'
             if not users_ids:
                 raise osv.except_osv(_(u'错误'), _(u'对应公司缺少销售经理！'))
             product_obj = self.pool.get('product.product').browse(cr, users_ids[0], product_id, context=context)
@@ -319,7 +317,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
                 res['value']['price_unit'] = price
                 res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
-                res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(partner_id) else obj.qty_jh
+                # res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(partner_id) else obj.qty_jh
             else:
                 res['value']['price_unit'] = product_obj.standard_price
             res['value']['name'] = product_obj.product_tmpl_id.name
