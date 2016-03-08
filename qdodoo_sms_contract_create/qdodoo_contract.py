@@ -56,10 +56,23 @@ class qdodoo_sms_create_contract(models.Model):
             else:
                 raise except_orm(_(u'警告'), _(u'短信发送失败'))
         else:
+            supplise_obj = self.env['supplise.ex']
+            if vals.get('partner_id'):
+                supplise_id = supplise_obj.search([('company_id_new','=',vals.get('contract_company1')),('partner_id','=',vals.get('partner_id'))])
+                if not supplise_id:
+                    supplise_obj.create({'company_id_new':vals.get('contract_company1'),'partner_id':vals.get('partner_id')})
             return super(qdodoo_sms_create_contract, self).create(vals)
 
     @api.multi
     def write(self, vals):
+        supplise_obj = self.env['supplise.ex']
+        partner_id = vals.get('partner_id') if vals.get('partner_id') else self.partner_id.id
+        contract_company1 = vals.get('contract_company1') if vals.get('contract_company1') else self.contract_company1.id
+        if vals.get('partner_id') or vals.get('contract_company1'):
+            if partner_id:
+                supplise_ids = supplise_obj.search([('company_id_new','=',contract_company1),('partner_id','=',partner_id)])
+                if not supplise_ids:
+                    supplise_obj.create({'company_id_new':contract_company1,'partner_id':partner_id})
         if vals.get('order_manager_id', False):
             if self.sms_create == True or vals.get('sms_create', False) == True:
                 user_obj = self.env['res.users']

@@ -24,27 +24,6 @@ class rain_supplise_ex(models.Model):
     shuilv=fields.Selection([('0','0%'),('3','3%'),('6','6%'),('11','11%'),('13','13%'),('17','17%')],u'税率')
     partner_id=fields.Many2one('res.partner',u'供应商名称')
 
-    def create(self, cr, uid, valus, context=None):
-        supplise_obj = self.pool.get('supplise.ex')
-        if valus.get('partner_id'):
-            supplise_id = supplise_obj.search(cr, uid, [('company_id_new','=',valus.get('contract_company1')),('partner_id','=',valus.get('partner_id'))])
-            if not supplise_id:
-                supplise_obj.create(cr, uid, {'company_id_new':valus.get('contract_company1'),'partner_id':valus.get('partner_id')})
-        return super(rain_supplise_ex, self).create(cr, uid, valus, context=context)
-
-    def write(self, cr, uid, ids, values, context=None):
-        super(rain_supplise_ex, self).write(cr, uid, ids, values, context=context)
-        supplise_obj = self.pool.get('supplise.ex')
-        obj = self.browse(cr, uid, ids)
-        partner_id = values.get('partner_id') if values.get('partner_id') else obj.partner_id.id
-        contract_company1 = values.get('contract_company1') if values.get('contract_company1') else obj.contract_company1.id
-        if values.get('partner_id') or values.get('contract_company1'):
-            if partner_id:
-                supplise_ids = supplise_obj.search(cr, uid, [('company_id_new','=',contract_company1),('partner_id','=',partner_id)])
-                if not supplise_ids:
-                    supplise_obj.create(cr, uid, {'company_id_new':contract_company1,'partner_id':partner_id})
-        return True
-
 class inherit_account_bottom(models.Model):
     _inherit='res.partner'
 
