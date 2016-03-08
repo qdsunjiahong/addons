@@ -8,7 +8,7 @@
                 <form string="开票规则">
                     <group>
                         <group >
-                            <field name="company_id" string="公司名称" />
+                            <field name="company_id_new" string="公司名称" />
                             <field name="property_supplier_payment_term" string="供应商支付条款"/>
                         </group>
                         <group>
@@ -27,7 +27,7 @@
             <field name="model">supplise.ex</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="company_id" string="公司名称" />
+                    <field name="company_id_new" string="公司名称" />
                     <field name="property_supplier_payment_term" string="供应商支付条款"/>
                     <field name="open_supp" string="开票需求"/>
                     <field name="shuilv"    string="税率"/>
@@ -51,7 +51,7 @@
                 <field name="bank_ids" position="after"  >
                     <field name="show_supplise" nolabel="1" mode="tree" colspan="4" >
                         <tree  editable="bottom">
-                            <field name="company_id" string="公司名称" />
+                            <field name="company_id_new" string="公司名称" />
                             <field name="property_supplier_payment_term" string="供应商支付条款"/>
                              <field name="open_supp" string="开票需求"/>
                             <field name="shuilv"   string="税率" attrs="{'readonly':['|',('open_supp','=','no'),('open_supp','=',False)]}"/>

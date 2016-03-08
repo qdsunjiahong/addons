@@ -17,7 +17,7 @@ class rain_supplise_ex(models.Model):
             self.complete_name = result[0][1]
 
     name=fields.Char('公司名称',required=False)
-    company_id = fields.Many2one('contract.company',u'公司名称',required=False)
+    company_id = fields.Many2one('res.company',u'公司名称',required=False)
     company_id_new = fields.Many2one('contract.company',u'公司名称',required=True)
     property_supplier_payment_term=fields.Many2one('account.payment.term',u'供应商支付条款')
     open_supp=fields.Selection([('yes','必选'),('no','不需要')],u'开票需求')
@@ -72,7 +72,7 @@ class qdodoo_supplier_infor(models.Model):
     contact_people = fields.Char(u'联系人')
     acc_number = fields.Char(u'银行账号')
     bank_name = fields.Char(u'银行名称')
-    company_id = fields.Many2one('res.partner',u'公司名称')
+    company_id = fields.Many2one('contract.company',u'公司名称')
     property_supplier_payment_term = fields.Many2one('account.payment.term',u'供应商付款方式')
     open_supp=fields.Selection([('yes','必选'),('no','不需要')],u'开票需求')
     shuilv=fields.Selection([('0','0%'),('3','3%'),('6','6%'),('11','11%'),('13','13%'),('17','17%')],u'税率')
@@ -101,7 +101,7 @@ class qdodoo_supplier_infor_search(models.Model):
                                                           'mobile':line.mobile,'QQ':line.QQ,'fax':line.fax,'email':line.email,
                                                           'title':line.title.id if line.title else '',
                                                                    # 'contact_people':line.contact_people,
-                                                          'acc_number':line1.acc_number,'bank_name':line1.bank_name,'company_id':line3.company_id.id,
+                                                          'acc_number':line1.acc_number,'bank_name':line1.bank_name,'company_id':line3.company_id_new.id,
                                                           'property_supplier_payment_term':line3.property_supplier_payment_term.id,'open_supp':line3.open_supp,
                                                           'shuilv':line3.shuilv})
                             move_lst.append(res_id)
@@ -119,7 +119,7 @@ class qdodoo_supplier_infor_search(models.Model):
                                                           'mobile':line.mobile,'QQ':line.QQ,'fax':line.fax,'email':line.email,
                                                           'title':line.title.id if line.title else '',
                                                                # 'contact_people':line.contact_people,
-                                                          'company_id':line2.company_id.id,
+                                                          'company_id':line2.company_id_new.id,
                                                           'property_supplier_payment_term':line2.property_supplier_payment_term.id,'open_supp':line2.open_supp,
                                                           'shuilv':line2.shuilv})
                         move_lst.append(res_id)
