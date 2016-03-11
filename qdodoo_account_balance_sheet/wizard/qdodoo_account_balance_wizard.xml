@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="qdodoo_account_balance_search_form" model="ir.ui.view">
+            <field name="name">科目余额表</field>
+            <field name="model">qdodoo.account.balance.search</field>
+            <field name="arch" type="xml">
+                <form string="科目余额表">
+                    <group col="4" colspan="4">
+                        <field name="start_p" domain="[('company_id','=',company_id)]"/>
+                        <field name="end_p" domain="[('company_id','=',company_id)]"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                    <footer>
+                        <button string="查询" name="btn_search" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="action_qdodoo_account_balance" model="ir.actions.act_window">
+            <field name="name">科目余额表</field>
+            <field name="res_model">qdodoo.account.balance.search</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="qdodoo_account_balance_search_form"/>
+            <field name="target">new</field>
+        </record>
+        <menuitem icon="STOCK_INDENT" name="科目余额表" action="action_qdodoo_account_balance"
+                  id="menu_qdodoo_account_balance"
+                  parent="account.menu_finance_charts" sequence="1"/>
+    </data>
+</openerp>
