@@ -113,10 +113,10 @@ class qdodoo_stock_inventory_wizard(models.Model):
                         account_move_line_obj.create(val)
                         if value_ll1 * key_ll1.standard_price <= 0:
                             val['account_id'] = self.credit_account.id
-                            val['location_in_id'] = key_ll1.property_stock_production.id
+                            val['location_in_id'] = self.inventory_id.location_id.id
                         else:
                             val['account_id'] = self.debit_account.id
-                            val['location_in_id'] = self.inventory_id.location_id.id
+                            val['location_in_id'] = key_ll1.property_stock_production.id
                         val['debit'] = 0
                         val['credit'] = abs(value_ll1 * key_ll1.standard_price)
                         val['analytic_account_id'] = self.inventory_id.account_assistant.id

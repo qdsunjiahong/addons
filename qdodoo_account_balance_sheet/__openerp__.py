@@ -1,30 +1,32 @@
 # -*- coding: utf-8 -*-
 ###########################################################################################
-#    author:suifeng
+#    author:qdodoo suifeng
 #    module name for Qdodoo
 #    Copyright (C) 2015 qdodoo Technology CO.,LTD. (<http://www.qdodoo.com/>).
 #
 ###########################################################################################
 
 {
-    'name': "中国固定资产修改",
-    'version': '2.0',
+    'name': "中国会计-科目余额表",
+    'version': '1.1',
     'author': 'Qdodoo suifeng',
     'category': 'Account',
     'sequence': 21,
     'website': 'https://www.qdodoo.com',
     'description': """
-修改内容：\n
-1：按照中国习惯，生成折旧数据是从采购日期的下月一号开始 \n
-2：折旧生成的会计凭证日期为折旧月份的最后一天 \n
-3：折旧生成的会计分录按照凭证簿合并会计分录
-
-有问题可以邮件 qdodoo@qdodoo.com
+点击菜单:会计->表->科目余额表 查询科目余额 \n
+1：按照会计区间查询、展示科目余额 \n
+2：报表分三层: \n
+**第一层:按公司组合每个科目的期初余额，借方金额，贷方金额,期末余额 \n
+**第二层:点击第一层Tree视图即可查看第二层,该科目下，按照合作伙伴拆分 \n
+**第三层:点击第二层即可查看合作伙伴对应明细
     """,
     'images': [
     ],
-    'depends': ['account_asset'],
+    'depends': ['account'],
     'data': [
+        'wizard/qdodoo_account_balance_wizard.xml',
+        'report/qdodoo_account_balance_report.xml'
     ],
     'test': [
     ],
