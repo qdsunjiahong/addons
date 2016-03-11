@@ -318,8 +318,8 @@ class qdodoo_plan_purchase_order_line(models.Model):
                 res['value']['price_unit'] = price
                 res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
                 # res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(partner_id) else obj.qty_jh
-            else:
-                res['value']['price_unit'] = product_obj.standard_price
+            # else:
+            #     res['value']['price_unit'] = product_obj.standard_price
             res['value']['name'] = product_obj.product_tmpl_id.name
             res['value']['uom_id'] = product_obj.uom_id.id
             return res
