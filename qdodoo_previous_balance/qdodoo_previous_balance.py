@@ -9,6 +9,41 @@
 from openerp import fields, models, api
 from datetime import datetime,timedelta
 
+class qdodoo_product_price_unit(models.Model):
+    """
+        每天存储产品的成本价
+    """
+    _name = 'qdodoo.product.price.unit'
+
+    product_id = fields.Many2one('product.product',u'产品')
+    price_unit = fields.Float(u'成本价')
+    date = fields.Date(u'日期')
+
+    def _create_new_data(self, cr, uid):
+        product_id = self.pool.get('product.product')
+        company_obj = self.pool.get('res.company')
+        users_obj = self.pool.get('res.users')
+        # 获取每个公司的第一个员工
+        company_person_dict = {}
+        for company_id in company_obj.search(cr, uid, []):
+            users_ids = users_obj.search(cr, uid, [('company_id','=',company_id)])
+            if users_ids:
+                company_person_dict[company_id] = users_ids[0]
+        # 获取每个产品对应的公司id
+        company_product_dict = {}
+        product_ids = product_id.search(cr, uid, [])
+        for product_id_new in product_id.browse(cr, uid, product_ids):
+            if product_id_new.company_id.id in company_product_dict:
+                company_product_dict[product_id_new.company_id.id].append(product_id_new.id)
+            else:
+                company_product_dict[product_id_new.company_id.id] = [product_id_new.id]
+        # 获取产品数据字典{id：采购价}
+        for line,line_vlaue in company_product_dict.items():
+            for lines in product_id.browse(cr,company_person_dict.get(line,1),line_vlaue):
+                sql = """insert into qdodoo_product_price_unit (product_id,date,price_unit) VALUES (%s,'%s',%s)"""%(lines.id,fields.date.today(),lines.standard_price)
+                cr.execute(sql)
+
+
 class qdodoo_previous_balance(models.Model):
     """
         存储物品明细账前期结余的数据
