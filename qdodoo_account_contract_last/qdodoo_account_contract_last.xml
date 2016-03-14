@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="tree_last_contract">
+            <field name="name">当前合同状态</field>
+            <field name="model">qdodoo.account.contract.last</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="ctype"/>
+                    <field name="partner_id"/>
+                    <field name="company_id"/>
+                    <field name="order_manger_id"/>
+                    <field name="cstate"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="form_qdodoo_account_contract_last" model="ir.ui.view">
+            <field name="name">当前合同状态查看</field>
+            <field name="model">qdodoo.account.contract.last</field>
+            <field name="arch" type="xml">
+                <form string="当前合同状态查看">
+                    <div>
+                        *查看当前合同状态
+                    </div>
+                    <footer>
+                        <button string="查询" name="action_search_last_contact" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_last_contract_state">
+            <field name="name">查看当前合同状态</field>
+            <field name="res_model">qdodoo.account.contract.last</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="form_qdodoo_account_contract_last"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem id="menu_last_contract"  name="当前合同状态" parent="purchase.menu_procurement_management" action="action_last_contract_state" sequence="9"/>
+    </data>
+</openerp>
