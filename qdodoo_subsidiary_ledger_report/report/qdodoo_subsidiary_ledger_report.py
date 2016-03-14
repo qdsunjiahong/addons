@@ -80,13 +80,19 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
                      'credit_money':0.0,'balance_num':product_num.get('balance_num',0.0000),'balance_money':product_num.get('balance_money',0.0000)}]
         for production_id in result:
             val_dict = {}
-            val_dict['credit_num'] = '%.4f'%(production_id[3]) if self.location_id == production_id[2] else 0.0#贷方数量
-            val_dict['credit_money'] = float(val_dict['credit_num']) * product_cost.get(self.product_id,0.0) # 贷方金额
-            val_dict['debit_num'] = '%.4f'%(production_id[3]) if self.location_id != production_id[2] else 0.0#借方数量
-            val_dict['debit_money'] = float(val_dict['debit_num']) * product_cost.get(self.product_id,0.0) #借方金额
-            val_dict['balance_money'] = '%.4f'%(product_num.get('balance_money',0.0) - float(val_dict['credit_money']) + float(val_dict['debit_money']))#结余金额
+            credit_num = str(production_id[3] if self.location_id == production_id[2] else 0.0)
+            val_dict['credit_num'] = credit_num[:credit_num.index('.')+5] #贷方数量
+            credit_money = str(float(val_dict['credit_num']) * product_cost.get(self.product_id,0.0))
+            val_dict['credit_money'] = credit_money[:credit_money.index('.')+5] # 贷方金额
+            debit_num = str(production_id[3] if self.location_id != production_id[2] else 0.0)
+            val_dict['debit_num'] = debit_num[:debit_num.index('.')+5] #借方数量
+            debit_money = str(float(val_dict['debit_num']) * product_cost.get(self.product_id,0.0))
+            val_dict['debit_money'] = debit_money[:debit_money.index('.')+5] #借方金额
+            balance_money = str(product_num.get('balance_money',0.0) - float(val_dict['credit_money']) + float(val_dict['debit_money']))
+            val_dict['balance_money'] = balance_money[:balance_money.index('.')+5] #结余金额
             product_num['balance_money'] = float(val_dict['balance_money'])
-            val_dict['balance_num'] = '%.4f'%(product_num.get('balance_num',0.0) - float(val_dict['credit_num']) + float(val_dict['debit_num']))#结余数量
+            balance_num = str(product_num.get('balance_num',0.0) - float(val_dict['credit_num']) + float(val_dict['debit_num']))
+            val_dict['balance_num'] = balance_num[:balance_num.index('.')+5] #结余数量
             product_num['balance_num'] = float(val_dict['balance_num'])
             val_dict['description'] = ('从'+dict_location.get(production_id[2],'')+'发出') if self.location_id == production_id[2] else ('从'+dict_location.get(production_id[2],'')+'入库')
             val_dict['move_id'] = self.get_picking_name(production_id[1])
