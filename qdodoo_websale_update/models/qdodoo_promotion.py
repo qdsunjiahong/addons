@@ -174,6 +174,7 @@ class qdodoo_checking_list(models.Model):
     _order = 'id desc'
 
     date = fields.Datetime(u'操作时间')
+    user_id = fields.Many2one('res.partner',u'用户')
     recharge = fields.Float(u'充值')
     comsume = fields.Float(u'消费')
     refund = fields.Float(u'订单退款')

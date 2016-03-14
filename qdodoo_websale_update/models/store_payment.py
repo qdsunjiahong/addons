@@ -90,7 +90,7 @@ class store_deposit(models.Model):
             all_money = -obj.name.credit
         else:
             all_money = 0.0
-        checking_obj.create(cr, uid, {'date':datetime.now(),'recharge':obj.money,'type':'beforehand','notes':obj.voucher_id.name,'all_money':all_money})
+        checking_obj.create(cr, uid, {'user_id':obj.name.id,'date':datetime.now(),'recharge':obj.money,'type':'beforehand','notes':obj.voucher_id.name,'all_money':all_money})
         return self.write(cr, uid, ids, {'state':'over'})
 
     # 取消
