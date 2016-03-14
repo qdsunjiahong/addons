@@ -140,24 +140,6 @@ class product_expense(models.Model):
         if not len(self.expense_line):
             raise except_orm(_('Warning!'), _('You must add at least one product!'))
 
-    # @api.model
-    # def create(self, vals):
-    #     vals['name'] = self.env['ir.sequence'].get('product.expense')
-    #     expense_loc = self.env['stock.location'].search([('expense_location', '=', True)])
-    #     res = super(product_expense, self).create(vals)
-    #     #create proper route for selected warehouse.
-    #     pull_obj = self.env['procurement.rule']
-    #     if not pull_obj.search([('location_id', '=', expense_loc.id), ('warehouse_id', '=', res.warehouse.id)]):
-    #         pull_obj.create({'name': 'Expense Route → ' + res.warehouse.name,
-    #                          'location_id': expense_loc.id,
-    #                          'warehouse_id': res.warehouse.id,
-    #                          'procure_method': 'make_to_stock',
-    #                          'action': 'move',
-    #                          'picking_type_id': res.warehouse.out_type_id.id,
-    #                          'location_src_id': res.expense_location.id,
-    #         })
-    #     return res
-
     def create(self, cr, uid, vals, context=None):
         uid = 1
         vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'product.expense')
@@ -220,15 +202,9 @@ class product_expense(models.Model):
 
     def do_ship_end(self):
         self.write({'state': 'done'})
-        # correcting the account according to the stratgy.
-        # 1.checking if there's one strategy fit department and product category requirement.
-        # strategy = self.env['product.expense.account'].search([('department','=',self.staff.department_id.id)])
         account_obj = self.env['account.move']
         account_moves = account_obj.search([('ref', '=', self.ref_no.name)])
-        # if len(strategy):
         for line in self.expense_line:
-            # res = [s_line for s_line in strategy.line_ids if s_line.product_category==line.product.categ_id]
-            # if len(res):
             if len(account_moves):
                 for account_move in account_moves:
                     for a_line in account_move.line_id:
@@ -262,12 +238,10 @@ class product_expense_line(models.Model):
 
     @api.onchange('quantity')
     def _onchange_quantity(self):
-        print '3333333333333'
         self.subtotal = self.price * self.quantity
 
     @api.onchange('price')
     def _onchange_price(self):
-        print '44444444444444'
         self.subtotal = self.price * self.quantity
 
     @api.one
