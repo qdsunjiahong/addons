@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <template id="details_dd">
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;"/>-->
+                    <title>写日志</title>
+                    <script type="text/javascript" src="/qdoo_dd_work_details/static/js/jquery-2.1.0.min.js"/>
+                    <script>
+                       $(function () {
+                        $("#detail_post").click(function () {
+                            var category = $("#category").val();
+                            var datetime = $('#datetime').val();
+                            var text = $('#text').val();
+                            if (category == "" || text == "") {
+                                alert("请检查信息是否填写完整！");
+                            } else {
+                                $.ajax({
+                                    async: false,
+                                    type: "POST",
+                                    url: "/details_create",
+                                    data: {"category": category, "datetime": datetime, 'text': text}
+                                }).done(function (msg) {
+                                    if (msg == 1) {
+                                        alert('提交成功');
+                                    } else {
+                                        alert('提交失败');
+                                    }
+                                })
+                            }
+                        });
+                    });
+                                </script>
+
+                </head>
+                <body>
+                    <!--主体部分-->
+                    <div>
+                        <h2>工作日志</h2>
+                        <a href="/search/details">查看日志历史"
+                        </a>
+                        <p>主题</p>:
+                        <span>
+                            <select id="category" name="category" class="form-control">
+                                <t t-foreach="category_ids or []" t-as="category_id">
+                                    <option t-att-value="category_id.id">
+                                        <t t-esc="category_id.name"/>
+                                    </option>
+                                </t>
+                            </select>
+                        </span>
+                        <p>日志内容:</p>
+                        <textarea cols="30" col="10" id="text">
+                            请在这里填写体质内容
+                        </textarea>
+                        <button id="detail_post" value="提交"/>
+                    </div>
+                </body>
+            </html>
+        </template>
+        <template id="didi2">
+
+            <html lang="en">
+                <head>
+                    <meta charset="UTF-8"/>
+                    <script type="text/javascript" src="https://g.alicdn.com/ilw/ding/0.3.8/scripts/dingtalk.js"/>
+                    <script type="text/javascript" src="/qdoo_dd_work_details/static/js/jquery-2.1.0.min.js"/>
+                    <title></title>
+                </head>
+                <body>
+                    <input type="hidden" name="corpId" t-att-value="corpId"/>
+                    <input type="hidden" name="agentId" t-att-value="agentId"/>
+                    <input type="hidden" name="timeStamp" t-att-value="timestamp"/>
+                    <input type="hidden" name="nonceStr" t-att-value="noncestr"/>
+                    <input type="hidden" name="signature" t-att-value="signature"/>
+                    <input type="hidden" name="access_token" t-att-value="access_token"/>
+                </body>
+                <script type="text/javascript" src="/qdoo_dd_work_details/static/js/ddwork.js"/>
+            </html>
+
+        </template>
+
+    </data>
+</openerp>
