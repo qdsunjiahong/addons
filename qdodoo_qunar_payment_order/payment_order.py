@@ -7,7 +7,7 @@
 ###########################################################################################
 
 from openerp.osv import osv, fields
-# from openerp import netsvc
+from openerp import netsvc
 
 
 class qunar_payment(osv.Model):
@@ -66,6 +66,7 @@ class qdodoo_account_voucher_inherit(osv.Model):
         context = context or {}
         i_ids = context.get('invoice_ids') or []
         if i_ids:
+            wf_service = netsvc.LocalService("workflow")
             for vid in ids:
                 voucher = self.pool.get('account.voucher').browse(cr, uid, vid, context=context)
                 for line in voucher.line_dr_ids:
@@ -80,8 +81,9 @@ class qdodoo_account_voucher_inherit(osv.Model):
                         line_obj.write({'reconcile': True, 'amount': line.amount_unreconciled})
                     else:
                         line_obj.write({'reconcile': False, 'amount': 0})
-                # wf_service.trg_validate(uid, 'account.voucher', vid, 'proforma_voucher', cr)
-        self.signal_workflow(cr, uid, ids, 'proforma_voucher')
+                wf_service.trg_validate(uid, 'account.voucher', vid, 'proforma_voucher', cr)
+        else:
+            self.signal_workflow(cr, uid, ids, 'proforma_voucher')
         return {'type': 'ir.actions.act_window_close'}
 
 class payment_order_inherit(osv.Model):
