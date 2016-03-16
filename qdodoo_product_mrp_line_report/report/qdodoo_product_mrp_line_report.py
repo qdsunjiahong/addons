@@ -11,7 +11,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-class qdodoo_product_mrp_line_report(models.TransientModel):
+class qdodoo_product_mrp_line_report(models.Model):
     """
         展示报表数据
     """

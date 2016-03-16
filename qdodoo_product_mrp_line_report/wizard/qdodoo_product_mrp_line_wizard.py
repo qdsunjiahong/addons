@@ -25,6 +25,8 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
 
     @api.multi
     def btn_search_date(self):
+        sql_unlink = """delete from qdodoo_product_mrp_line_report where 1=1"""
+        self._cr.execute(sql_unlink)
         # 完成判断条件
         domain = [('company_id','=',self.company_id.id)]
         if not self.is_draft:
@@ -66,6 +68,7 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
                     all_dict[key] = {'money':line.debit}
         # 创建对应的报表数据
         # 收集创建数据的id
+
         ids_lst = []
         for key,value in all_dict.items():
             if key == '其他':
