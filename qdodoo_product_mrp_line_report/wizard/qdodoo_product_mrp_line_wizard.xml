@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+        <record id="view_form_qdodoo_product_mrp_line_wizard" model="ir.ui.view">
+            <field name="name">qdodoo.product.mrp.line.wizard.form</field>
+            <field name="model">qdodoo.product.mrp.line.wizard</field>
+            <field name="arch" type="xml">
+                <form string="产量成本明细表">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="company_id"/>
+                                <field name="start_period" domain="[('company_id','=',company_id)]"/>
+                            </group>
+                            <group>
+                                <field name="is_draft"/>
+                                <field name="end_period" domain="[('company_id','=',company_id)]"/>
+                            </group>
+                        </group>
+                        <footer>
+                            <button name="btn_search_date" string="查询" type="object" default_focus="1" class="oe_highlight"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_product_mrp_line_wizard" model="ir.actions.act_window">
+            <field name="name">产量成本明细表</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">qdodoo.product.mrp.line.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="view_id" ref="view_form_qdodoo_product_mrp_line_wizard"/>
+        </record>
+        <menuitem name="产量成本明细表" id="menu_qdodoo_product_mrp_line_wizard" parent="mrp.next_id_77" sequence="15"
+                  action="action_qdodoo_product_mrp_line_wizard"/>
+    </data>
+</openerp>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="0">
+
+        <record id="qdodoo_config_account" model="ir.config_parameter">
+            <field name="key">qdodoo.account</field>
+            <field name="value">直接材料</field>
+        </record>
+
+    </data>
+</openerp>

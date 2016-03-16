@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+
+        <record id="view_tree_qdodoo_product_mrp_line_report" model="ir.ui.view">
+            <field name="name">qdodoo.product.mrp.line.report.tree</field>
+            <field name="model">qdodoo.product.mrp.line.report</field>
+            <field name="arch" type="xml">
+                <tree string="产品">
+                    <field name="name"/>
+                    <field name="department"/>
+                    <field name="qty"/>
+                    <field name="price_unit"/>
+                    <field name="price"/>
+                    <field name="price_cost"/>
+                    <field name="month_money"/>
+                </tree>
+            </field>
+        </record>
+
+    </data>
+</openerp>
