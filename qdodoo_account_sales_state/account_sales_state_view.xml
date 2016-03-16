@@ -51,7 +51,7 @@
         </record>
     </data>
 
-    <data noupdate="0">
+    <data noupdate="1">
         <record id="qdodoo_account_sales_state_account1" model="ir.config_parameter">
             <field name="key">qdodoo.account.sales.sate.account1</field>
             <field name="value">主营业务收入,其他业务收入</field>
