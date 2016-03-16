@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_qdodoo_sales_state" model="ir.ui.view">
+            <field name="name">销售明细查询</field>
+            <field name="model">account.sales.state.search</field>
+            <field name="arch" type="xml">
+                <form string="销售明细">
+                    <group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="start_period_id" domain="[('company_id', '=', company_id)]"/>
+                        </group>
+                        <group>
+                            <field name="cstate"/>
+                            <field name="end_period_id" domain="[('company_id', '=', company_id)]"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="查询" name="sales_state_search_open" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_qdodoo_sales_state" model="ir.actions.act_window">
+            <field name="name">库存查询</field>
+            <field name="res_model">account.sales.state.search</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_qdodoo_sales_state"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem name="销售明细" action="action_qdodoo_sales_state" id="menu_qdodoo_sales_state" parent="mrp.next_id_77"/>
+
+        <record id="view_result_sales_state_tree" model="ir.ui.view">
+            <field name="name">销售明细报表</field>
+            <field name="model">qdodoo.account.sales.state.result</field>
+            <field name="arch" type="xml">
+                <tree string="销售明细报表">
+                    <field name="product_id"/>
+                    <field name="sale_quantity"/>
+                    <field name="sale_price"/>
+                    <field name="sale_earning"/>
+                    <field name="sale_cost"/>
+                </tree>
+            </field>
+        </record>
+    </data>
+
+    <data noupdate="0">
+        <record id="qdodoo_account_sales_state_account1" model="ir.config_parameter">
+            <field name="key">qdodoo.account.sales.sate.account1</field>
+            <field name="value">主营业务收入,其他业务收入</field>
+        </record>
+
+        <record id="qdodoo_account_sales_state_account2" model="ir.config_parameter">
+            <field name="key">qdodoo.account.sales.sate.account2</field>
+            <field name="value">主营业务成本</field>
+        </record>
+    </data>
+</openerp>
