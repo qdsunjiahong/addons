@@ -35,6 +35,9 @@ class account_sales_state_search(models.Model):
         """
         根据查询条件查询数据，填写account.sales.state.result模型，再调用视图显示
         """
+        #清除旧数据
+        self._cr.execute('delete from qdodoo_account_sales_state_result')
+
         account_move_obj = self.env['account.move']
         account_move_line_obj = self.env['account.move.line']
         account_account_obj = self.env['account.account']
@@ -140,7 +143,7 @@ class account_sales_state_search(models.Model):
             'view_id': [view_id],
         }
 
-class qdodoo_account_sales_state_result(models.TransientModel):
+class qdodoo_account_sales_state_result(models.Model):
     _name = "qdodoo.account.sales.state.result"
     _description = u"销售明细表"
     _rec_name = 'sale_quantity'
