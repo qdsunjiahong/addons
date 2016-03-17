@@ -50,10 +50,10 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
         # 组织数据字典{产品：{总数量，总金额}}
         all_dict = {}
         for line in self.env['account.move.line'].search(domain):
-            if not line.product_id:
+            if not line.finished_goods:
                 key = '其他'
             else:
-                key = line.product_id
+                key = line.finished_goods
             # 如果贷方大于0,统计产量
             if line.credit:
                 if key in all_dict:
