@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+    <!--定义行和列-->
+    <record id="view_mrp_production_day_report_graph" model="ir.ui.view">
+         <field name="name">生产投料报表</field>
+         <field name="model">qdodoo.mrp.production.day.report</field>
+         <field name="arch" type="xml">
+             <graph string="投料报表" type="pivot">
+                 <field name="product_id" type="row"/>
+                 <field name="stock_product_id" type="col"/>
+                 <field name="production_qty" type="measure"/>
+                 <field name="stock_qty" type="measure"/>
+             </graph>
+         </field>
+    </record>
+
+    <record id="view_qdodoo_mrp_production_day_report_search" model="ir.ui.view">
+        <field name="name">生产投料报表</field>
+        <field name="model">qdodoo.mrp.production.day.report.search</field>
+        <field name="arch" type="xml">
+            <form string="生产投料报表">
+                <group>
+                    <group>
+                        <field name="check_date"/>
+                    </group>
+                    <group>
+                        <field name="account_analytic_id"/>
+                    </group>
+                </group>
+                <footer>
+                    <button string="查询" name="search_mrp_production_day_report" type="object" class="oe_highlight"/>
+                    or
+                    <button string="取消" class="oe_link" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!--动作-->
+    <record id="action_mrp_production_day_report" model="ir.actions.act_window">
+        <field name="name">查看每日生产投料报表</field>
+        <field name="res_model">qdodoo.mrp.production.day.report.search</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_qdodoo_mrp_production_day_report_search"/>
+        <field name="target">new</field>
+        <field name="help">统计每天生产的成品数量及其原材料数量。 </field>
+    </record>
+
+    <!--菜单-->
+    <menuitem action="action_mrp_production_day_report" id="menu_action_mrp_production_day_report" parent="mrp.next_id_77" name="生产投料报表"/>
+</data>
+</openerp>
