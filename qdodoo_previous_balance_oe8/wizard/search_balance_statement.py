@@ -36,9 +36,7 @@ class qdodoo_search_balance_statement(models.Model):
     def balance_statement_open_window(self):
         # 获取数据模型
         product_obj = self.env['product.product']
-        statement_obj = self.env["qdodoo.result.balance.statement"]
         mod_obj = self.env['ir.model.data']
-        move_obj = self.env["stock.move"]
         balance_obj = self.env["qdodoo.previous.balance"]
         quant_obj = self.env['stock.quant']
         # 判断查询条件是否合理
@@ -82,12 +80,16 @@ class qdodoo_search_balance_statement(models.Model):
         balance_num_end_dict = {}
         balance_mount_end_dict = {}
         if self.end_date and self.end_date < now_date:
-            balance_ids_new = balance_obj.search([('date', '=', end_date), ('location_id', 'in', location_list.ids),
+            balance_ids_new_ids = balance_obj.search([('date', '=', self.end_date), ('location_id', 'in', location_list.ids),
                                                   ('product_id', 'in', product_ids.ids)])
-            if balance_ids_new:
-                for balance_id_new in balance_ids_new:
-                    balance_num_end_dict[balance_id_new.product_id.id] = {balance_id_new.location_id.id:balance_id_new.balance_num}
-                    balance_mount_end_dict[balance_id_new.product_id.id] = {balance_id_new.location_id.id:balance_id_new.balance_money}
+            if balance_ids_new_ids:
+                for balance_id_new in balance_ids_new_ids:
+                    if balance_id_new.product_id.id in balance_num_end_dict:
+                        balance_num_end_dict[balance_id_new.product_id.id][balance_id_new.location_id.id] = balance_id_new.balance_num
+                        balance_mount_end_dict[balance_id_new.product_id.id][balance_id_new.location_id.id] = balance_id_new.balance_money
+                    else:
+                        balance_num_end_dict[balance_id_new.product_id.id] = {balance_id_new.location_id.id:balance_id_new.balance_num}
+                        balance_mount_end_dict[balance_id_new.product_id.id] = {balance_id_new.location_id.id:balance_id_new.balance_money}
         else:
             # 查询当前的库存
             for quant in quant_obj.search([('location_id','in',location_list.ids),('product_id', 'in', product_ids.ids)]):
@@ -109,57 +111,51 @@ class qdodoo_search_balance_statement(models.Model):
                 log = 0
                 location_dict[location_id] = {}
                 # 前期结余数量、前期金额、本期数量、本期金额
-                location_dict[location_id]['pre_balance'] = balance_num_dict[product_id.id].get(location_id.id) if balance_num_dict.get(product_id.id) else 0.0
+                location_dict[location_id]['pre_balance'] = balance_num_dict[product_id.id].get(location_id.id,0.0) if balance_num_dict.get(product_id.id) else 0.0
                 if not location_dict[location_id]['pre_balance']:
                     log += 1
-                location_dict[location_id]['pre_balance_amount'] = balance_mount_dict[product_id.id].get(location_id.id) if balance_mount_dict.get(product_id.id) else 0.0
+                location_dict[location_id]['pre_balance_amount'] = balance_mount_dict[product_id.id].get(location_id.id,0.0) if balance_mount_dict.get(product_id.id) else 0.0
                 if not location_dict[location_id]['pre_balance_amount']:
                     log += 1
-                location_dict[location_id]['current_balance'] = balance_num_end_dict[product_id.id].get(location_id.id) if balance_num_end_dict.get(product_id.id) else 0.0
+                location_dict[location_id]['current_balance'] = balance_num_end_dict[product_id.id].get(location_id.id,0.0) if balance_num_end_dict.get(product_id.id) else 0.0
                 if not location_dict[location_id]['current_balance']:
                     log += 1
-                location_dict[location_id]['current_balance_amount'] = balance_mount_end_dict[product_id.id].get(location_id.id) if balance_mount_end_dict.get(product_id.id) else 0.0
+                location_dict[location_id]['current_balance_amount'] = balance_mount_end_dict[product_id.id].get(location_id.id,0.0) if balance_mount_end_dict.get(product_id.id) else 0.0
                 if not location_dict[location_id]['current_balance_amount']:
                     log += 1
                 # 查询满足条件的调拨单
                 # 本期入库数量、金额
-                move_ids = move_obj.search([('state','=','done'),('product_id','=',product_id.id),('location_dest_id','=',location_id.id),('date','>=',start_date),('date','<=',end_date)])
+                sql1 = """select product_uom_qty,tfs_price_unit from stock_move where state='done' and product_id=%s and location_dest_id=%s and date >='%s' and date <='%s'"""%(product_id.id,location_id.id,start_date,end_date)
+                self._cr.execute(sql1)
+                move_ids = self._cr.fetchall()
                 if not move_ids:
                     log += 1
                 for move_id in move_ids:
-                    location_dict[location_id]['storage_quantity_period'] = location_dict[location_id].get('storage_quantity_period',0.0) + move_id.product_uom_qty
-                    location_dict[location_id]['storage_quantity_amount'] = location_dict[location_id].get('storage_quantity_amount',0.0) + (move_id.product_uom_qty * move_id.tfs_price_unit)
+                    location_dict[location_id]['storage_quantity_period'] = location_dict[location_id].get('storage_quantity_period',0.0) + move_id[0]
+                    location_dict[location_id]['storage_quantity_amount'] = location_dict[location_id].get('storage_quantity_amount',0.0) + (move_id[0] * move_id[1])
                 # 本期出库数量、金额
-                move_out_ids = move_obj.search([('state','=','done'),('product_id','=',product_id.id),('location_id','=',location_id.id),('date','>=',start_date),('date','<=',end_date)])
+                sql2 = """select product_uom_qty,tfs_price_unit from stock_move where state='done' and product_id=%s and location_id=%s and date >='%s' and date <='%s'"""%(product_id.id,location_id.id,start_date,end_date)
+                self._cr.execute(sql2)
+                move_out_ids = self._cr.fetchall()
                 if not move_out_ids:
                     log += 1
                 for move_id in move_out_ids:
-                    location_dict[location_id]['number_of_library'] = location_dict[location_id].get('number_of_library',0.0) + move_id.product_uom_qty
-                    location_dict[location_id]['number_of_library_amount'] = location_dict[location_id].get('number_of_library_amount',0.0) + (move_id.product_uom_qty * move_id.tfs_price_unit)
+                    location_dict[location_id]['number_of_library'] = location_dict[location_id].get('number_of_library',0.0) + move_id[0]
+                    location_dict[location_id]['number_of_library_amount'] = location_dict[location_id].get('number_of_library_amount',0.0) + (move_id[0] * move_id[1])
                 if log == 6:
                     location_dict.pop(location_id)
-                # if product_id.id == 17844 and location_id.id == 265:
             info_dict[product_id] = location_dict
         # 创建报表展示中数据
         result_list = []
         for key,value in info_dict.items():
             for key1,value1 in value.items():
-                result = {
-                    'name': key1.complete_name,  # 库位名称
-                    'product_name': key.name,  # 产品名称
-                    'product_id': key.id,
-                    'pre_balance': value1.get('pre_balance'),  # 前期结余数量
-                    'pre_balance_amount': value1.get('pre_balance_amount'),  # 前期结余金额
-                    'storage_quantity_amount': value1.get('storage_quantity_amount'),  # 入库金额
-                    'storage_quantity_period': value1.get('storage_quantity_period'), # 本期入库数量
-                    'number_of_library': value1.get('number_of_library'),  # 本期出库数量
-                    'number_of_library_amount': value1.get('number_of_library_amount'),  # 出库金额
-                    'current_balance': value1.get('current_balance'),  # 本期结余数量
-                    'current_balance_amount': value1.get('current_balance_amount'),  # 本期结余金额
-                    'company_id': key1.company_id.id
-                }
-                cre_obj = statement_obj.create(result)
-                result_list.append(cre_obj.id)
+                sql = """insert into qdodoo_result_balance_statement (product_name,product_id,name,pre_balance,pre_balance_amount,storage_quantity_period,storage_quantity_amount,number_of_library,number_of_library_amount,current_balance,current_balance_amount,company_id) VALUES ('%s',%s,'%s',%s,%s,%s,%s,%s,%s,%s,%s,%s) returning id"""%(
+                key.name,key.id,key1.complete_name,value1.get('pre_balance',0.0),value1.get('pre_balance_amount',0.0),value1.get('storage_quantity_period',0.0),value1.get('storage_quantity_amount',0.0),value1.get('number_of_library',0.0),value1.get('number_of_library_amount',0.0),value1.get('current_balance',0.0),value1.get('current_balance_amount',0.0),key1.company_id.id
+                )
+                self._cr.execute(sql)
+                return_obj = self.env.cr.fetchall()
+                if return_obj:
+                    result_list.append(return_obj[0][0])
         if self.location_id:
             view_model, view_id = mod_obj.get_object_reference('qdodoo_previous_balance_oe8',
                                                                'view_result_balance_statement_tree')
