@@ -19,3 +19,8 @@ class qdodoo_stock_inventory_report(models.Model):
     credit_account = fields.Many2one('account.account', string=u'贷方科目')
     inventory_id = fields.Many2one('stock.inventory', string=u'盘点单')
     date = fields.Date(string=u'盘点时间')
+
+class qdodoo_account_move_line_log(models.Model):
+    _inherit = 'account.move.line'
+
+    is_mrp_inventory = fields.Boolean(u'是否是生产盘点差异产生的分录')

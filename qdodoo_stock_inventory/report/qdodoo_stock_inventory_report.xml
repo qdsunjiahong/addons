@@ -5,7 +5,7 @@
             <field name="name">生产库存盘点报表</field>
             <field name="model">qdodoo.stock.inventory.report2</field>
             <field name="arch" type="xml">
-                <tree string="生产库存盘点报表">
+                <tree string="生产库存盘点报表" colors="red:product_qty &lt; 0">
                     <field name="mo_id"/>
                     <field name="product_id"/>
                     <field name="product_qty"/>
