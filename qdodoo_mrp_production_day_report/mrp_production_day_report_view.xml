@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 <data>
+
+    <!--在产品分类中-->
+    <record model="ir.ui.view" id="product_category_form_view_inherit_inherit">
+            <field name="name">product.category.form.inherit</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="stock.product_category_form_view_inherit"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='removal_strategy_id']" position="after">
+                    <field name="is_descreption"/>
+                </xpath>
+
+            </field>
+        </record>
+
     <!--定义行和列-->
     <record id="view_mrp_production_day_report_graph" model="ir.ui.view">
          <field name="name">生产投料报表</field>

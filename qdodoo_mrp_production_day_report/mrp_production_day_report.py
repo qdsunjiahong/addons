@@ -36,19 +36,19 @@ class qdodoo_mrp_production_day_report_search(models.Model):
             bom_qty = bom_line.bom_id.product_qty  #该物料对应的物料清单数量
 
             # 如果该物料也有对应的物料清单，则其作为某个产成品处理存储，并递归查找其下物料清单
-            if bom_product_id in pid2bomid_dict:
-                self.all_bom_lines(pid2bomid_dict[bom_product_id], pid2bomid_dict, bom_product_id, bom_product_qty)
-            else:  #如果只是单纯物料，则存储据
-                insert_dict = {
-                    'product_id': pid,  #产成品
-                    'production_qty': qty,  #本产成品产量
-                    'stock_product_id': bom_product_id,  #物料ID
-                    'stock_qty': bom_product_qty*qty/bom_qty  #投料数量 = 本物料投入量 x 本产成品产量/物料所属物料清单数量
-                }
+            if not bom_line.product_id.categ_id.is_descreption:
+                if bom_product_id in pid2bomid_dict:
+                    self.all_bom_lines(pid2bomid_dict[bom_product_id], pid2bomid_dict, bom_product_id, bom_product_qty)
+                else:  #如果只是单纯物料，则存储据
+                    insert_dict = {
+                        'product_id': pid,  #产成品
+                        'production_qty': qty,  #本产成品产量
+                        'stock_product_id': bom_product_id,  #物料ID
+                        'stock_qty': bom_product_qty*qty/bom_qty  #投料数量 = 本物料投入量 x 本产成品产量/物料所属物料清单数量
+                    }
 
-                insert_obj = self.env['qdodoo.mrp.production.day.report'].create(insert_dict)
-                insert_ids_list.append(insert_obj.id)
-
+                    insert_obj = self.env['qdodoo.mrp.production.day.report'].create(insert_dict)
+                    insert_ids_list.append(insert_obj.id)
         return True
 
 
@@ -171,7 +171,10 @@ class qdodoo_mrp_production_day_report(models.Model):
     stock_product_id = fields.Many2one('product.product', string=u'投料', readonly=True)
     stock_qty = fields.Float(string=u'投料量', digits=(20,6), readonly=True)
 
+class qdodoo_product_category_tfs(models.Model):
+    _inherit = 'product.category'
 
-
+    # 增加字段判断是否要在生产投料报表中展示该分类产品
+    is_descreption = fields.Boolean(u'该分类产品是否在生产投料报表中隐藏')
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

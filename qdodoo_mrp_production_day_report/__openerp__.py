@@ -13,7 +13,7 @@
     'author': 'qdodoo Technology',  # 作者
     'website': 'http://www.qdodoo.com/',  # 网址
     'summary': '统计每天生产的成品数量及其原材料数量',  # 摘要
-    'depends': ['base'],  # 依赖模块
+    'depends': ['base','product','stock'],  # 依赖模块
     'data': [
         'mrp_production_day_report_view.xml'
         # ...
