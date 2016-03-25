@@ -14,7 +14,7 @@
    'website': 'http://www.qdodoo.com/',    #网址
    'summary': '',    #摘要
    'images' : [],    #模块图片
-   "depends":["base","hr","hr_expense","stock","account"],
+   "depends":["base","hr","hr_expense","stock","account",'mail'],
    "data":[
        "security/product_expense_security.xml",
        "security/ir.model.access.csv",

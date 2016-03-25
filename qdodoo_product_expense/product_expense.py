@@ -27,6 +27,7 @@ import datetime
 
 class product_expense(models.Model):
     _name = 'product.expense'
+    _inherit = ['mail.thread']
 
     name = fields.Char('Name', readonly=True)
     staff = fields.Many2one('hr.employee', 'Employee', required=True)
@@ -38,7 +39,7 @@ class product_expense(models.Model):
                                            'done': [('readonly', True)], 'refused': [('readonly', True)]})
     state = fields.Selection(
         selection=[('draft', 'Draft'), ('confirm', 'Confirm'), ('accepted', 'Accepted'), ('waiting', 'Waiting'),
-                   ('done', 'Done'), ('refused', 'Refused')], string="Status")
+                   ('done', 'Done'), ('refused', 'Refused')], string="Status", track_visibility='onchange')
     amount = fields.Float('Amount', compute="_get_amount")
     note = fields.Text('Free Notes')
     ref_no = fields.Many2one('stock.picking', 'Ref Delivery', readonly=True)
