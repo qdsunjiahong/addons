@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ###########################################################################################
 #
-#    author:qdodoo suifeng
+#    author:Qdodoo suifeng
 #    module name for Qdodoo
 #    Copyright (C) 2015 qdodoo Technology CO.,LTD. (<http://www.qdodoo.com/>).
 #
@@ -133,7 +133,6 @@ class qdodoo_account_asset_depreciation_line(models.Model):
                     company_currency = key2.company_id.currency_id.id
                     current_currency = key2.currency_id.id
                     asset_name = key2.name
-                    # partner_id = key2.partner_id.id
                     for line_obj in value2:
                         # 创建凭证明细行
                         reference = line_obj.name
@@ -147,7 +146,6 @@ class qdodoo_account_asset_depreciation_line(models.Model):
                             'credit': amount,
                             'period_id': period_ids and period_ids[0] or False,
                             'journal_id': journal_id,
-                            # 'partner_id': partner_id,
                             'currency_id': company_currency != current_currency and current_currency or False,
                             'amount_currency': company_currency != current_currency and - sign * line_obj.amount or 0.0,
                             'date': key,
@@ -161,10 +159,9 @@ class qdodoo_account_asset_depreciation_line(models.Model):
                             'debit': amount,
                             'period_id': period_ids and period_ids[0] or False,
                             'journal_id': journal_id,
-                            # 'partner_id': partner_id,
                             'currency_id': company_currency != current_currency and current_currency or False,
                             'amount_currency': company_currency != current_currency and sign * line_obj.amount or 0.0,
-                            'analytic_account_id': key2.category_id.account_analytic_id.id,
+                            'analytic_account_id': key2.department.id,
                             'date': key,
                             'asset_id': key2.id
                         })

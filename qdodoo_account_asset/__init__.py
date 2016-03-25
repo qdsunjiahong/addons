@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ###########################################################################################
-#    author:qdodoo suifeng
+#    author:Qdodoo suifeng
 #    module name for Qdodoo
 #    Copyright (C) 2015 qdodoo Technology CO.,LTD. (<http://www.qdodoo.com/>).
 ###########################################################################################
