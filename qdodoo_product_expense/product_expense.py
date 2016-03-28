@@ -210,8 +210,7 @@ class product_expense(models.Model):
                 for account_move in account_moves:
                     for a_line in account_move.line_id:
                         if a_line.product_id == line.product and a_line.credit != 0 and a_line.debit == 0:
-                            a_line.write({'account_id': self.usage.debit.id,
-                                          'analytic_account_id': self.analytic_acc.id})
+                            a_line.write({'account_id': self.usage.debit.id})
                         if a_line.product_id == line.product and a_line.debit != 0 and a_line.credit == 0:
                             a_line.write({'account_id': self.usage.credit.id,
                                           'analytic_account_id': self.analytic_acc.id})
