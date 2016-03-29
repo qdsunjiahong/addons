@@ -125,7 +125,7 @@ class qdodoo_search_balance_statement(models.Model):
                     log += 1
                 # 查询满足条件的调拨单
                 # 本期入库数量、金额
-                sql1 = """select product_uom_qty,tfs_price_unit from stock_move where state='done' and product_id=%s and location_dest_id=%s and date >='%s' and date <='%s'"""%(product_id.id,location_id.id,start_date,end_date)
+                sql1 = """select product_uom_qty,price_unit from stock_move where state='done' and product_id=%s and location_dest_id=%s and date >='%s' and date <='%s'"""%(product_id.id,location_id.id,start_date,end_date)
                 self._cr.execute(sql1)
                 move_ids = self._cr.fetchall()
                 if not move_ids:
