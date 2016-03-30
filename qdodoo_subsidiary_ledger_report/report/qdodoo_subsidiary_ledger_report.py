@@ -72,14 +72,13 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
         product_num = {}
         banlance_obj = self.pool.get('qdodoo.previous.balance')
         for banlance_id in banlance_obj.browse(self.cr, self.uid, banlance_obj.search(self.cr, self.uid, [('location_id','=',self.location_id),('date','=',yesteday),('product_id','=',self.product_id)])):
-            product_num['balance_num'] = product_id.balance_num
-            product_num['balance_money'] = product_id.balance_money
+            product_num['balance_num'] = banlance_id.balance_num
+            product_num['balance_money'] = banlance_id.balance_money
         # 循环所有查询出来的数据
         data = [{'start_date':self.start_date,'end_date':self.end_date if self.end_date else now_date,'product_id':dict_product.get(self.product_id,''),'product_num':dict_product_num.get(self.product_id,''),
                      'location_id':dict_location.get(self.location_id,''),'date':yesteday,'move_id':0,'description':'前期结余','debit_num':product_num.get('balance_num',0.0000),'debit_money':product_num.get('balance_money',0.0000),'credit_num':0.0000,
                      'credit_money':0.0,'balance_num':product_num.get('balance_num',0.0000),'balance_money':product_num.get('balance_money',0.0000)}]
         for production_id in result:
-            print production_id[3],'11111111111111'
             val_dict = {}
             credit_num = str(production_id[3] if self.location_id == production_id[2] else 0.0)
             val_dict['credit_num'] = credit_num[:credit_num.index('.')+5] #贷方数量
