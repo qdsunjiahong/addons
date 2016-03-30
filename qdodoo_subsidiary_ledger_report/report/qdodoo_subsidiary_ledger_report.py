@@ -28,8 +28,8 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
         now_date = datetime.now().strftime('%Y-%m-%d ')
         data = []
         # 获取查询条件中的开始时间和结束时间
-        start_date = self.start_date + ' 00:00:00'
-        end_date = (self.end_date if self.end_date else now_date) + ' 23:59:59'
+        start_date = (datetime.strptime(self.start_date,'%Y-%m-%d') + timedelta(days=-1)).strftime('%Y-%m-%d') + ' 15:00:00'
+        end_date = (self.end_date if self.end_date else now_date) + ' 15:59:59'
         sql = """select
                     sm.date as date,
                     sm.id as move_id,
@@ -79,6 +79,7 @@ class qdodoo_subsidiary_ledger_report(report_sxw.rml_parse):
                      'location_id':dict_location.get(self.location_id,''),'date':yesteday,'move_id':0,'description':'前期结余','debit_num':product_num.get('balance_num',0.0000),'debit_money':product_num.get('balance_money',0.0000),'credit_num':0.0000,
                      'credit_money':0.0,'balance_num':product_num.get('balance_num',0.0000),'balance_money':product_num.get('balance_money',0.0000)}]
         for production_id in result:
+            print production_id[3],'11111111111111'
             val_dict = {}
             credit_num = str(production_id[3] if self.location_id == production_id[2] else 0.0)
             val_dict['credit_num'] = credit_num[:credit_num.index('.')+5] #贷方数量
