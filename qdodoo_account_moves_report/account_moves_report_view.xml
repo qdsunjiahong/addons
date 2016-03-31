@@ -7,7 +7,7 @@
          <field name="model">account.moves.report</field>
          <field name="arch" type="xml">
              <graph string="分录分析" type="pivot">
-                <field name="user_type" type="row"/> <!--科目类型作为行-->
+                <field name="analytic_account_id" type="row"/> <!--科目类型作为行-->
                 <field name="period_id" type="col"/> <!--会计期间作为列-->
                 <field name="debit" type="measure"/>    <!--借方作为子列-->
                 <field name="credit" type="measure"/>   <!--贷方作为子列-->
@@ -70,7 +70,8 @@
     <!--菜单-->
     <menuitem action="action_account_moves_report_all" id="menu_action_account_moves_report_all"
         parent="account.menu_finance_reporting"
-        name="会计分录分析"
+        name="新辅助核算项分析"
         sequence="10"/>
+
 </data>
 </openerp>
