@@ -30,12 +30,16 @@ class qdodoo_mrp_production_day_report_search(models.Model):
         # 查询产品模板ID对应的物料清单ID
         product_bom_dict = {}
         for bom_id in self.env['mrp.bom'].search([]):
-            product_bom_dict[bom_id.product_tmpl_id] = bom_id
+            if bom_id.product_tmpl_id in product_bom_dict:
+                if product_bom_dict[bom_id.product_tmpl_id].sequence > bom_id.sequence:
+                    product_bom_dict[bom_id.product_tmpl_id] = bom_id
+            else:
+                product_bom_dict[bom_id.product_tmpl_id] = bom_id
         #时间范围
         start_date = self.check_date + " 00:00:01"
         end_date = self.check_date + " 23:59:59"
         #查找时间范围内指定生产车间的生产订单
-        mrp_production_ids = self.env['mrp.production'].search([('state','=','confirmed'),('analytic_account', '=', self.account_analytic_id.id), ('date_finished', '>=', start_date), ('date_finished', '<=', end_date)])
+        mrp_production_ids = self.env['mrp.production'].search([('state','in',('confirmed','ready')),('analytic_account', '=', self.account_analytic_id.id), ('date_finished', '>=', start_date), ('date_finished', '<=', end_date)])
         # 记录bom的数据{产品:产成品数量}
         bom_dict = {}
         for mrp_production in mrp_production_ids:
