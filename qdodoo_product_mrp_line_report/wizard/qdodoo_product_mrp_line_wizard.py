@@ -47,28 +47,43 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
         else:
             raise osv.except_osv(_(u'警告'),_(u'该公司缺少对应的科目！'))
         # 查询出来所有满足条件的分录明细
-        # 组织数据字典{产品：{总数量，总金额}}
+        # 组织数据字典{产品：{部门:{总数量，总金额}}}
         all_dict = {}
         for line in self.env['account.move.line'].search(domain):
             if not line.finished_goods:
                 key = '其他'
             else:
                 key = line.finished_goods
-            # 如果贷方大于0,统计产量
-            if line.credit:
-                if key in all_dict:
-                    all_dict[key]['number'] = all_dict[key].get('number',0) + line.quantity
+            # 判断辅助核算项是否已存在
+            if line.analytic_account_id:
+                analytic_account_id = line.analytic_account_id
+            else:
+                analytic_account_id = 'tfs'
+
+            if key in all_dict:
+                if analytic_account_id in all_dict[key]:
+                    # 如果贷方大于0,统计产量
+                    if line.credit:
+                        all_dict[key][analytic_account_id]['number'] = all_dict[key][analytic_account_id].get('number',0) + line.quantity
+                    # 如果借方金额大于0,统计金额
+                    if line.debit:
+                        all_dict[key][analytic_account_id]['money'] = all_dict[key][analytic_account_id].get('money',0) + line.debit
                 else:
-                    all_dict[key] = {'number':line.quantity}
-            # 如果借方金额大于0,统计金额
-            if line.debit:
-                if key in all_dict:
-                    all_dict[key]['money'] = all_dict[key].get('money',0) + line.debit
-                else:
-                    all_dict[key] = {'money':line.debit}
+                    # 如果贷方大于0,统计产量
+                    if line.credit:
+                        all_dict[key][analytic_account_id] = {'number':line.quantity}
+                    # 如果借方金额大于0,统计金额
+                    if line.debit:
+                        all_dict[key][analytic_account_id] = {'money':line.debit}
+            else:
+                # 如果贷方大于0,统计产量
+                if line.credit:
+                    all_dict[key] = {analytic_account_id:{'number':line.quantity}}
+                # 如果借方金额大于0,统计金额
+                if line.debit:
+                    all_dict[key] = {analytic_account_id:{'money':line.debit}}
         # 创建对应的报表数据
         # 收集创建数据的id
-
         ids_lst = []
         for key,value in all_dict.items():
             if key == '其他':
@@ -77,13 +92,18 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
             else:
                 name = key.name
                 price_unit = key.list_price
-            sql = """insert into qdodoo_product_mrp_line_report (name,qty,price_unit,month_money) VALUES ('%s',%s,%s,%s) returning id"""%(
-                name,value.get('number',0),price_unit,value.get('money',0)
-            )
-            self._cr.execute(sql)
-            return_obj = self.env.cr.fetchall()
-            if return_obj:
-                ids_lst.append(return_obj[0][0])
+            for key1, value1 in value.items():
+                if key1 == 'tfs':
+                    department = '其他'
+                else:
+                    department = key1.name
+                sql = """insert into qdodoo_product_mrp_line_report (name,department,qty,price_unit,month_money) VALUES ('%s','%s',%s,%s,%s) returning id"""%(
+                    name,department,value1.get('number',0),price_unit,value1.get('money',0)
+                )
+                self._cr.execute(sql)
+                return_obj = self.env.cr.fetchall()
+                if return_obj:
+                    ids_lst.append(return_obj[0][0])
         result = self.env['ir.model.data'].get_object_reference('qdodoo_product_mrp_line_report', 'view_tree_qdodoo_product_mrp_line_report')
         view_id = result and result[1] or False
         return {
