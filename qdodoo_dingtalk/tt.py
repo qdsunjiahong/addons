@@ -27,4 +27,3 @@ data = {
     'parentid': 1,
 }
 req = url_post(department_create_url, json.dumps(data))
-print req,111111

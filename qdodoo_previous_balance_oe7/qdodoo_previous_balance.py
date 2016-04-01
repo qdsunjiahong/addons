@@ -53,7 +53,5 @@ class qdodoo_previous_balance(osv.Model):
                             {'location_id': location_id, 'product_id': product_id, 'date': date, 'balance_num': value,
                              'balance_money': value * product_cost.get(product_id, 0.0)})
 
-                print "location_id=%s,product_id=%s,date=%s,balance_num=%s,balance_money=%s" % (
-                location_id, product_id, date, value, value * product_cost.get(product_id, 0.0))
 
                 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

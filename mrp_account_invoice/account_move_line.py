@@ -11,7 +11,6 @@ class account_move_line(models.Model):
     @api.one
     def _get_finished_goods(self):
         if self.name:
-            print "self.name=",self.name
             try:
                 mrp_product_list = self.env['mrp.production'].search([('name', '=', self.name)])
                 # print "mrp_product_list", mrp_product_list

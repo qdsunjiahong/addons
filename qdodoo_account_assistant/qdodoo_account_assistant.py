@@ -23,7 +23,6 @@ class qdodoo_sale_order(models.Model):
     def create(self, cr, uid, values, context=None):
         if values.get('order_line', []):
             for line in values.get('order_line', []):
-                print line
                 product_id = line[-1]['product_id']
                 product_obj = self.pool.get('product.product').browse(cr, uid, product_id)
                 if product_obj.categ_id.property_stock_account_output_categ.required_assistant and not values[

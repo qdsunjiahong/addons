@@ -144,7 +144,6 @@ class product_expense(models.Model):
     def create(self, cr, uid, vals, context=None):
         uid = 1
         vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'product.expense')
-        print vals['name']
         expense_id = self.pool.get('stock.location').search(cr, uid, [('expense_location', '=', True)])
         expense_loc = self.pool.get('stock.location').browse(cr, uid, expense_id[0])
         res = super(product_expense, self).create(cr, uid, vals, context=context)

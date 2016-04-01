@@ -73,7 +73,6 @@ class taylor_pricce_list(models.Model):
 
     # 修改明细修改关联到产品中对应数据
     def write(self, cr, uid, ids, value, context=None):
-        print ids,'1111111111',value
         super(taylor_pricce_list, self).write(cr, uid, ids, value, context=context)
         if not value.get('price_version_item_id'):
             relation_obj = self.pool.get('pricelist.prolate.relation')

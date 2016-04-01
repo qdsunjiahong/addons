@@ -45,7 +45,6 @@ class rain_account_move_line_import(osv.osv):
                 if left_index < -1 or right_index < -1:
                     raise osv.except_osv(u'excel文件有问题',u'缺少"[",或者"]", 检查行号:%d' % (i + 1))
 
-                print left_index, right_index
                 product_code = product_message[left_index+1: right_index]
                 product_id2 = product_pool.search(cr, uid, [('default_code', '=', product_code)])
                 if not product_id2:
@@ -72,7 +71,6 @@ class rain_account_move_line_import(osv.osv):
                 'account_id':credit_account_id
             }
 
-            print args_debit
 
             move_line_pool.create(cr, uid, args_credit, context)
             move_line_pool.create(cr, uid, args_debit, context)

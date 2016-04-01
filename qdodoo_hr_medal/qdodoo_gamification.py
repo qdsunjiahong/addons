@@ -29,7 +29,6 @@ class qdodoo_gamification(osv.Model):
     def action_grant_badge(self, cr, uid, ids, context=None):
         if context is None:
             context = {}
-        print context,333333333
         badge_user_obj = self.pool.get('gamification.badge.user')
         grant_badge_obj = self.browse(cr, uid, ids[0], context=context)
 

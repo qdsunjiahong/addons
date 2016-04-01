@@ -16,7 +16,6 @@ class qdodoo_account_analytic_line(osv.osv):
     }
 
     def create(self, cr, uid, vals, context=None):
-        print vals.get('date'), vals.get('account_id')
         if vals.get('date', False) and vals.get('account_id', False):
             company_id = self.pool.get("account.analytic.account").browse(cr, uid, vals.get('account_id')).company_id.id
             period_ids = self.pool.get('account.period').search(cr, uid,

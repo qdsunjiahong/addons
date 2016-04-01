@@ -46,9 +46,7 @@ class qdodoo_department_auto(models.Model):
                     'name': key,
                     'parentid': parent_id
                 }
-                print data, 11111111
                 req = self.url_post(department_create_url % access_token, data)
-                print req, 1222222
                 if req.get('errcode') == 0:
                     return {'key': key, 'pa_id': req.get('id')}
         else:  #否则，先创建上级部分

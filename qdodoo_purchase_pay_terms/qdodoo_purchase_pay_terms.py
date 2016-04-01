@@ -20,10 +20,8 @@ class stock_picking(models.Model):
         if context is None:
             context = {}
         partner, currency_id, company_id, user_id = key
-        print key, inv_type
         if inv_type in ('out_invoice', 'out_refund'):
             account_id = partner.property_account_receivable.id
-            print account_id
             payment_term = partner.property_payment_term.id or False
         else:
             account_id = partner.property_account_payable.id
