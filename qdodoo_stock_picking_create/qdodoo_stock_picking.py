@@ -26,6 +26,13 @@ class qdodoo_account_invoice(models.Model):
 class stock_picking(models.Model):
     _inherit = 'stock.picking'
 
+    @api.one
+    def do_transfer(self):
+        for ids in self:
+            if ids.state == 'done':
+                raise osv.osv(_(u'错误'),_(u'转移单已完成，请刷新页面！'))
+        return super(stock_picking, self).do_transfer()
+
     def _get_invoice_vals(self, cr, uid, key, inv_type, journal_id, move, context=None):
         if context is None:
             context = {}
@@ -80,6 +87,8 @@ class qdodoo_stock_picking(models.Model):
 
     @api.one
     def do_detailed_transfer(self):
+        if self.picking_id.state == 'done':
+            raise osv.osv(_(u'错误'),_(u'转移单已完成，请刷新页面！'))
         processed_ids = []
         # Create new and update existing pack operations
         for lstits in [self.item_ids, self.packop_ids]:
