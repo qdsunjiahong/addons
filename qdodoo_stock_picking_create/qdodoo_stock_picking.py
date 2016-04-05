@@ -31,7 +31,17 @@ class stock_picking(models.Model):
         for ids in self:
             if ids.state == 'done':
                 raise osv.osv(_(u'错误'),_(u'转移单已完成，请刷新页面！'))
-        return super(stock_picking, self).do_transfer()
+        res = super(stock_picking, self).do_transfer()
+        for ids in self:
+            # 删除虚增的库存
+            for line in ids.move_lines:
+                quant_ids = self.env['stock.quant'].search([('product_id','=',line.product_id.id),('location_id','=',line.location_dest_id.id)])
+                for quant_id in quant_ids:
+                    for move_id in quant_id.history_ids:
+                        if move_id.state != 'done':
+                            quant_id.unlink()
+                            break
+        return res
 
     def _get_invoice_vals(self, cr, uid, key, inv_type, journal_id, move, context=None):
         if context is None:
