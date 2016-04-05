@@ -63,7 +63,7 @@
         <field name="view_mode">graph</field>
         <field name="search_view_id" ref="view_account_moves_report_search"/>
         <field name="view_id" ref="view_account_moves_report_graph"/>
-        <field name="context">{'group_by':[], 'search_default_usertype':1, 'search_default_thisyear':1, 'group_by_no_leaf':1}</field>
+        <field name="context">{'search_default_thisyear':1}</field>
         <field name="help">该视图中呈现了多个不同资金账户的分析。 </field>
     </record>
 

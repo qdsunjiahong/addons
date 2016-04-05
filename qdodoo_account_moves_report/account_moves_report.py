@@ -125,7 +125,7 @@ class account_moves_report(osv.osv):
                 left join account_account a on (l.account_id = a.id)
                 left join account_move am on (am.id=l.move_id)
                 left join account_period p on (am.period_id=p.id)
-                where l.state != 'draft'
+                where l.state != 'draft' and l.analytic_account_id is not Null
             )
         """)
 
