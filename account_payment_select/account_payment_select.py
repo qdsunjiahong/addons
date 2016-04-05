@@ -19,11 +19,8 @@
 #
 ##############################################################################
 
-from openerp.osv import osv, orm
-from openerp.osv import fields
-from openerp import api
+from openerp.osv import osv, fields
 from openerp.tools.translate import _
-import datetime, time
 from openerp.addons.account_payment.account_move_line import account_move_line
 
 
@@ -78,11 +75,13 @@ class account_payment_select(osv.osv):
         data = self.browse(cr, uid, ids, context=context)[0]
         payment_id = payment_obj.browse(cr, uid, context.get('active_id'))
         search_due_date = data.duedate
-        domain = [('partner_id', '=', payment_id.payment_supplier.id), ('reconcile_id', '=', False),
-                  ('log_is_two', '=', False), ('account_id.type', '=', 'payable'),
+        domain = [('partner_id', '=', payment_id.payment_supplier.id),
+                  ('reconcile_id', '=', False),
+                  ('log_is_two', '=', False),
+                  ('account_id.type', '=', 'payable'),
                   ('company_id', '=', payment_id.company_id.id),
                   ('account_id.reconcile', '=', True)]  # ('credit', '>', 0),
-        domain = domain + ['|', ('date_maturity', '<=', search_due_date), ('date_maturity', '=', False)]
+        # domain = domain + ['|', ('date_maturity', '<=', search_due_date), ('date_maturity', '=', False)]
         line_ids = line_obj.search(cr, uid, domain, context=context)
         context = dict(context, line_ids=line_ids)
         context.update({'line_ids': line_ids})
@@ -168,11 +167,11 @@ class account_move_line_inherit(osv.osv):
     }
 
 
-class payment_order_inherit(osv.osv):
+class account_payment_order_sequence_inherit(osv.osv):
     _inherit = "payment.order"
 
     def fields_get(self, cr, uid, fields=None, context=None, write_access=True, attributes=None):
-        res = super(payment_order_inherit, self).fields_get(cr, uid, fields, context, write_access, attributes)
+        res = super(account_payment_order_sequence_inherit, self).fields_get(cr, uid, fields, context, write_access, attributes)
         if 'communication2' in res:
             res['communication2'].setdefault('states', {})
             res['communication2']['states']['structured'] = [('readonly', True)]
@@ -190,7 +189,7 @@ class payment_order_inherit(osv.osv):
             for line_id in rec.line_ids:
                 if line_id.move_line_id:
                     account_obj.write(cr, uid, line_id.move_line_id.id, {'log_is_two': False})
-        return super(payment_order_inherit, self).unlink(cr, uid, ids, context=context)
+        return super(account_payment_order_sequence_inherit, self).unlink(cr, uid, ids, context=context)
 
     def _get_location_name(self, cr, uid, ids, field_name, args, context=None):
         res = {}
@@ -220,3 +219,17 @@ class payment_order_inherit(osv.osv):
     _columns = {
         "location_name": fields.function(_get_location_name, type="char", string=u'库位')
     }
+
+    _defaults = {
+        'reference': '/',
+    }
+
+    def create(self, cr, uid, valu, context=None):
+        # 如果没有编号
+        if valu.get('reference') == '/' or not valu.get('reference'):
+            # 获取产品当前数据公司
+            company_id = self.pool.get('payment.mode').browse(cr, uid, valu['mode']).company_id.id
+            # 获取当前公司的人员
+            user_id = self.pool.get('res.users').search(cr, uid, [('company_id','=',company_id)])
+            valu['reference'] = self.pool.get('ir.sequence').get(cr, user_id[0], 'payment.order')
+        return super(account_payment_order_sequence_inherit, self).create(cr, uid, valu, context=context)
