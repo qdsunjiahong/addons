@@ -120,7 +120,7 @@ class qdodoo_search_balance_statement(models.Model):
             # 查询满足条件的调拨单
             # 本期入库数量、金额（采购入库、销售退货、生产入库、盘盈）
             if self.company_id:
-                sql1 = """select product_uom_qty,tfs_price_unit,price_unit from stock_move where state='done' and product_id=%s and date >='%s' and date <='%s' and location_id in %s"""%(product_id.id,start_date,end_date,no_location_ids)
+                sql1 = """select product_uom_qty,tfs_price_unit,price_unit from stock_move where state='done' and product_id=%s and date >='%s' and date <='%s' and location_id in %s and location_dest_id not in %s"""%(product_id.id,start_date,end_date,no_location_ids,no_location_ids)
             if self.location_id:
                 sql1 = """select product_uom_qty,tfs_price_unit,price_unit from stock_move where state='done' and product_id=%s and date >='%s' and date <='%s' and location_dest_id=%s"""%(product_id.id,start_date,end_date,self.location_id.id)
             self._cr.execute(sql1)
@@ -136,7 +136,7 @@ class qdodoo_search_balance_statement(models.Model):
                 info_dict[product_id]['storage_quantity_amount'] = info_dict[product_id].get('storage_quantity_amount',0.0) + (move_id[0] * new_price)
             # 本期出库数量、金额（销售出库、采购退货、原材料生产、盘亏）
             if self.company_id:
-                sql2 = """select product_uom_qty,tfs_price_unit, price_unit from stock_move where state='done' and product_id=%s and date >='%s' and date <='%s' and location_dest_id in %s"""%(product_id.id,start_date,end_date,no_location_ids)
+                sql2 = """select product_uom_qty,tfs_price_unit, price_unit from stock_move where state='done' and product_id=%s and date >='%s' and date <='%s' and location_dest_id in %s and location_id not in %s"""%(product_id.id,start_date,end_date,no_location_ids,no_location_ids)
             if self.location_id:
                 sql2 = """select product_uom_qty,tfs_price_unit, price_unit from stock_move where state='done' and product_id=%s and date >='%s' and date <='%s' and location_id=%s"""%(product_id.id,start_date,end_date,self.location_id.id)
             self._cr.execute(sql2)
