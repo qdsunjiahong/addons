@@ -28,7 +28,7 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
         sql_unlink = """delete from qdodoo_product_mrp_line_report where 1=1"""
         self._cr.execute(sql_unlink)
         # 完成判断条件
-        domain = [('company_id','=',self.company_id.id)]
+        domain = [('company_id','=',self.company_id.id),('is_mrp_inventory','=',False)]
         if not self.is_draft:
             domain.append(('move_id.state','=','posted'))
         # 获取所有时间段内的账期
