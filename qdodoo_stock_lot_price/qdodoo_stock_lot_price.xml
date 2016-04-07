@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!--在产品中增加按照批次价格出库标识字段-->
+        <record id="view_template_property_form_qdodoo_inherit" model="ir.ui.view">
+            <field name="name">product.template.stock.property.form.qdodoo.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="stock.view_template_property_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='track_all']" position="after">
+                    <field name="user_lot_price" groups="stock.group_production_lot"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!--在批次中增加价格字段-->
+        <record id="view_production_lot_form_qdodoo_inherit" model="ir.ui.view">
+            <field name="name">stock.production.lot.form.qdodoo.inherit</field>
+            <field name="model">stock.production.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='main_group']" position="inside">
+                    <group>
+                        <field name="price_unit" readonly="True"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+        <!--在份中替换库存估值字段-->
+        <record id="view_stock_quant_form_qdodoo_inherit" model="ir.ui.view">
+            <field name="name">stock.quant.form.qdodoo.inherit</field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.view_stock_quant_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='inventory_value']" position="replace">
+                    <field name="new_inventory_value" readonly="True"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!--在份中替换库存估值字段-->
+        <record id="view_stock_quant_tree_qdodoo_inherit" model="ir.ui.view">
+            <field name="name">stock.quant.tree.qdodoo.inherit</field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.view_stock_quant_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='inventory_value']" position="replace">
+                    <field name="new_inventory_value"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>
