@@ -21,8 +21,8 @@ from urllib import urlencode
 from werkzeug.utils import redirect
 import os,sys
 import simplejson
-import requests.packages.urllib3.util.ssl_
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'
+#import requests.packages.urllib3.util.ssl_
+#requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL'
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -106,7 +106,7 @@ class website_sale(http.Controller):
             以下可以是用户注册处理
             """
             users_obj.create(cr, SUPERUSER_ID, {'login':login,'name':wx_nickname,'password':'qdodoo','oauth_provider_id':'','company_id':int(company_id),'company_ids':[[6, False, [int(company_id)]]]})
-        return request.redirect("/login?db=%s&login=%s&key=%s&redirect=%s"%(request.session.db,login,'qdodoo','shop/wx/lunch'))
+        return request.redirect("/login?db=%s&login=%s&key=%s&redirect=%s"%(request.session.db,login,'qdodoo','shop/wx/main'))
 
     @http.route(['/wxsite/wxoauth/new'], type='http', auth="public", website=True)
     def wx_oauth_new(self, **post):
@@ -198,7 +198,7 @@ class website_sale(http.Controller):
                         car_obj.write(cr, SUPERUSER_ID, car_ids[0], {'number':int(post.get('number'))})
             else:
                 if post.get('action') == 'update':
-                    car_obj.create(cr, SUPERUSER_ID, {'user_id':uid,'name':int(post.get('cartid')),'number':int(post.get('number'))})
+                    car_obj.create(cr, SUPERUSER_ID, {'user_id': uid,'name': int(post.get('cartid')), 'number': int(post.get('number'))})
             all_car_num = 0
             all_money = 0
             car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
@@ -218,6 +218,19 @@ class website_sale(http.Controller):
             # 获取操作的数据
             order_obj = pool.get('pos.order')
             order_obj.write(cr, SUPERUSER_ID, int(post.get('res_order_id_new[]')), {'customer_count':int(post.get('deskNo',0)),'note':post.get('orderNote','') + ' ' + post.get('taste','')})
+            return '1'
+        except ValueError, e:
+            return '-1'
+
+    @http.route(['/onchange/aliorder'], type='http', auth="public", website=True, csrf=False)
+    def get_onchange_aliorder(self, **post):
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        # 判断是如何修改数据
+        # 删除数据
+        try:
+            # 获取操作的数据
+            order_obj = pool.get('pos.order')
+            order_obj.write(cr, SUPERUSER_ID, int(post.get('res_order_id_new')), {'customer_count':int(post.get('deskNo',0)),'note':post.get('orderNote','') + ' ' + post.get('taste','')})
             return '1'
         except ValueError, e:
             return '-1'
@@ -249,7 +262,7 @@ class website_sale(http.Controller):
             'all_money':all_money,
             'product_num':product_num,
         }
-        return request.website.render("wxsite.car",values)
+        return request.website.render("wxsite.newcar",values)
 
     # 产品加入购物车
     @http.route(['/ajax/addtocart'], type='http', auth="public", website=True, csrf=False)
@@ -370,7 +383,7 @@ class website_sale(http.Controller):
             from_currency = pool['res.users'].browse(cr, uid, uid, context=context).company_id.currency_id
             to_currency = pricelist.currency_id
             compute_currency = lambda price: pool['res.currency']._compute(cr, uid, from_currency, to_currency, price, context=context)
-            values={
+            values = {
                 'company_name':company_name,
                 'products': products,
                 'category': category,
@@ -460,10 +473,16 @@ class website_sale(http.Controller):
         参考：https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_1
         """
         cr, uid, context, pool = request.cr,request.uid, request.context, request.registry
+
+        #如果用户是支付宝授权登录的，则跳转到支付宝支付
+        if request.session.get('alipay_userid'):
+            return redirect('/shop/wx/alipay/pay')
+
         # 获取当前公司的名称（根据用户模型获取数据）
         users_obj = pool.get('res.users')
         product_obj = pool.get('product.product')
         taste_obj = pool.get('qdodoo.product.taste')
+        session_obj = pool.get('pos.session')
         users = users_obj.browse(cr, SUPERUSER_ID, uid)
         taste_ids = taste_obj.search(cr, SUPERUSER_ID, [])
         tastes = taste_obj.browse(cr, SUPERUSER_ID, taste_ids)
@@ -474,8 +493,8 @@ class website_sale(http.Controller):
         if post.get('oid'):
             res_order_id = int(post.get('oid'))
             all_money = float(post.get('money'))
+            wx_fix = order_obj.browse(cr, uid, int(res_order_id)).session_id.config_id.en_name
         else:
-            session_obj = pool.get('pos.session')
             session_id = session_obj.search(cr, SUPERUSER_ID, [('config_id.company_id','=',company_id),('state','=','opened')])
             if not session_id:
                 values = {
@@ -485,7 +504,9 @@ class website_sale(http.Controller):
                 return request.website.render("wxsite.error", values)
             else:
                 # 获取负责人
-                uid_session = session_obj.browse(cr, SUPERUSER_ID, session_id[0]).user_id.id
+                session_ids = session_obj.browse(cr, SUPERUSER_ID, session_id[0])
+                wx_fix = session_ids.config_id.en_name
+                uid_session = session_ids.user_id.id
                 car_obj = pool.get('qdodoo.wxsite.car')
                 car_ids = car_obj.search(cr, SUPERUSER_ID, [('user_id','=',uid)])
                 if car_ids:
@@ -515,7 +536,7 @@ class website_sale(http.Controller):
         config = pool.get('ir.config_parameter')
         #下面几个变量是微信支付相关配置
         wx_appid = config.get_param(cr, uid, 'wx_appid')    #公众号号APPID，通常是微信签约时的服务号APPID
-        wx_fix = config.get_param(cr, uid, 'wx_fix')    #支付订单号前缀
+        # wx_fix = config.get_param(cr, uid, 'wx_fix')    #支付订单号前缀
         wx_mchid = config.get_param(cr, uid, 'wx_mchid')  #商户号，签约微信支付后分配的商户号
         wx_key = config.get_param(cr, uid, 'wx_key')  #微信支付密钥，到微信商户平台设置并填写此处
         wx_pay_backnotify = config.get_param(cr, uid, 'web.base.url') + '/shop/wx/backnotify'  #接收微信支付异步通知地址，不可携带参数
@@ -527,7 +548,7 @@ class website_sale(http.Controller):
         for i in range(1, 32, 1):
             nonce_str += chars[random.randint(0, chars_length)]
         spbill_create_ip = config.get_param(cr, uid, 'spbill_create_ip')
-        out_trade_no = wx_fix + str(res_order_id)
+        out_trade_no = str(wx_fix) + str(res_order_id)
         #微信统一下单接口所需参数
         wx_oparam = {
             'appid': wx_appid,   #公众号号APPID
@@ -703,10 +724,12 @@ class website_sale(http.Controller):
             wx_add = 'https://api.mch.weixin.qq.com/pay/orderquery'
             wx_appid = config.get_param(cr, uid, 'wx_appid')    #公众号号APPID，通常是微信签约时的服务号APPID
             wx_mchid = config.get_param(cr, uid, 'wx_mchid')  #商户号，签约微信支付后分配的商户号
-            wx_fix = config.get_param(cr, uid, 'wx_fix') #付款订单号前缀
+            # wx_fix = config.get_param(cr, uid, 'wx_fix') #付款订单号前缀
             # 查询所有未完成的订单
             order_ids = order_obj.search(cr, SUPERUSER_ID, [('state','=','draft'),('partner_id','!=',False)])
             for order_id in order_ids:
+                pos_obj = order_obj.browse(cr, SUPERUSER_ID, int(order_id))
+                wx_fix = pos_obj.session_id.config_id.en_name
                 #生成一个随机字符串，不长于32位，主要保证签名不可预测
                 nonce_str = ''
                 chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789'
@@ -735,7 +758,6 @@ class website_sale(http.Controller):
                 return_xml = etree.fromstring(res.read())
                 if return_xml.find('return_code').text == "SUCCESS" and return_xml.find('result_code').text != 'FAIL':
                     pay_state = return_xml.find('trade_state').text #交易状态
-                    pos_obj = order_obj.browse(cr, SUPERUSER_ID, int(order_id))
                     date_order = pos_obj.date_order
                     if pay_state == 'SUCCESS':
                         try:
@@ -749,7 +771,6 @@ class website_sale(http.Controller):
                                     <div><pre>订单号 %s</pre></div>
                                     <div><pre>%s</pre></div>
                                 </div>
-                                <br/><br/>
                                 <div line-ratio="0.6">++++++"""%(pos_obj.name,datetime.now())
                             # 组织前台打印数据
                             infomation = """<receipt align="center" value-thousands-separator="" width="40">
@@ -757,9 +778,9 @@ class website_sale(http.Controller):
                                     <div>微信支付-结账单</div>
                                     <div>订单号：%s</div>
                                     <div>时间：%s</div>
-                                    <div>==============================================</div>
-                            <br/><br/>
-                            ++++++<div>产品　　　　　　数量　　　　单价　　　　金额　　　　@@@@@%s@@@@@</div>++++++"""%(pos_obj.name,datetime.now(),pos_obj.session_id.config_id.front_desk)
+                                    <div>==========================================================</div>
+                            ++++++<div>产品　　　　　　数量　　　　单价　　　　金额　　　　@@@@@%s@@@@@</div>
+                            <div>------------------------------------------------------</div>++++++"""%(pos_obj.name,datetime.now(),pos_obj.session_id.config_id.front_desk)
                             for line in pos_obj.lines:
                                 infomation_new += """<line size="double-height">
                                     <left><pre>%s</pre></left>
@@ -795,7 +816,6 @@ class website_sale(http.Controller):
                                 </div>++++++"""%(product_id_name,product_qty,product_list,
                                 product_subtotal, pos_obj.session_id.config_id.front_desk)
                             infomation_new += """</div>
-                                    <br/><br/><br/>
                                     <div size="double-height">
                                         <left><pre>备注：%s号桌 %s</pre></left>
                                     </div>
@@ -807,16 +827,15 @@ class website_sale(http.Controller):
                                 amount_total = amount_total[:6]
                             note = u'号桌:'+str(pos_obj.customer_count)+'　　备注：'+ pos_obj.note
                             infomation += """
-                                <br/><br/><br/>
+                                <div>------------------------------------------------------</div>
                                 <div size="double-height">
                                     合计　　　　　　　　　　　　　　　　　%s
                                 </div>
-                                <br/>
+                                <div>------------------------------------------------------</div>
                                 <div size="double-height">
                                     %s
                                 </div>
-                                <br/><br/>
-                                <div>==============================================</div>
+                                <div>==========================================================</div>
                                 <div>%s</div>
                                 <div>电话：%s</div>
                                 <div>%s</div>
@@ -909,3 +928,48 @@ class website_sale(http.Controller):
             'orders':order_list,
         }
         return request.website.render("wxsite.order_list", values)
+
+    @http.route(['/shop/wx/main'], type='http', auth="public", website=True, csrf=False)
+    def main_page(self, category=None, **post):
+        """
+        店铺主页，主要是一个展示和功能入口页面
+        """
+                # 先校验是否登录
+        cr, uid, context, pool = request.cr, request.uid, request.context, request.registry
+        config_obj = pool.get('pos.config')
+        # 如果有桌号
+        # 3代表公开用户，也就是未登录状态
+        desk_id = post.get('desk_id')
+        if desk_id:
+            config_id = config_obj.browse(cr, SUPERUSER_ID, int(desk_id))
+            company_id = config_id.company_id.id
+            return self.user_check(company_id)
+        else:
+            if uid == 3:
+                values = {
+                    'company_name':'',
+                    'error_text':u'登录失败，请联系系统管理员！！',
+                }
+                return request.website.render("wxsite.error", values)
+
+            # 获取当前公司的名称（根据用户模型获取数据）
+            users_obj = pool.get('res.users')
+            company_obj = users_obj.browse(cr, SUPERUSER_ID, uid).company_id
+            company_name = company_obj.name
+
+        values = {
+            'company_name':company_name,
+        }
+        return request.website.render("wxsite.main", values)
+
+    @http.route(['/shop/wx/secret'], type='http', auth="public", website=True, csrf=False)
+    def secret_func(self, category=None, **post):
+        """
+        神秘功能
+        """
+        values = {
+            'company_name':'',
+            'error_text':u'神秘功能敬请期待！',
+        }
+        return request.website.render("wxsite.error", values)
+

@@ -1,22 +1,23 @@
 /*顶部滚动*/
+/*
 .index-scrolls{position: relative; margin: 0.4em auto;}
 .index-scrolls img{display: none; width:100%; border: none 0;}
 .index-scrolls img.curr-img{display: block;}
 .index-scrolls ul{display: block; position: absolute;  bottom: 6px; left: 40%; list-style: none; padding: 0; margin: 0;}
 .index-scrolls ul li{display: block; height: 6px; width: 6px; border: solid 2px white; border-radius: 6px; float: left; margin-left: 4px;}
 .index-scrolls ul li.curr-mark{background-color: white;}
-
+*/
 
 /*顶部分类*/
-.top-cats{position: fixed; width:25%; min-width: 4em; font-size: 14px; background-color: #f2f2f2; min-height: 600px; border-right: solid 1px #cfcace; overflow: hidden;}
+.top-cats{position: fixed; width:25%; min-width: 4em; font-size: 14px; background-color: #f2f2f2; min-height: 600px; overflow: hidden;}
 .top-cats ul{display: block; list-style: none; margin: 0; padding: 0; }
 .top-cats ul li{display: block; color: #444; line-height: 3em; font-size: 1em; padding: 0 0.5em;}
-.top-cats ul li a{color: #666666;}
+.top-cats ul li a{color: #666666; display: block;}
 .top-cats ul li.active{background-color: white;}
 .top-cats ul li.active a{color: #fb9700;}
 
 /*菜品列表*/
-.products{float: right; width: 74%; margin-top: 10px; margin-bottom: 10px;}
+.products{float: right; border-left: solid 1px #cfcace; width: 74%; padding-top: 10px; margin-bottom: 10px;}
 .products .product{height: 7em; padding: 2%; margin-top: 6px; border-bottom: solid 1px #ccc; position: relative;}
 .products .product .oe_product_image{float: left; width: 30%;}
 .products .product .oe_product_image img{display: block; width: 100%; height: 7em; border: none 0; border-radius: 4px;}

@@ -51,7 +51,7 @@
 						options.process.call(that, ev);
 					}
 
-					e.preventDefault();
+					//e.preventDefault();
 				});
 
 				$(document).on('touchend.drag.founder mouseup.drag.founder', function(e) {
@@ -64,7 +64,7 @@
 					$(document).off('.drag.founder');
 				});
 			
-			    e.preventDefault();
+			    //e.preventDefault();
 			});
 		}
 	};

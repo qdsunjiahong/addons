@@ -35,6 +35,7 @@ class qdodoo_pos_config(models.Model):
     _inherit = 'pos.config'
 
     front_desk = fields.Char(u'前台打印机地址')
+    en_name = fields.Char(u'英文名称',required=True)
 
 class qdodoo_pos_order_inherit(models.Model):
     _inherit = 'pos.order'
