@@ -109,11 +109,11 @@ class qdodoo_mrp_product_produce_inherit(models.Model):
 
     @api.multi
     def do_produce(self):
+        mrp_obj = self.env['mrp.production']
         # 判断产成品是否启用批次价格
         if self.product_id.user_lot_price:
             # 判断产成品的价格计算方法，获取批次价格
             product_obj = self.pool['product.product']
-            mrp_obj = self.env['mrp.production']
             account_line_obj = self.env['account.move.line']
             if self.product_id.cost_method == 'average':
                 # 根据投料自动计算
@@ -140,25 +140,27 @@ class qdodoo_mrp_product_produce_inherit(models.Model):
         # 修改产成品的stock.move的单价
         mrp_id = mrp_obj.browse(self._context.get('active_id'))
         for line in mrp_id.move_created_ids2:
-            line.write({'product_price':new_price})
-            # 查找对应的分录，修改价格
-            account_line_ids = account_line_obj.search([('name','=',mrp_id.name),('product_id','=',mrp_id.product_id.id)])
-            for account_line_id in account_line_ids:
-                if account_line_id.debit > 0:
-                    account_line_id.write({'debit':account_line_id.quantity*new_price})
-                if account_line_id.credit > 0:
-                    account_line_id.write({'credit':account_line_id.quantity*new_price})
-        # 修改原料的stock.move的单价
-        for line in mrp_id.move_lines2:
-            if line.restrict_lot_id and line.restrict_lot_id.price_unit:
-                line.write({'product_price':line.restrict_lot_id.price_unit})
+            if line.product_id.user_lot_price:
+                line.write({'product_price':new_price})
                 # 查找对应的分录，修改价格
-                account_line_ids = account_line_obj.search([('name','=',mrp_id.name),('product_id','=',line.product_id.id)])
+                account_line_ids = account_line_obj.search([('name','=',mrp_id.name),('product_id','=',mrp_id.product_id.id)])
                 for account_line_id in account_line_ids:
                     if account_line_id.debit > 0:
-                        account_line_id.write({'debit':account_line_id.quantity*line.restrict_lot_id.price_unit})
+                        account_line_id.write({'debit':account_line_id.quantity*new_price})
                     if account_line_id.credit > 0:
-                        account_line_id.write({'credit':account_line_id.quantity*line.restrict_lot_id.price_unit})
+                        account_line_id.write({'credit':account_line_id.quantity*new_price})
+        # 修改原料的stock.move的单价
+        for line in mrp_id.move_lines2:
+            if line.product_id.user_lot_price:
+                if line.restrict_lot_id and line.restrict_lot_id.price_unit:
+                    line.write({'product_price':line.restrict_lot_id.price_unit})
+                    # 查找对应的分录，修改价格
+                    account_line_ids = account_line_obj.search([('name','=',mrp_id.name),('product_id','=',line.product_id.id)])
+                    for account_line_id in account_line_ids:
+                        if account_line_id.debit > 0:
+                            account_line_id.write({'debit':account_line_id.quantity*line.restrict_lot_id.price_unit})
+                        if account_line_id.credit > 0:
+                            account_line_id.write({'credit':account_line_id.quantity*line.restrict_lot_id.price_unit})
         return res
 
 class qdodoo_stock_inventory_inherit(models.Model):
