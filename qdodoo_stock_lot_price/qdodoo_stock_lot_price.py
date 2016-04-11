@@ -110,11 +110,11 @@ class qdodoo_mrp_product_produce_inherit(models.Model):
     @api.multi
     def do_produce(self):
         mrp_obj = self.env['mrp.production']
+        product_obj = self.pool['product.product']
+        account_line_obj = self.env['account.move.line']
         # 判断产成品是否启用批次价格
         if self.product_id.user_lot_price:
             # 判断产成品的价格计算方法，获取批次价格
-            product_obj = self.pool['product.product']
-            account_line_obj = self.env['account.move.line']
             if self.product_id.cost_method == 'average':
                 # 根据投料自动计算
                 sum = 0.0
