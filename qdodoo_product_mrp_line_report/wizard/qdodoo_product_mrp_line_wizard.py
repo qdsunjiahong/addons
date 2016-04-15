@@ -28,7 +28,7 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
         sql_unlink = """delete from qdodoo_product_mrp_line_report where 1=1"""
         self._cr.execute(sql_unlink)
         # 完成判断条件
-        domain = [('company_id','=',self.company_id.id),('is_mrp_inventory','=',False)]
+        domain = [('company_id','=',self.company_id.id)]
         if not self.is_draft:
             domain.append(('move_id.state','=','posted'))
         # 获取所有时间段内的账期
@@ -48,8 +48,10 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
             raise osv.except_osv(_(u'警告'),_(u'该公司缺少对应的科目！'))
         # 查询出来所有满足条件的分录明细
         # 组织数据字典{产品：{部门:{总数量，总金额}}}
+        domain_1 = domain[:]
+        domain_1.append(('is_mrp_inventory','=',False))
         all_dict = {}
-        for line in self.env['account.move.line'].search(domain):
+        for line in self.env['account.move.line'].search(domain_1):
             if not line.finished_goods:
                 key = '其他'
             else:
@@ -80,6 +82,42 @@ class qdodoo_product_mrp_line_wizard(models.TransientModel):
                 if line.credit:
                     all_dict[key] = {analytic_account_id:{'number':line.quantity}}
                 # 如果借方金额大于0,统计金额
+                if line.debit:
+                    all_dict[key] = {analytic_account_id:{'money':line.debit}}
+        # 统计生产均摊后的金额
+        domain_2 = domain[:]
+        domain_2.append(('is_mrp_inventory','=',True))
+        for line in self.env['account.move.line'].search(domain_2):
+            if not line.finished_goods:
+                key = '其他'
+            else:
+                key = line.finished_goods
+            # 判断辅助核算项是否已存在
+            if line.analytic_account_id:
+                analytic_account_id = line.analytic_account_id
+            else:
+                analytic_account_id = 'tfs'
+
+            if key in all_dict:
+                if analytic_account_id in all_dict[key]:
+                    # 如果贷方大于0,金额为负
+                    if line.credit:
+                        all_dict[key][analytic_account_id]['money'] = all_dict[key][analytic_account_id].get('money',0) - line.credit
+                    # 如果借方金额大于0,金额为正
+                    if line.debit:
+                        all_dict[key][analytic_account_id]['money'] = all_dict[key][analytic_account_id].get('money',0) + line.debit
+                else:
+                    # 如果贷方大于0,金额为负
+                    if line.credit:
+                        all_dict[key][analytic_account_id] = {'money':-line.credit}
+                    # 如果借方金额大于0,金额为正
+                    if line.debit:
+                        all_dict[key][analytic_account_id] = {'money':line.debit}
+            else:
+                # 如果贷方大于0,金额为负
+                if line.credit:
+                    all_dict[key] = {analytic_account_id:{'money':-line.credit}}
+                # 如果借方金额大于0,金额为正
                 if line.debit:
                     all_dict[key] = {analytic_account_id:{'money':line.debit}}
         # 创建对应的报表数据
