@@ -39,7 +39,7 @@ class stock_picking(models.Model):
                     quant_ids = self.env['stock.quant'].search([('product_id','=',line.product_id.id),('location_id','=',line.location_dest_id.id)])
                     for quant_id in quant_ids:
                         for move_id in quant_id.history_ids:
-                            if move_id.state != 'done' and move_id.location_dest_id == line.location_dest_id.id:
+                            if move_id.state != 'done' and move_id.location_dest_id == line.location_dest_id:
                                 quant_id.unlink()
                                 break
         return res
