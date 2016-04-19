@@ -35,12 +35,13 @@ class stock_picking(models.Model):
         for ids in self:
             # 删除虚增的库存
             for line in ids.move_lines:
-                quant_ids = self.env['stock.quant'].search([('product_id','=',line.product_id.id),('location_id','=',line.location_dest_id.id)])
-                for quant_id in quant_ids:
-                    for move_id in quant_id.history_ids:
-                        if move_id.state != 'done':
-                            quant_id.unlink()
-                            break
+                if line.location_dest_id.usage == 'internal':
+                    quant_ids = self.env['stock.quant'].search([('product_id','=',line.product_id.id),('location_id','=',line.location_dest_id.id)])
+                    for quant_id in quant_ids:
+                        for move_id in quant_id.history_ids:
+                            if move_id.state != 'done' and move_id.location_dest_id == line.location_dest_id.id:
+                                quant_id.unlink()
+                                break
         return res
 
     def _get_invoice_vals(self, cr, uid, key, inv_type, journal_id, move, context=None):
