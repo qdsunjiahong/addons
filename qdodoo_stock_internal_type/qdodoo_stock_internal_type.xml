@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="view_picking_form_inherit">
+            <field name="name">stock.picking.form.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="qdodoo_logistics_freight.view_picking_form_inherit"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='shipper_num']" position="after">
+                    <field name="source_location" attrs="{'readonly':[('state','=','done')]}"/>
+                    <field name="dest_location" attrs="{'readonly':[('state','=','done')]}"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_picking_form_new_inherit">
+            <field name="name">stock.picking.form.new.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='move_lines']" position="before">
+                    <group>
+                        <group>
+                            <field name='import_file' attrs="{'readonly':[('state','=','done')]}"/>
+                        </group>
+                        <group>
+                            <button name='import_data' string='导入' type='object' class='oe_edit_only'/>
+                            <a href="/qdodoo_stock_internal_type/static/line_products.xls">点此进行模板下载</a>
+                        </group>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+
+
+    </data>
+</openerp>
