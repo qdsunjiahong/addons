@@ -778,9 +778,9 @@ class website_sale(http.Controller):
                                     <div>微信支付-结账单</div>
                                     <div>订单号：%s</div>
                                     <div>时间：%s</div>
-                                    <div>==========================================================</div>
+                                    <div>================================================</div>
                             ++++++<div>产品　　　　　　数量　　　　单价　　　　金额　　　　@@@@@%s@@@@@</div>
-                            <div>------------------------------------------------------</div>++++++"""%(pos_obj.name,datetime.now(),pos_obj.session_id.config_id.front_desk)
+                            <div>------------------------------------------------</div>++++++"""%(pos_obj.name,datetime.now(),pos_obj.session_id.config_id.front_desk)
                             for line in pos_obj.lines:
                                 infomation_new += """<line size="double-height">
                                     <left><pre>%s</pre></left>
@@ -827,15 +827,15 @@ class website_sale(http.Controller):
                                 amount_total = amount_total[:6]
                             note = u'号桌:'+str(pos_obj.customer_count)+'　　备注：'+ pos_obj.note
                             infomation += """
-                                <div>------------------------------------------------------</div>
+                                <div>------------------------------------------------</div>
                                 <div size="double-height">
                                     合计　　　　　　　　　　　　　　　　　%s
                                 </div>
-                                <div>------------------------------------------------------</div>
+                                <div>------------------------------------------------</div>
                                 <div size="double-height">
                                     %s
                                 </div>
-                                <div>==========================================================</div>
+                                <div>================================================</div>
                                 <div>%s</div>
                                 <div>电话：%s</div>
                                 <div>%s</div>
