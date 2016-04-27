@@ -3,6 +3,10 @@
 from openerp import models, fields, _, api
 from openerp.exceptions import except_orm
 import time
+from datetime import datetime
+from openerp import tools
+from openerp.osv import osv
+import base64,xlrd
 
 class taylor_price_version_list(models.Model):
     """
@@ -24,9 +28,89 @@ class taylor_pricce_version(models.Model):
     _inherit = "product.pricelist.version"
 
     price_list_ref = fields.One2many('price.list.version', 'perice_version', '相关价格表')
+    import_file = fields.Binary(string="导入的模板")
+
+    @api.model
+    def create(self, vals):
+        res = super(taylor_pricce_version, self).create(vals)
+        self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':res.pricelist_id.name,'note':'创建价格表版本：%s'%res.name})
+        return res
+
+    @api.multi
+    def write(self, vals):
+        if vals.get('active'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.pricelist_id.name,'note':'将价格表版本%s置为无效'%self.name})
+        if vals.get('name'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.pricelist_id.name,'note':'将价格表版本的名称由%s改为%s'%(self.name,vals.get('name'))})
+        if vals.get('date_start'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.pricelist_id.name,'note':'将价格表版本的开始时间由%s改为%s'%(self.date_start,vals.get('date_start'))})
+        if vals.get('date_end'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.pricelist_id.name,'note':'将价格表版本的结束时间由%s改为%s'%(self.date_end,vals.get('date_end'))})
+        return super(taylor_pricce_version, self).write(vals)
+
+    # 删除价格表版本
+    @api.multi
+    def unlink(self):
+        self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.pricelist_id.name,'note':'删除价格表版本：%s'%self.name})
+        return super(taylor_pricce_version, self).unlink()
 
     def _check_date(self, cursor, user, ids, context=None):
         return True
+
+    # 明细导入
+    @api.one
+    def import_data(self):
+        if self.import_file:
+            try:
+                excel = xlrd.open_workbook(file_contents=base64.decodestring(self.import_file))
+            except:
+                raise osv.except_osv(_(u'提示'), _(u'请使用xls文件进行上传'))
+            product_info = excel.sheet_by_index(0)
+            pricelist_item_obj = self.env['product.pricelist.item']
+            product_obj = self.env['product.product']
+            for obj in range(2, product_info.nrows):
+                val = {}
+                # 获取产品编号产品
+                default_code = product_info.cell(obj, 0).value
+                if default_code:
+                    product_ids = product_obj.search([('default_code','=',default_code)])
+                    if len(product_ids) > 1:
+                        raise osv.except_osv(_(u'提示'), _(u'系统中存在多个产品编号为%s的产品')%default_code)
+                    else:
+                        val['product_id'] = product_ids[0].id
+                        val['name'] = default_code
+                # 获取倍数
+                multipl = product_info.cell(obj, 2).value
+                if not multipl:
+                    val['multipl'] = 1
+                else:
+                    val['multipl'] = float(multipl)
+                # 获取价格计算方法
+                base = product_info.cell(obj, 3).value
+                if not base:
+                    raise osv.except_osv(_(u'提示'), _(u'第%s行，价格计算基础不能为空')%obj)
+                else:
+                    base = int(base)
+                    if base not in (1,2):
+                        raise osv.except_osv(_(u'提示'), _(u'第%s行，价格计算基础只能填写‘1’或‘2’')%obj)
+                    val['base'] = base
+                # 获取价格计算比例
+                price_discount = product_info.cell(obj, 4).value
+                if not price_discount:
+                    val['price_discount'] = 0
+                else:
+                    val['price_discount'] = float(price_discount)
+                # 获取价格计算固定值
+                price_surcharge = product_info.cell(obj, 5).value
+                if not price_surcharge:
+                    val['price_surcharge'] = 0
+                else:
+                    val['price_surcharge'] = float(price_surcharge)
+                val['price_version_id'] = self.id
+                pricelist_item_obj.create(val)
+            self.write({'import_file': ''})
+        else:
+            raise osv.except_osv(_(u'提示'), _(u'请先上传模板'))
 
 class taylor_pricce_list(models.Model):
 
@@ -34,6 +118,7 @@ class taylor_pricce_list(models.Model):
 
     multipl= fields.Float('倍数')
     price_version_item_id = fields.Many2one('pricelist.prolate.relation',string='关联产品中的价格版本信息')
+    is_recommend = fields.Boolean(u'设置为推荐')
 
     _defaults = {
         'multipl':1,
@@ -58,32 +143,60 @@ class taylor_pricce_list(models.Model):
             if ids.multipl<0:
                 raise except_orm(_('Warning!'),_('警告,倍数必须大于0！'))
 
+    @api.model
     # 创建价格表关联到产品中对应数据
-    def create(self, cr, uid, vals, context=None):
-        res_id = super(taylor_pricce_list, self).create(cr, uid, vals, context=context)
-        relation_id = self.pool.get('pricelist.prolate.relation')
-        obj = self.browse(cr, uid, res_id)
+    def create(self, vals):
+        res_id = super(taylor_pricce_list, self).create(vals)
+        self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':res_id.price_version_id.pricelist_id.name,'note':'创建价格表明细：%s'%res_id.name})
+        relation_id = self.env['pricelist.prolate.relation']
         # 如果选择了产品模板
         if vals.get('product_tmpl_id'):
             # 在产品中创建对应数据
-            res = relation_id.create(cr, uid, {'proce_version':obj.price_version_id.id,'proportion':obj.price_discount,
-                                         'fixed':obj.price_surcharge,'multipl':obj.multipl,'ref_product_template':vals.get('product_tmpl_id')}, context=context)
-            self.write(cr, uid, res_id, {'price_version_item_id':res})
+            res = relation_id.create({'proce_version':res_id.price_version_id.id,'proportion':res_id.price_discount,
+                                         'fixed':res_id.price_surcharge,'multipl':res_id.multipl,'ref_product_template':vals.get('product_tmpl_id')})
+            res_id.write({'price_version_item_id':res.id})
         return res_id
 
+    @api.multi
     # 修改明细修改关联到产品中对应数据
-    def write(self, cr, uid, ids, value, context=None):
-        super(taylor_pricce_list, self).write(cr, uid, ids, value, context=context)
-        if not value.get('price_version_item_id'):
-            relation_obj = self.pool.get('pricelist.prolate.relation')
-            for obj in self.browse(cr, uid, ids):
-                relation_obj.write(cr, uid, obj.price_version_item_id.id, {'proportion':obj.price_discount,'fixed':obj.price_surcharge,'multipl':obj.multipl})
+    def write(self, vals):
+        if vals.get('active'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细%s置为无效'%self.name})
+        if vals.get('name'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的名称由 %s 改为 %s'%(self.name,vals.get('name'))})
+        if vals.get('product_id'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品由 %s 改为 %s'%(self.product_id.name if self.product_id else '空',self.env['product.product'].browse(vals.get('product_id')).name)})
+        if vals.get('product_tmpl_id'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品模板由 %s 改为 %s'%(self.product_tmpl_id.name if self.product_tmpl_id else '空',self.env['product.template'].browse(vals.get('product_tmpl_id')).name)})
+        if vals.get('categ_id'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品分类由 %s 改为 %s'%(self.categ_id.name if self.categ_id else '空',self.env['product.category'].browse(vals.get('categ_id')).name)})
+        if vals.get('multipl'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的倍数由 %s 改为 %s'%(self.multipl,vals.get('multipl'))})
+        if vals.get('base'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的价格基础由 %s 改为 %s'%(self.base,vals.get('base'))})
+        if vals.get('price_discount'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的新价格比例由 %s 改为 %s'%(self.price_discount,vals.get('price_discount'))})
+        if vals.get('price_surcharge'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的新价格固定值由 %s 改为 %s'%(self.price_surcharge,vals.get('price_surcharge'))})
+        if vals.get('price_round'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的舍入方法由 %s 改为 %s'%(self.price_round,vals.get('price_round'))})
+        if vals.get('price_min_margin'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的最小上浮金额由 %s 改为 %s'%(self.price_min_margin,vals.get('price_min_margin'))})
+        if vals.get('price_max_margin'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的最大利润由 %s 改为 %s'%(self.price_max_margin,vals.get('price_max_margin'))})
+        super(taylor_pricce_list, self).write(vals)
+        if not vals.get('price_version_item_id'):
+            for obj in self:
+                obj.price_version_item_id.write({'proportion':obj.price_discount,'fixed':obj.price_surcharge,'multipl':obj.multipl})
         return True
 
     def unlink(self, cr, uid, ids, context={}):
         relation_obj = self.pool.get('pricelist.prolate.relation')
+        obj_ids = self.browse(cr, uid, ids)
+        for line in obj_ids:
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':uid,'pricelist_id':line.price_version_id.pricelist_id.name,'note':'删除价格表明细：%s'%line.name})
         if not context.get('version'):
-            for obj in self.browse(cr, uid, ids):
+            for obj in obj_ids:
                 relation_obj.unlink(cr, uid, obj.price_version_item_id.id,context={'item':True})
         return super(taylor_pricce_list, self).unlink(cr, uid, ids, context=context)
 
@@ -281,6 +394,30 @@ class qdodoo_product_pricelist_inherit(models.Model):
             results[product.id] = (price, rule_id)
         return results
 
+    # 创建价格表时插入记录
+    @api.model
+    def create(self, vals):
+        res = super(qdodoo_product_pricelist_inherit, self).create(vals)
+        self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':res.name,'note':'创建价格表：%s'%res.name})
+        return res
+
+    # 编辑价格表是插入数据
+    @api.multi
+    def write(self, vals):
+        if vals.get('active'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.name,'note':'将价格表%s置为无效'%self.name})
+        if vals.get('type'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.name,'note':'将价格表类型由%s修改为%s'%(self.type,vals.get('type'))})
+        if vals.get('name'):
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.name,'note':'将价格表名称由%s修改为%s'%(self.name,vals.get('name'))})
+        return super(qdodoo_product_pricelist_inherit, self).write(vals)
+
+    # 删除价格表
+    @api.multi
+    def unlink(self):
+        self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.name,'note':'删除价格表：%s'%self.name})
+        return super(qdodoo_product_pricelist_inherit, self).unlink()
+
 class qdodoo_pricelist_partner_inherit(models.Model):
     _name = 'product.pricelist.partner'
 
@@ -321,3 +458,15 @@ class qdodoo_pricelist_partner_inherit(models.Model):
         if obj.name:
             partner_obj.write(cr, uid, obj.name.id,{'property_product_pricelist':1})
         return super(qdodoo_pricelist_partner_inherit, self).unlink(cr, uid, ids, context=context)
+
+class qdodoo_pricelist_edit_line(models.Model):
+    """
+        价格表修改记录
+    """
+    _name = 'qdodoo.pricelist.edit.line'
+    _order = 'id desc'
+
+    name = fields.Datetime(u'修改时间')
+    user_id = fields.Many2one('res.users',u'修改人')
+    pricelist_id = fields.Char(u'修改的价格表')
+    note = fields.Char(u'修改内容')

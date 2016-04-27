@@ -36,14 +36,26 @@
                 <field name="inherit_id" ref="product.product_pricelist_version_form_view"/>
                 <field name="arch" type="xml">
                     <xpath expr="//page[@string='Item List']" position="after">
-                            <page string="价格表">
-                                <field name="price_list_ref">
-                                    <tree editable="bottom">
-                                        <field name="pricelist"/>
-                                    </tree>
-                                </field>
-                                <button string="添加价格表"  type="object" name="add_price_list"/>
-                            </page>
+                        <page string="价格表">
+                            <field name="price_list_ref">
+                                <tree editable="bottom">
+                                    <field name="pricelist"/>
+                                </tree>
+                            </field>
+                            <button string="添加价格表"  type="object" name="add_price_list"/>
+                        </page>
+                    </xpath>
+                    <!--增加产品价格表明细导入按钮-->
+                    <xpath expr="//notebook" position="before">
+                        <group>
+                            <group>
+                                <field name='import_file'/>
+                            </group>
+                            <group>
+                                <button name='import_data' string='导入' type='object' class='oe_edit_only'/>
+                                <a href="/qdodoo_websale_update/static/pricelist_items_import.xls">点此进行模板下载</a>
+                            </group>
+                        </group>
                     </xpath>
                 </field>
             </record>
@@ -54,7 +66,8 @@
                 <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
                 <field name="arch" type="xml">
                     <field name="min_quantity" position="after">
-                            <field name="multipl"/>
+                        <field name="multipl"/>
+                        <field name="is_recommend"/>
                     </field>
                 </field>
             </record>
@@ -81,6 +94,26 @@
                 <field name="view_mode">tree,form</field>
             </record>
             <menuitem id="qdodoo_door_dipozit_act" name="门店存款" parent="portal.portal_orders" action="store_deposit_act" sequence="99"/>
+
+            <record model="ir.ui.view" id="qdodoo_pricelist_edit_line_tree">
+                <field name="name">qdodoo.pricelist.edit.line.tree</field>
+                <field name="model">qdodoo.pricelist.edit.line</field>
+                <field name="arch" type="xml">
+                    <tree create="false" edit="false">
+                        <field name="name"/>
+                        <field name="user_id"/>
+                        <field name="pricelist_id"/>
+                        <field name="note"/>
+                    </tree>
+                </field>
+            </record>
+            <record model="ir.actions.act_window" id="action_qdodoo_pricelist_edit_line">
+                <field name="name">价格表修改记录</field>
+                <field name="res_model">qdodoo.pricelist.edit.line</field>
+                <field name="view_type">form</field>
+                <field name="view_mode">tree</field>
+            </record>
+            <menuitem id="menu_qdodoo_pricelist_edit_line" name="价格表修改记录" parent="base.menu_base_config" action="action_qdodoo_pricelist_edit_line" sequence="71"/>
 
 
         </data>

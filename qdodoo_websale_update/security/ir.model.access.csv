@@ -6,7 +6,7 @@ access_qdodoo_product_template_gifts,公开 赠品,qdodoo_websale_update.model_p
 access_qdodoo_qdodoo_promotion,公开 促销单,qdodoo_websale_update.model_qdodoo_promotion,base.group_portal,1,0,0,0
 access_qdodoo_qdodoo_promotion_version,公开 促销单版本,qdodoo_websale_update.model_qdodoo_promotion_version,base.group_portal,1,0,0,0
 access_qdodoo_qdodoo_promotion_version_items,促销单版本明细 赠品,qdodoo_websale_update.model_qdodoo_promotion_version_items,base.group_portal,1,0,0,0
-access_qdodoo_qdodoo_promotion_version_gift_items,促销单版本明细 满赠,qdodoo_websale_update.model_qdodoo_promotion_version_gift_items,base.group_portal,1,0,0,0
+access_qdodoo_qdodoo_promotion_version_gift_items,促销单版本明细 满赠,qdodoo_websale_update.model_qdodoo_promotion_version_gift_items,base.group_portal,1,1,0,0
 access_qdodoo_qdodoo_promotion_version_gift,促销单版本 满赠,qdodoo_websale_update.model_qdodoo_promotion_version_gift,base.group_portal,1,0,0,0
 access_qdodoo_qdodoo_user_promot,促销报名,qdodoo_websale_update.model_qdodoo_user_promotion,base.group_portal,1,0,0,0
 access_ir_sequence,序列,base.model_ir_sequence,base.group_portal,1,1,1,0
@@ -33,3 +33,6 @@ access_stock_picking,装箱单,stock.model_stock_picking,base.group_portal,1,1,1
 access_stock_move,转移单,stock.model_stock_move,base.group_portal,1,1,1,0
 access_account_voucher,付款单,account_voucher.model_account_voucher,base.group_portal,1,1,1,0
 access_qdodoo_checking_list,对账单,model_qdodoo_checking_list,base.group_portal,1,1,1,0
+access_qdodoo_promotion_version_discount,打折促销版本,model_qdodoo_promotion_version_discount,base.group_portal,1,1,1,0
+access_qdodoo_promotion_version_discount_items,打折促销版本明细,model_qdodoo_promotion_version_discount_items,base.group_portal,1,1,1,0
+access_qdodoo_promotion_version_discount_product,打折促销版本明细单品,model_qdodoo_promotion_version_discount_product,base.group_portal,1,1,1,0

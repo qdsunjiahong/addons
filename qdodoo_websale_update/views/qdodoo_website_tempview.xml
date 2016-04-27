@@ -1,28 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
     <data>
-        <!--替换产品显示样式-->
-        <template id="products_list_taylor_style" inherit_id="website_sale.products" active="False"
-                  customize_show="True" name="Taylor list">
-            <xpath expr="//div[@id='products_grid']//table" position="replace">
-                <script type="text/javascript">
 
-                </script>
-                <link rel='stylesheet' href='/qdodoo_websale_update/static/src/css/taylor_style.css'/>
-                <form t-att-action="keep('/shop/bat/cart')" method="POST">
-                    <table class='table table-striped table-condensed' id="cart_products">
-                        <thead>
-                            <tr>
-                                <th colspan="2" width="100">产品</th>
-                                <th width="100">价格</th>
-                                <th width="100" >库存</th>
-                                <th width="120">数量</th>
-                                <th width="100">倍数</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="products" t-as="product">
-                              <t t-if="product_num.get(product.id) >0">
+        <!--新的产品列表展示样式-->
+        <template id="products_list_tfs_style">
+            <link rel='stylesheet' href='/qdodoo_websale_update/static/src/css/taylor_style.css'/>
+            <form t-att-action="keep('/shop/bat/cart')" method="POST">
+                <table class='table table-striped table-condensed' id="cart_products">
+                    <thead>
+                        <tr>
+                            <th colspan="2" width="100">产品</th>
+                            <th width="100">价格</th>
+                            <th width="100" >库存</th>
+                            <th width="120">数量</th>
+                            <th width="100">倍数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-if="recommends">
+                            <t>
+                               <tr>
+                                    <td>推荐</td>
+                               </tr>
+                            </t>
+                        </t>
+                        <t t-foreach="recommends" t-as="recommend">
+                            <t t-if="product_num.get(recommend.id) >0">
+                                <tr>
+                                    <td align="center">
+                                        <a itemprop="url"
+                                           t-att-href="keep('/shop/product/%s' % slug(recommend), page=(pager['page']['num'] if pager['page']['num']>1 else None))">
+                                            <img itemprop="image" class="img img-responsive"
+                                                 t-att-src="website.image_url(recommend, 'image', '100x100')"
+                                                 style="width: 50px; height: 50px;"/>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <h5>
+                                            <strong>
+                                                <a itemprop="name" style="color:red"
+                                                   t-att-href="keep('/shop/product/%s' % slug(recommend), page=(pager['page']['num'] if pager['page']['num']>1 else None))"
+                                                   t-field="recommend.name"/>
+                                            </strong>
+                                        </h5>
+                                    </td>
+                                    <td>
+                                        <div itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer"
+                                             class="product_price" t-if="recommend.product_variant_ids">
+                                            <b>
+                                                <t t-if="(compute_currency(recommend.lst_price) - recommend.price) &gt; 0.1">
+                                                    <del class="text-danger" style="white-space: nowrap;"
+                                                         t-field="recommend.lst_price" t-field-options='{
+                                          "widget": "monetary",
+                                          "from_currency": "recommend.company_id.currency_id",
+                                          "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                                        }'/>&amp;nbsp;
+                                                </t>
+                                                <span t-field="recommend.price" style="white-space: nowrap;"
+                                                      t-field-options='{
+                                           "widget": "monetary",
+                                           "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                                       }'>
+                                                </span>
+                                                <span itemprop="price" style="display:none;" t-esc="recommend.price"/>
+                                                <span itemprop="priceCurrency" style="display:none;"
+                                                      t-esc="user_id.partner_id.property_product_pricelist.currency_id.name"/>
+                                            </b>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <t t-if=" not product_num.get(recommend.id) or 0>product_num.get(recommend.id)">
+                                            <input type="text" class="form-control"   value="0"  id="virtual_available" readonly="True" size="10"/>
+                                        </t>
+                                        <t t-if="product_num.get(recommend.id) >0">
+                                            <input type="text" class="form-control"   t-att-value="product_num.get(recommend.id)"  id="virtual_available"   readonly="True" size="10"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                    <t t-if=" not product_num.get(recommend.id) or 0>product_num.get(recommend.id)">
+                                          <div class="css_quantity input-group oe_website_spinner">
+                                            <input type="text" class="js_quantity form-control" data-min="0"
+                                                   t-att-name="recommend.id" value="0" id="product_id"   readonly="True"/>
+                                        </div>
+                                     </t>
+                                    <t t-if="product_num.get(recommend.id) >0">
+                                          <div class="css_quantity input-group oe_website_spinner">
+                                            <span class="input-group-addon">
+                                                <a t-attf-href="#" class="mb8 js_add_cart_json">
+                                                    <i class="fa fa-minus"></i>
+                                                </a>
+                                            </span>
+                                            <input type="text" class="js_quantity form-control" data-min="0"
+                                                   t-att-name="recommend.id" value="0" id="product_id"  t-att-max="product_num.get(recommend.id)" />
+                                            <span class="input-group-addon" >
+                                                <a t-attf-href="#" class="mb8 float_left js_add_cart_json">
+                                                    <i class="fa fa-plus"></i>
+                                                </a>
+                                            </span>
+                                        </div>
+                                    </t>
+
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control"   t-att-value="key.get(recommend.id)"  id="beishu"   readonly="True" size="3"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-foreach="products" t-as="product">
+                            <t t-if="product_num.get(product.id) >0">
                                 <tr>
                                     <td align="center">
                                         <a itemprop="url"
@@ -102,16 +188,38 @@
                                         <input type="text" class="form-control"   t-att-value="key.get(product.id)"  id="beishu"   readonly="True" size="3"/>
                                     </td>
                                 </tr>
-                                </t>
                             </t>
-                        </tbody>
-                    </table>
-                    <div class="add_to_cart_buttom">
-                        <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">加入购物车</a>
-                    </div>
-                </form>
-            </xpath>
+                        </t>
+                    </tbody>
+                </table>
+                <div class="add_to_cart_buttom">
+                    <a id="add_to_cart" class="btn btn-primary btn-lg mt8 js_check_product a-submit" href="#">加入购物车</a>
+                </div>
+            </form>
         </template>
+
+        <!--增加新列表展示样式-->
+        <template id="products_list_view" inherit_id="website_sale.products" active="False" customize_show="True" name="Taylor View">
+            <xpath expr="//div[@id='products_grid']//table" position="replace">
+                <t t-call="qdodoo_websale_update.products_list_tfs_style"/>
+            </xpath>
+            <xpath expr="//div[@style='width: 100%;']" position="after">
+                <t>
+                    <span>排序方式：
+                    <t class="input-group-btn">
+                        <a class="btn btn-default a-submit" href="/shop?order=code">编码</a>
+                        <a class="btn btn-default a-submit" href="/shop?order=price">价格</a>
+                        <a class="btn btn-default a-submit" href="/shop?order=sales">销量</a>
+                        <a class="btn btn-default a-submit" href="/shop?order=popularity">人气</a>
+                        <a class="btn btn-default a-submit" href="/shop?order=new">最新</a>
+                        <a class="btn btn-default a-submit" href="/shop?order=categ">分类</a>
+                    </t>
+                    </span>
+                </t>
+            </xpath>
+
+        </template>
+
         <template id="address_update" inherit_id="website_sale.checkout" active="True" customize_show="True" name="Taylot_address">
             <xpath expr="//div[@class='container oe_website_sale']" position="replace">
                 <div class="container oe_website_sale">
@@ -345,6 +453,8 @@
                                         <th width="120">Quantity</th>
                                         <th width="100">倍数</th>
                                         <th width="100">实际数量</th>
+                                        <th width="100" t-if="discount_num">可优惠数</th>
+                                        <th width="100" t-if="discount_num">优惠金额</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -375,6 +485,12 @@
                                         </td>
                                         <td>
                                             <div t-esc="line.multiple_number"/>
+                                        </td>
+                                        <td t-if="discount_num">
+                                            <input type="text" class="form-control" t-att-value="discount_num.get(line.product_id.id)" id="discount_num" readonly="True" size="6"/>
+                                        </td>
+                                        <td t-if="discount_num">
+                                            <input type="text" class="form-control" t-att-value="discount_money.get(line.product_id.id)" id="discount_money" readonly="True" size="6"/>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -434,62 +550,70 @@
                               <th colspan="2" width="100">Product</th>
                               <th width="100">Price</th>
                               <th width="120">Quantity</th>
-                              <th width="120">倍数</th>
+                              <th width="100">倍数</th>
+                              <th width="100" t-if="discount_num">可优惠数</th>
+                              <th width="100" t-if="discount_num">优惠金额</th>
                           </tr>
                       </thead>
                       <tbody>
-                        <t t-foreach="website_sale_order.website_order_line" t-as="line">
-                          <tr>
-                              <td colspan="2" t-if="not line.product_id.product_tmpl_id"></td>
-                              <td align="center" t-if="line.product_id.product_tmpl_id">
-                                  <span t-field="line.product_id.image_small"
-                                        t-field-options='{"widget": "image", "class": "img-rounded"}'/>
-                              </td>
-                              <td t-if="line.product_id.product_tmpl_id">
-                                  <div>
-                                      <a t-attf-href="/shop/product/#{ slug(line.product_id.product_tmpl_id) }">
-                                          <strong t-esc="line.product_id.name_get()[0][1]"/>
-                                      </a>
-                                  </div>
-                                  <div class="text-muted" t-field="line.name"/>
-                              </td>
-                              <td class="text-center" name="price">
-                                <t t-if="(compute_currency(line.product_id.lst_price) - line.price_unit) &gt; 1">
-                                  <del class="text-danger" style="white-space: nowrap;"
-                                    t-field="line.product_id.lst_price" t-field-options='{
-                                        "widget": "monetary",
-                                        "from_currency": "line.company_id.currency_id",
-                                        "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
-                                    }'/>&amp;nbsp;
-                                </t>
-                                <span t-field="line.price_unit" style="white-space: nowrap;" t-field-options='{
-                                     "widget": "monetary",
-                                     "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
-                                 }'/>
-                              </td>
-                              <td class="text-center">
-                                  <div class="input-group oe_website_spinner">
-                                      <span class="input-group-addon">
-                                          <a t-attf-href="#" class="mb8 js_add_cart_json" data-no-instant="">
-                                              <i class="fa fa-minus"></i>
+                          <t t-foreach="website_sale_order.website_order_line" t-as="line">
+                              <tr>
+                                  <td colspan="2" t-if="not line.product_id.product_tmpl_id"></td>
+                                  <td align="center" t-if="line.product_id.product_tmpl_id">
+                                      <span t-field="line.product_id.image_small"
+                                            t-field-options='{"widget": "image", "class": "img-rounded"}'/>
+                                  </td>
+                                  <td t-if="line.product_id.product_tmpl_id">
+                                      <div>
+                                          <a t-attf-href="/shop/product/#{ slug(line.product_id.product_tmpl_id) }">
+                                              <strong t-esc="line.product_id.name_get()[0][1]"/>
                                           </a>
-                                      </span>
-                                      <input type="text" class="js_quantity form-control"
-                                          t-att-data-line-id="line.id"
-                                          t-att-data-product-id="line.product_id.id"
-                                          t-att-value="int(line.product_uom_qty)"/>
-                                      <span class="input-group-addon">
-                                          <a t-attf-href="#" class="mb8 float_left js_add_cart_json" data-no-instant="">
-                                              <i class="fa fa-plus"></i>
-                                          </a>
-                                      </span>
-                                  </div>
-                              </td>
-                              <td>
-                                    <input type="text" class="form-control"   t-att-value="multiple.get(line.product_id.product_tmpl_id.id)"  id="beishu"   readonly="True" size="3"/>
-                                </td>
-                          </tr>
-                        </t>
+                                      </div>
+                                      <div class="text-muted" t-field="line.name"/>
+                                  </td>
+                                  <td class="text-center" name="price">
+                                    <t t-if="(compute_currency(line.product_id.lst_price) - line.price_unit) &gt; 1">
+                                      <del class="text-danger" style="white-space: nowrap;"
+                                        t-field="line.product_id.lst_price" t-field-options='{
+                                            "widget": "monetary",
+                                            "from_currency": "line.company_id.currency_id",
+                                            "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                                        }'/>&amp;nbsp;
+                                    </t>
+                                    <span t-field="line.price_unit" style="white-space: nowrap;" t-field-options='{
+                                         "widget": "monetary",
+                                         "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
+                                     }'/>
+                                  </td>
+                                  <td class="text-center">
+                                      <div class="input-group oe_website_spinner">
+                                          <span class="input-group-addon">
+                                              <a t-attf-href="#" class="mb8 js_add_cart_json" data-no-instant="">
+                                                  <i class="fa fa-minus"></i>
+                                              </a>
+                                          </span>
+                                          <input type="text" class="js_quantity form-control"
+                                              t-att-data-line-id="line.id"
+                                              t-att-data-product-id="line.product_id.id"
+                                              t-att-value="int(line.product_uom_qty)"/>
+                                          <span class="input-group-addon">
+                                              <a t-attf-href="#" class="mb8 float_left js_add_cart_json" data-no-instant="">
+                                                  <i class="fa fa-plus"></i>
+                                              </a>
+                                          </span>
+                                      </div>
+                                  </td>
+                                  <td>
+                                      <input type="text" class="form-control" t-att-value="multiple.get(line.product_id.product_tmpl_id.id)" id="beishu" readonly="True" size="3"/>
+                                  </td>
+                                  <td t-if="discount_num">
+                                      <input type="text" class="form-control" t-att-value="discount_num.get(line.product_id.id)" id="discount_num" readonly="True" size="6"/>
+                                  </td>
+                                  <td t-if="discount_num">
+                                      <input type="text" class="form-control" t-att-value="discount_money.get(line.product_id.id)" id="discount_money" readonly="True" size="6"/>
+                                  </td>
+                              </tr>
+                          </t>
                       </tbody>
                   </table>
             </xpath>
@@ -499,7 +623,7 @@
             <xpath expr="//tr[@id='order_total']" position="replace">
 
                 <tr width="100" id="minus_money">
-                    <th><h3>优惠金额: </h3></th>
+                    <th><h3>满减金额: </h3></th>
                     <th class="text-right">
                       <h3><span t-field="website_sale_order.minus_money" style="white-space: nowrap;" t-field-options='{
                           "widget": "monetary",
@@ -546,9 +670,9 @@
             </t>
         </template>
 
-        <template id="qdodoo_websale_update.promotion" name="促销报名">
+        <template id="qdodoo_websale_update.promotion" name="Promotion">
             <t t-call-assets="web.assets_common" t-css="false"/>
-            <t t-call-assets="website.assets_frontend" t-css="false"/>
+            <t t-call-assets="web.assets_backend" t-css="false"/>
             <script type="text/javascript">
                 $(function(){
                     $('button.btn-danger').click(function(){
@@ -581,8 +705,8 @@
             </script>
             <t t-call="website.layout">
               <div id="wrap">
-                <div class="oe_structure"/>
-                <div class="container">
+                  <div class="oe_structure"/>
+                  <div class="container">
                     <h1>促销报名</h1>
                     <div class="row">
                         <div class="col-md-8">

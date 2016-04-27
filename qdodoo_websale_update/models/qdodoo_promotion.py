@@ -24,9 +24,10 @@ class qdodoo_promotion(models.Model):
     _description = 'qdodoo.promotion'    # 模型描述
 
     name = fields.Char(u'方案名称',required=True)
-    selection_ids = fields.Selection([('reduction',u'满减促销'),('gift',u'满赠促销')],u'促销类型')
+    selection_ids = fields.Selection([('reduction',u'满减促销'),('gift',u'满赠促销'),('discount',u'打折促销')],u'促销类型')
     version_gift_id = fields.One2many('qdodoo.promotion.version.gift','promotion_id',string=u'方案版本')
     version_id = fields.One2many('qdodoo.promotion.version','promotion_id',string=u'方案版本')
+    version_discount_id = fields.One2many('qdodoo.promotion.version.discount','promotion_id',string=u'方案版本')
     active = fields.Boolean(u'有效')
     company_id = fields.Many2one('res.company',u'公司',required=True)
     is_play = fields.Boolean(u'是否让客户自己报名')
@@ -46,6 +47,9 @@ class qdodoo_promotion(models.Model):
         return super(qdodoo_promotion, self).create(cr, uid, valus, context=context)
 
 class qdodoo_promotion_version_gift(models.Model):
+    """
+        满赠促销版本
+    """
     _name = 'qdodoo.promotion.version.gift'
 
     promotion_id = fields.Many2one('qdodoo.promotion',u'促销单')
@@ -84,19 +88,56 @@ class qdodoo_promotion_version_gift(models.Model):
                                 raise osv.except_osv(_('错误!'), _("版本的时间段不能出现重叠."))
         return super(qdodoo_promotion_version_gift, self).create(cr, uid, valus, context=context)
 
+class qdodoo_promotion_version_discount(models.Model):
+    """
+        打折促销版本
+    """
+    _name = 'qdodoo.promotion.version.discount'
+
+    promotion_id = fields.Many2one('qdodoo.promotion',u'促销单')
+    name = fields.Char(u'版本名称',required=True)
+    date_start = fields.Date(u'开始时间')
+    date_end = fields.Date(u'结束时间')
+    active = fields.Boolean(u'有效', default=True)
+    items_id = fields.One2many('qdodoo.promotion.version.discount.items','version_id',u'优惠条目')
+
+    def create(self, cr, uid, valus, context=None):
+        # promotion_obj = self.pool.get('qdodoo.promotion')
+        promotion_id = valus.get('promotion_id')
+        date_start = valus.get('date_start')
+        date_end = valus.get('date_end')
+        if promotion_id:
+            self_ids = self.search(cr, uid, [('promotion_id','=',promotion_id)])
+            if self_ids:
+                for line in self.browse(cr, uid, self_ids):
+                    # 如果开始时间没填
+                    if not date_start:
+                        if not date_end:
+                            raise osv.except_osv(_('错误!'), _("版本的时间段不能出现重叠."))
+                        else:
+                            if date_end <= line.date_start or not line.date_start:
+                                raise osv.except_osv(_('错误!'), _("版本的时间段不能出现重叠."))
+                    else:
+                        if not date_end:
+                            if date_start >= line.date_end or not line.date_end:
+                                raise osv.except_osv(_('错误!'), _("版本的时间段不能出现重叠."))
+                        else:
+                            if (line.date_start <= date_start <= line.date_end) or (line.date_start <= date_end <= line.date_end) or (not line.date_end) or (not line.date_start):
+                                raise osv.except_osv(_('错误!'), _("版本的时间段不能出现重叠."))
+        return super(qdodoo_promotion_version_discount, self).create(cr, uid, valus, context=context)
+
 class qdodoo_promotion_version(models.Model):
+    """
+        满减促销
+    """
     _name = 'qdodoo.promotion.version'
 
     promotion_id = fields.Many2one('qdodoo.promotion',u'促销单')
     name = fields.Char(u'版本名称',required=True)
     date_start = fields.Date(u'开始时间')
     date_end = fields.Date(u'结束时间')
-    active = fields.Boolean(u'有效')
+    active = fields.Boolean(u'有效', default=True)
     items_id = fields.One2many('qdodoo.promotion.version.items','version_id',u'优惠条目')
-
-    _defaults = {
-        'active':True,
-    }
 
     def create(self, cr, uid, valus, context=None):
         # promotion_obj = self.pool.get('qdodoo.promotion')
@@ -124,6 +165,9 @@ class qdodoo_promotion_version(models.Model):
         return super(qdodoo_promotion_version, self).create(cr, uid, valus, context=context)
 
 class qdodoo_promotion_version_items(models.Model):
+    """
+        满减促销明细
+    """
     _name = 'qdodoo.promotion.version.items'
 
     version_id = fields.Many2one('qdodoo.promotion.version',u'版本')
@@ -141,13 +185,17 @@ class qdodoo_promotion_version_items(models.Model):
     }
 
 class qdodoo_promotion_version_gift_items(models.Model):
+    """
+        满赠促销明细
+    """
     _name = 'qdodoo.promotion.version.gift.items'
 
-    version_id = fields.Many2one('qdodoo.promotion.version',u'版本')
+    version_id = fields.Many2one('qdodoo.promotion.version.gift',u'版本')
     name = fields.Char(u'条目名称',required=True)
     section_id = fields.Many2one('crm.case.section',u'品牌')
     product_id = fields.Many2one('product.product',u'单品',required=True)
     product_items = fields.Many2one('product.product',u'赠品',required=True)
+    product_items_money = fields.Float(u'赠品金额')
     product_items_num = fields.Float(u'赠品数量')
     all_money = fields.Float(u'满')
     active = fields.Boolean(u'有效')
@@ -156,6 +204,19 @@ class qdodoo_promotion_version_gift_items(models.Model):
     _defaults = {
         'active':True,
     }
+
+class qdodoo_promotion_version_discount_items(models.Model):
+    """
+        打折促销明细
+    """
+    _name = 'qdodoo.promotion.version.discount.items'
+
+    version_id = fields.Many2one('qdodoo.promotion.version.discount',u'版本')
+    name = fields.Char(u'条目名称',required=True)
+    section_id = fields.Many2one('crm.case.section',u'品牌')
+    product_items = fields.One2many('qdodoo.promotion.version.discount.product','discount_id',u'单品')
+    product_items_num = fields.Float(u'打折比例(%)',default="100")
+    active = fields.Boolean(u'有效', default=True)
 
 class qdodoo_user_promotion(models.Model):
     _name = 'qdodoo.user.promotion'
@@ -181,3 +242,14 @@ class qdodoo_checking_list(models.Model):
     all_money = fields.Float(u'可用余额')
     type = fields.Selection([('beforehand',u'预存款'),('order',u'订货消费'),('refund',u'退款')],u'业务类型')
     notes = fields.Text(u'备注')
+
+class qdodoo_promotion_version_discount_product(models.Model):
+    """
+        促销方案明细单品数据
+    """
+    _name = 'qdodoo.promotion.version.discount.product'
+
+    discount_id = fields.Many2one('qdodoo.promotion.version.discount.items',u'促销明细')
+    name = fields.Many2one('product.product',u'单品')
+    all_num = fields.Float(u'总优惠数')
+    order_num = fields.Float(u'订单优惠数')

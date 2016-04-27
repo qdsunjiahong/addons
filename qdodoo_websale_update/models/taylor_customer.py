@@ -24,6 +24,7 @@ class taylor_customer(osv.Model):
     _columns = {    # 定义字段
         'out_stock': fields.many2one('stock.warehouse','仓库'),
         'location_id': fields.many2one('stock.location', '出库库位'),
+        'assist_pricelist': fields.many2one('product.pricelist',u'网络报货辅助价格表'),
     }
 
     def change_out_stock_id(self, cr, uid, ids, out_stock, context=None):

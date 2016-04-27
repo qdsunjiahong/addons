@@ -1,71 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <openerp>
-        <data>
-            <record model="ir.ui.view" id="res_partner_inherit_outstock_form">
-                <field name="name">res_partner_inherit_outstock</field>
-                <field name="model">res.partner</field>
-                <field name="inherit_id" ref="purchase.view_partner_property_form"/>
-                <field name="arch" type="xml">
-                    <field name="property_product_pricelist_purchase" position="after">
-                        <field name="out_stock" domain="[('company_id','=',company_id)]" on_change="change_out_stock_id(out_stock)"/>
-                        <field name="location_id"/>
-                    </field>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="res_partner_inherit_outstock_form">
+            <field name="name">res_partner_inherit_outstock</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="purchase.view_partner_property_form"/>
+            <field name="arch" type="xml">
+                <field name="property_product_pricelist_purchase" position="after">
+                    <field name="out_stock" domain="[('company_id','=',company_id)]" on_change="change_out_stock_id(out_stock)"/>
+                    <field name="location_id"/>
                 </field>
-            </record>
+                <field name="property_product_pricelist" position="after">
+                    <field name="assist_pricelist"/>
+                </field>
+            </field>
+        </record>
 
 
-            <record model="ir.ui.view" id="pricelist_prolate_show_form">
-                <field name="name">pricelist_prolate_show_form</field>
-                <field name="model">product.template</field>
-                <field name="inherit_id" ref="product.product_template_only_form_view"/>
-                <field name="arch" type="xml">
-                    <div name="options" position="inside">
-                        <div>
-                            <field name="is_gifts"/>
-                            <label for="is_gifts"/>
-                        </div>
+        <record model="ir.ui.view" id="pricelist_prolate_show_form">
+            <field name="name">pricelist_prolate_show_form</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view"/>
+            <field name="arch" type="xml">
+                <div name="options" position="inside">
+                    <div>
+                        <field name="is_gifts"/>
+                        <label for="is_gifts"/>
                     </div>
+                </div>
 
-                    <xpath expr="//page[@string='Variants']" position="after">
-                        <page string="价格表">
-                            <field name="ref_pricelist_prolate">
-                                <tree editable="bottom">
-                                    <field name="proce_version" options="{'no_create': True}"/>
-                                    <field name="proportion"/>
-                                    <field name="fixed"/>
-                                    <field name="to_toal"/>
-                                    <field name="multipl"/>
-                                </tree>
-                            </field>
-                        </page>
-                        <page string="赠品" attrs="{'invisible':[('is_gifts','=',False)]}">
-                            <field name="gifts_ids">
-                                 <tree editable="bottom">
-                                    <field name="name" options="{'no_create': True}" domain="[('company_id','=',parent.company_id)]"/>
-                                    <field name="number"/>
-                                 </tree>
-                            </field>
-                        </page>
-                    </xpath>
-                </field>
-            </record>
+                <xpath expr="//page[@string='Variants']" position="after">
+                    <page string="价格表">
+                        <field name="ref_pricelist_prolate">
+                            <tree editable="bottom">
+                                <field name="proce_version" options="{'no_create': True}"/>
+                                <field name="proportion"/>
+                                <field name="fixed"/>
+                                <field name="to_toal"/>
+                                <field name="multipl"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="赠品" attrs="{'invisible':[('is_gifts','=',False)]}">
+                        <field name="gifts_ids">
+                             <tree editable="bottom">
+                                <field name="name" options="{'no_create': True}" domain="[('company_id','=',parent.company_id)]"/>
+                                <field name="number"/>
+                             </tree>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
 
-            <record model="ir.ui.view" id="product_pricelist_view_form_inherit">
-                <field name="name">product.pricelist.form.inherit</field>
-                <field name="model">product.pricelist</field>
-                <field name="inherit_id" ref="product.product_pricelist_view"/>
-                <field name="arch" type="xml">
-                     <xpath expr="//field[@name='version_id']" position="after">
-                         <group attrs="{'invisible':[('type','!=','sale')]}">
-                             <field name="partner_all" nolabel="1">
-                                 <tree editable="bottom">
-                                      <field name="name"/>
-                                 </tree>
-                             </field>
-                         </group>
-                     </xpath>
-                </field>
-            </record>
+        <record model="ir.ui.view" id="product_pricelist_view_form_inherit">
+            <field name="name">product.pricelist.form.inherit</field>
+            <field name="model">product.pricelist</field>
+            <field name="inherit_id" ref="product.product_pricelist_view"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//field[@name='version_id']" position="after">
+                     <group attrs="{'invisible':[('type','!=','sale')]}">
+                         <field name="partner_all" nolabel="1">
+                             <tree editable="bottom">
+                                  <field name="name"/>
+                             </tree>
+                         </field>
+                     </group>
+                 </xpath>
+            </field>
+        </record>
 
-        </data>
-    </openerp>
+        <!--产品分类上增加网络报货倍数-->
+        <record id="product_category_form_view_inherit" model="ir.ui.view">
+            <field name="name">product.category.inherit</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='parent']" position="inside">
+                    <group string="网络报货" colspan="2">
+                        <field name="fold"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

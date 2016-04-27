@@ -158,3 +158,10 @@ class qdodoo_sale_order_inherit_tfs(models.Model):
             num += line.multiple_number * line.price_unit
         self.all_money = num - self.minus_money
 
+class qdodoo_product_category_inherit(models.Model):
+    """
+        产品分类增加网络报货倍数
+    """
+    _inherit = 'product.category'
+
+    fold = fields.Float(u'倍数')

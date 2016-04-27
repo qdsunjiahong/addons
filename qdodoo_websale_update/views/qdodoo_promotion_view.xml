@@ -35,6 +35,14 @@
                             <field name="active"/>
                         </tree>
                     </field>
+                    <field name="version_discount_id" attrs="{'invisible':[('selection_ids','!=','discount')]}">
+                        <tree>
+                            <field name="name"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="active"/>
+                        </tree>
+                    </field>
                 </form>
             </field>
         </record>
@@ -91,6 +99,35 @@
                 </form>
             </field>
         </record>
+        <record id="view_form_qdodoo_promotion_version_discount" model="ir.ui.view">
+            <field name="name">qdodoo.promotion.version.discount.form</field>
+            <field name="model">qdodoo.promotion.version.discount</field>
+            <field name="arch" type="xml">
+                <form string="打折促销单">
+                    <h1>
+                        <label for="name" class="oe_edit_only"/>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                        <group>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="items_id">
+                        <tree>
+                            <field name="name"/>
+                            <field name="section_id"/>
+                            <field name="product_items_num"/>
+                            <field name="active"/>
+                        </tree>
+                    </field>
+                </form>
+            </field>
+        </record>
         <record id="view_form_qdodoo_promotion_version" model="ir.ui.view">
             <field name="name">qdodoo.promotion.version.form</field>
             <field name="model">qdodoo.promotion.version</field>
@@ -139,14 +176,44 @@
                             <field name="product_items_num"/>
                         </group>
                     </group>
-                    <group col="6" colspan="6">
+                    <group col="8" colspan="8">
                         <label string="促销条件：满"/>
                         <field name="all_money" nolabel="1"/>
                         <label string="赠"/>
                         <field name="subtract_money" nolabel="1"/>
                         <label string="赠品"/>
                         <field name="product_items" nolabel="1"/>
+                        <label string="赠品金额"/>
+                        <field name="product_items_money" nolabel="1"/>
                     </group>
+                </form>
+            </field>
+        </record>
+        <record id="view_form_qdodoo_promotion_version_discount_items" model="ir.ui.view">
+            <field name="name">qdodoo.promotion.version.discount.items.form</field>
+            <field name="model">qdodoo.promotion.version.discount.items</field>
+            <field name="arch" type="xml">
+                <form string="打折促销单">
+                    <h1>
+                        <label for="name" class="oe_edit_only"/>
+                        <field name="name"/>
+                    </h1>
+                    <group>
+                        <group>
+                            <field name="section_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="product_items_num"/>
+                        </group>
+                    </group>
+                    <field name="product_items">
+                        <tree editable="top">
+                            <field name="name"/>
+                            <field name="order_num"/>
+                            <field name="all_num"/>
+                        </tree>
+                    </field>
                 </form>
             </field>
         </record>
@@ -254,11 +321,11 @@
 
         <record id="menu_user_promotion" model="website.menu">
             <field name="name">促销报名</field>
-            <field name="url">/shop/user/info</field>
+            <field name="url">/tfs/user/info</field>
             <field name="parent_id" ref="website.main_menu"/>
             <field name="sequence" type="int">36</field>
         </record>
-        <record id="menu_qdodoo_mendian" model="website.menu">
+        <record id="menu_qdodoo_mendian_my" model="website.menu">
             <field name="name">我的门店</field>
             <field name="url">/web</field>
             <field name="parent_id" ref="website.main_menu"/>
