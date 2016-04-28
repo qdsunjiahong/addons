@@ -14,9 +14,11 @@ class qdodoo_account_contract_last(models.TransientModel):
 
     ctype = fields.Many2one('contract.type', string=u'合同类型', readonly=True)
     partner_id = fields.Many2one('res.partner', string=u'供货商名称', readonly=True)
-    company_id = fields.Many2one('res.company', string=u'合同公司', readonly=True)
+    company_id = fields.Many2one('contract.company', string=u'合同公司', readonly=True)
+    contract_no = fields.Char(u'合同编码')
     order_manger_id = fields.Many2one('res.users', string=u'签署人', readonly=True)
     cstate = fields.Char(string=u'合同状态')
+    date = fields.Date(u'截止时间')
     state = fields.Selection([('template', u'模版'),('draft',u'新建'), ('open',u'进行中'), ('pending',u'要续签的'), ('close',u'已关闭'), ('cancelled', u'已取消')], u'合同状态',)
 
 
@@ -39,9 +41,11 @@ class qdodoo_account_contract_last(models.TransientModel):
             #获取要显示的数据
             contract_type = contract.contract_type1
             partner_id = contract.partner_id.id
-            company_id = contract.company_id.id
-            omanager_id = contract.order_manager_id.id
+            company_id = contract.contract_company1.id if contract.contract_company1 else ''
+            omanager_id = contract.manager_id.id if contract.manager_id else ''
             contract_state = contract.contract_state
+            contract_no = contract.contract_no
+            date = contract.date
             state = contract.state  #这个state在此处不需要
 
             #重复键：由公司ID+供货商ID组成，避免重复同一供货商和同一公司签的合同
@@ -56,7 +60,9 @@ class qdodoo_account_contract_last(models.TransientModel):
                     'partner_id': partner_id,
                     'company_id': company_id,
                     'order_manger_id': omanager_id,
+                    'date': date,
                     'cstate': contract_state,
+                    'contract_no': contract_no,
                     'state': state,
                 })
 
