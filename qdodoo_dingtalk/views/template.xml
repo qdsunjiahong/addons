@@ -5,9 +5,9 @@
             <html>
                 <head>
                     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-                    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;"/>-->
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;"/>
                     <title>写日志</title>
-                    <script type="text/javascript" src="/qdoo_dd_work_details/static/js/jquery-2.1.0.min.js"/>
+                    <script type="text/javascript" src="/qdodoo_dingtalk/static/js/jquery-2.1.0.min.js"/>
                     <script>
                        $(function () {
                         $("#detail_post").click(function () {
@@ -41,21 +41,23 @@
                         <h2>工作日志</h2>
                         <a href="/search/details">查看日志历史"
                         </a>
-                        <p>主题</p>:
-                        <span>
-                            <select id="category" name="category" class="form-control">
-                                <t t-foreach="category_ids or []" t-as="category_id">
-                                    <option t-att-value="category_id.id">
-                                        <t t-esc="category_id.name"/>
-                                    </option>
-                                </t>
-                            </select>
-                        </span>
+                        <p>日志类型:
+                            <span>
+                                <select id="category" name="category" class="form-control">
+                                    <t t-foreach="category_ids or []" t-as="category_id">
+                                        <option t-att-value="category_id.id">
+                                            <t t-esc="category_id.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </span>
+                        </p>
                         <p>日志内容:</p>
-                        <textarea cols="30" col="10" id="text">
-                            请在这里填写体质内容
+                        <textarea cols="30" col="10" id="text">请在这里填写体质内容
                         </textarea>
-                        <button id="detail_post" value="提交"/>
+                        <p>
+                            <button id="detail_post" value="提交">提交日报</button>
+                        </p>
                     </div>
                 </body>
             </html>
@@ -66,7 +68,7 @@
                 <head>
                     <meta charset="UTF-8"/>
                     <script type="text/javascript" src="https://g.alicdn.com/ilw/ding/0.3.8/scripts/dingtalk.js"/>
-                    <script type="text/javascript" src="/qdoo_dd_work_details/static/js/jquery-2.1.0.min.js"/>
+                    <script type="text/javascript" src="/qdodoo_dingtalk/static/js/jquery-2.1.0.min.js"/>
                     <title></title>
                 </head>
                 <body>
@@ -77,7 +79,7 @@
                     <input type="hidden" name="signature" t-att-value="signature"/>
                     <input type="hidden" name="access_token" t-att-value="access_token"/>
                 </body>
-                <script type="text/javascript" src="/qdoo_dd_work_details/static/js/ddwork.js"/>
+                <script type="text/javascript" src="/qdodoo_dingtalk/static/js/ddwork.js"/>
             </html>
 
         </template>

@@ -18,6 +18,7 @@
         'views/qdodoo_dingding_data.xml',
         'views/qdoo_dd_configure_view.xml',
         'views/qdoo_dd_init_view.xml',
+        'views/qdodoo_hr_employee.xml',
         'views/qdodoo_hr_work_details.xml',
         'views/template.xml'
         # ...

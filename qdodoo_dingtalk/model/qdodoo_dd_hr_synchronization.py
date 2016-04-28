@@ -4,6 +4,8 @@ from openerp import models, fields, api, _
 import urllib2
 import json
 from openerp.exceptions import except_orm
+import logging
+_logger = logging.getLogger(__name__)
 
 department_create_url = "https://oapi.dingtalk.com/department/create?access_token=%s"
 
@@ -193,7 +195,6 @@ class qdodoo_department_auto(models.Model):
         dd_department_get = "https://oapi.dingtalk.com/department/list?access_token=%s" % access_token
         department_info_dict = self.url_get(dd_department_get)
         department_list = department_info_dict.get('department', [])
-
         #######部门信息########
         department_name_id = {}  # {部门名称:部门id}
         department_name_parentid = {}  # {部门名称:父部门id}
@@ -237,7 +238,7 @@ class qdodoo_department_auto(models.Model):
         ####erp员工信息##########
         erp_user_mobile_list = []  # erp员工列表
         # 获取erp所有员工列表
-        employee_ids = self.env['hr.employee'].search([('active', '!=', True)])
+        employee_ids = self.env['hr.employee'].search([])
         for employee_id in employee_ids:
             user_name = employee_id.name
             department_id = department_name_id.get(employee_id.department_id.name)
@@ -268,7 +269,7 @@ class qdodoo_department_auto(models.Model):
                 req_create = self.url_post(user_create, data)
                 userid = req_create.get('userid', False)
                 if userid:
-                    employee_id.wirte({'dd_user_id': userid})
+                    employee_id.write({'dd_user_id': userid})
                     erp_user_mobile_list.append(phone_number)
 
         ######删除########

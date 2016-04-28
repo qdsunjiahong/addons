@@ -23,12 +23,10 @@ class qdodoo_work_details(models.Model):
     c_date = fields.Datetime(string=u'创建日期')
     # end_date = fields.Datetime(string=u'结束日期')
     text = fields.Text(string=u'内容')
-    user_id = fields.Many2one('res.users', string=u'创建者', default=lambda self: self.env.user)
+    user_id = fields.Many2one('res.users', string=u'创建者', default=lambda self: self._uid)
 
     _defaults = {
         'c_date': fields.datetime.now(),
-        # 'end_date': fields.datetime.now(),
-        # 'user_id': lambda obj, cr, uid, context: uid,
     }
 
 
@@ -40,3 +38,4 @@ class qdodoo_detail_category(models.Model):
     _description = 'qdodoo.detail.category'
 
     name = fields.Char(string=u'日志类型', required=True)
+    user_id = fields.Many2one('res.users', string=u'创建者', default=lambda self: self._uid)

@@ -54,7 +54,7 @@ class qdoo_dd_work(http.Controller):
         for i in range(1, 16, 1):
             nonceStr += chars[random.randint(0, chars_length)]
         timeStamp = int(time.time())
-        url = 'http://www.qdodoo.com/qdoo/dd/work'
+        url = 'http://runbot.qdodoo.com/qdoo/dd/work'
         key_valu = {
             'noncestr': nonceStr,
             'timestamp': timeStamp,
@@ -66,7 +66,7 @@ class qdoo_dd_work(http.Controller):
         key_valu['corpId'] = corpid
         key_valu['agentId'] = agentid
         key_valu['access_token'] = access_token
-        return request.website.render("qdoo_dd_work_details.didi2", key_valu)
+        return request.website.render("qdodoo_dingtalk.didi2", key_valu)
 
     @http.route(['/qdoo/dd/work_details'], type='http', auth="public", website=True)
     def get_code(self, **post):
@@ -84,7 +84,7 @@ class qdoo_dd_work(http.Controller):
             user_id = user_obj.search(cr, SUPERUSER_ID, [('didi_id', '=', userid)])
             if user_id:
                 # password=pwd_context.encrypt()
-                url_red = 'http://www.qdodoo.com/web/works_details'
+                url_red = 'http://runbot.qdodoo.com/web/works_details'
                 login = user_obj.browse(cr, SUPERUSER_ID, user_id[0]).login
                 passwd = user_obj.browse(cr, SUPERUSER_ID, user_id[0]).password
                 info = "/login?db=%s&login=%s&key=%s&redirect=%s" % (request.session.db, login, passwd, url_red)
@@ -103,7 +103,7 @@ class qdoo_dd_work(http.Controller):
         values['category_ids'] = category_ids2
         date_time = fields.Datetime.now()
         values['date_time'] = date_time
-        return request.website.render("qdoo_dd_work_details.details_dd", values)
+        return request.website.render("qdodoo_dingtalk.details_dd", values)
 
     @http.route(['/details_create'], type='http', auth='public', website=True)
     def details_create(self, **kwargs):
@@ -122,6 +122,6 @@ class qdoo_dd_work(http.Controller):
 
     @http.route(['/search/details'], type='http', auth='public', website=True)
     def search_detail(self, **kwargs):
-        url = 'http://www.qdodoo.com/web?#page=0&limit=80&view_type=list&model=qdodoo.work.details&menu_id=556&action=732'
+        url = 'http://runbot.qdodoo.com/web?#page=0&limit=80&view_type=list&model=qdodoo.work.details&menu_id=556&action=732'
         ret = "<html><head><meta http-equiv='refresh' content='0;URL=%s'></head></html>" % url
         return ret

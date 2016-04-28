@@ -15,8 +15,8 @@ def url_post(url, data):
     return json.loads(fd.read())
 
 
-corpid = 'dinge0b8fc92eb965404'
-secrect = 'MkKb_QDrtkwigaBar13AHo51xQLcJdnzLFiE_giow1kXeQUWLDH0K-1kC9gup7Zx'
+corpid = 'ding9fdc4501ed0ed880'
+secrect = 'TZbQ31u_9vWZ9d3rS7hev6WVU78NgcugbNTE7xcGM9FYCG6mNu14YrQFGtwC697P'
 token_url = 'https://oapi.dingtalk.com/gettoken?corpid=%s&corpsecret=%s' % (corpid, secrect)
 access_token_dict = url_get(token_url)
 access_token = access_token_dict.get('access_token', 0)
