@@ -383,7 +383,7 @@ class qdodooo_website_update(website_sale):
         version=""
         lst = {}
         for version_id in version_obj.browse(cr ,uid ,pricelist_version_ids,context=context):
-            if (version_id.date_start is False) or (version_id.date_start <= datetime.datetime.now()):
+            if (version_id.date_start is False) or (version_id.date_start <= datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')):
                 lst[version_id] = version_id.date_end
         a = ''
         for line_key,line_value in lst.items():
