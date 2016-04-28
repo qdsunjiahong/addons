@@ -165,11 +165,11 @@ class taylor_pricce_list(models.Model):
         if vals.get('name'):
             self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的名称由 %s 改为 %s'%(self.name,vals.get('name'))})
         if vals.get('product_id'):
-            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品由 %s 改为 %s'%(self.product_id.name if self.product_id else '空',self.env['product.product'].browse(vals.get('product_id')).name)})
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品由 %s 改为 %s'%(self.product_id.name if self.product_id else '空',self.sudo().env['product.product'].browse(vals.get('product_id')).name)})
         if vals.get('product_tmpl_id'):
-            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品模板由 %s 改为 %s'%(self.product_tmpl_id.name if self.product_tmpl_id else '空',self.env['product.template'].browse(vals.get('product_tmpl_id')).name)})
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品模板由 %s 改为 %s'%(self.product_tmpl_id.name if self.product_tmpl_id else '空',self.sudo().env['product.template'].browse(vals.get('product_tmpl_id')).name)})
         if vals.get('categ_id'):
-            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品分类由 %s 改为 %s'%(self.categ_id.name if self.categ_id else '空',self.env['product.category'].browse(vals.get('categ_id')).name)})
+            self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的产品分类由 %s 改为 %s'%(self.categ_id.name if self.categ_id else '空',self.sudo().env['product.category'].browse(vals.get('categ_id')).name)})
         if vals.get('multipl'):
             self.env['qdodoo.pricelist.edit.line'].create({'name':datetime.now(),'user_id':self._uid,'pricelist_id':self.price_version_id.pricelist_id.name,'note':'将价格表明细的倍数由 %s 改为 %s'%(self.multipl,vals.get('multipl'))})
         if vals.get('base'):
