@@ -207,7 +207,7 @@ class qdodooo_website_update(website_sale):
                 product_item_dict[product_item.id]=1
             #如果存在产品模板
             if product_item.product_tmpl_id:
-                if product_item.is_recommend and product_item.product_tmpl_id.id not in recommend_dict:
+                if product_item.is_recommend and (product_item.product_tmpl_id.id not in recommend_dict):
                     recommend_dict.append(product_item.product_tmpl_id.id)
                 # 产品模板如果不存在于pricelist_procuct_ids中，将模板id加入到其中
                 if product_item.product_tmpl_id.id not in pricelist_procuct_ids:
@@ -227,7 +227,7 @@ class qdodooo_website_update(website_sale):
                             recommend_dict.append(temp_id.product_tmpl_id.id)
             # 如果存在产品
             if  product_item.product_id:
-                if product_item.is_recommend and product_item.product_id.product_tmpl_id.id not in recommend_dict:
+                if product_item.is_recommend and (product_item.product_id.product_tmpl_id.id not in recommend_dict):
                     recommend_dict.append(product_item.product_tmpl_id.product_tmpl_id.id)
                 if product_item.product_id.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_id.product_tmpl_id.id)
@@ -319,7 +319,6 @@ class qdodooo_website_update(website_sale):
                 if product_info_line[0] in products_ids:
                     products_ids_new.append(product_info_line[0])
                     products_ids.remove(product_info_line[0])
-
             recommend_ids_new.extend(recommend_ids)
             products_ids_new.extend(products_ids)
         else:
