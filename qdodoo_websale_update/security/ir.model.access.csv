@@ -36,3 +36,4 @@ access_qdodoo_checking_list,对账单,model_qdodoo_checking_list,base.group_port
 access_qdodoo_promotion_version_discount,打折促销版本,model_qdodoo_promotion_version_discount,base.group_portal,1,1,1,0
 access_qdodoo_promotion_version_discount_items,打折促销版本明细,model_qdodoo_promotion_version_discount_items,base.group_portal,1,1,1,0
 access_qdodoo_promotion_version_discount_product,打折促销版本明细单品,model_qdodoo_promotion_version_discount_product,base.group_portal,1,1,1,0
+access_stock_warehouse,仓库,stock.model_stock_warehouse,base.group_portal,1,1,1,0
