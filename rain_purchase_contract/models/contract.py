@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
 from openerp import fields, models, api, _
 from openerp.exceptions import except_orm
+from datetime import datetime
 
 class rain_contract(models.Model):
     _inherit="account.analytic.account"
 
-	#contract_no = fields.Char('Contract_no',required=True)
-    #contract_name = fields.Char('Contract_name',required=True)
-    #contract_date = fields.Date('Contract_date',required=True)
-    #contract_type = fields.Selection((('a',u'临时合同'),('b',u'长期合同')),'Contract_type',required=True)
-    #contract_company = fields.Selection((('a',u'香界'),('b',u'惠美')),'Contract_company',required=True)
     contract_type1 = fields.Many2one('contract.type','Contract_type1',required=True)
     contract_company1 = fields.Many2one('contract.company','Contract_company1',required=True)
-    contract_state = fields.Selection(((u'正常',u'正常'),(u'到期',u'到期'),(u'即将到期',u'即将到期')),u'合同状态',required=True)
+    contract_state = fields.Selection([('ok',u'正常'),('no',u'到期'),('date',u'即将到期')],u'合同状态',required=True)
     contract_partner_no = fields.Char('Contract_partner_no')#,required=True
     contract_company_no = fields.Char('Contract_company_no')#,required=True
     partner_id = fields.Many2one('res.partner','partner_id',required=True)
@@ -36,6 +32,24 @@ class rain_contract(models.Model):
         elif not self.contract_company_no : self.contract_company_no = 0
         elif not self.code : self.code = 0
         self.contract_no = self.contract_partner_no + self.contract_company_no + self.code
+
+    def get_contract_state(self, cr, uid):
+        ids = self.search(cr, uid, [])
+        ids_lst = {}
+        for obj in self.browse(cr, uid, ids):
+            if obj.date:
+                period = datetime.strptime(obj.date, '%Y-%m-%d') - datetime.now()
+                days = period.days
+            else:
+                days = 50
+            if days < 0 and obj.contract_state != 'no':
+                ids_lst[obj.id] = 'no'
+            if 0 < days < 15 and obj.contract_state != 'date':
+                ids_lst[obj.id] = 'date'
+            if days >15 and obj.contract_state != 'ok':
+                ids_lst[obj.id] = 'ok'
+        for key,value in ids_lst.items():
+            super(rain_contract, self).write(cr, uid, key, {'contract_state':value})
 
 class rain_contract_type(models.Model):
     _name="contract.type"

@@ -17,7 +17,7 @@ class qdodoo_account_contract_last(models.TransientModel):
     company_id = fields.Many2one('contract.company', string=u'合同公司', readonly=True)
     contract_no = fields.Char(u'合同编码')
     order_manger_id = fields.Many2one('res.users', string=u'签署人', readonly=True)
-    cstate = fields.Char(string=u'合同状态')
+    cstate = fields.Selection([('ok',u'正常'),('no',u'到期'),('date',u'即将到期')],u'合同状态')
     date = fields.Date(u'截止时间')
     state = fields.Selection([('template', u'模版'),('draft',u'新建'), ('open',u'进行中'), ('pending',u'要续签的'), ('close',u'已关闭'), ('cancelled', u'已取消')], u'合同状态',)
 
