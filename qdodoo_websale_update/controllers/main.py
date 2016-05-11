@@ -462,7 +462,7 @@ class qdodooo_website_update(website_sale):
         for mrp_pro,mrp_id in mrp_dict.items():
             num = 999999999
             for line in mrp_id.bom_line_ids:
-                if re_dict.get(line.product_id.product_tmpl_id.id,0.0) < num:
+                if line.product_id.product_tmpl_id.id in re_dict and re_dict.get(line.product_id.product_tmpl_id.id,0.0) < num:
                     num = re_dict.get(line.product_id.product_tmpl_id.id,0.0)
             re_dict[mrp_pro] = num
         return re_dict
