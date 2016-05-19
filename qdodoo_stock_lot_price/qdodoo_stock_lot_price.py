@@ -28,54 +28,18 @@ class qdodoo_stock_production_lot_inherit(models.Model):
 
     price_unit = fields.Float(u'价格')
 
-class qdodoo_stock_transfer_details_inherit(models.Model):
-    """
-       转移时，针对批次价格的处理
-    """
-
-    _inherit = 'stock.transfer_details'
+# class qdodoo_stock_transfer_details_inherit(models.Model):
+#     """
+#        转移时，针对批次价格的处理
+#     """
+#
+#     _inherit = 'stock.transfer_details'
 
     # 采购入库时校验，只能选择相同产品、价格的批次
-    @api.one
-    def do_detailed_transfer(self):
-        quant_obj = self.env['stock.quant']
-        account_line_obj = self.env['account.move.line']
-        res = super(qdodoo_stock_transfer_details_inherit, self).do_detailed_transfer()
-        account_ids = self.env['account.move'].search([('ref','=',self.picking_id.name)])
-        for line in self.item_ids:
-            # 判断产品是否要求按照批次价格出库
-            if line.product_id.user_lot_price:
-                # 如果是采购入库，并且有批次
-                if line.lot_id and line.sourceloc_id.usage == 'supplier':
-                    # 如果有批次价格
-                    if line.lot_id.price_unit:
-                        # 判断批次单价是否是产品的采购单价格
-                        for move_line in line.packop_id.linked_move_operation_ids:
-                            if move_line.move_id.price_unit != line.lot_id.price_unit:
-                                raise osv.except_osv(_(u'警告'),_(u'此次入库的价格和选择批次的价格不符，请检查批次！'))
-                    else:
-                        # 更新产品的批次价格
-                        line.lot_id.write({'price_unit':line.packop_id.linked_move_operation_ids[0].move_id.price_unit})
-                # 如果是出库、运输库位出入库，并且有批次，按照批次价格修改对应的
-                if line.lot_id and line.lot_id.price_unit and (line.destinationloc_id.usage in ('customer','transit') or line.sourceloc_id.usage == 'transit'):
-                    # 判断该批次、此库位中是否有足够的产品出库
-                    # 查询该库位该批次的库存
-                    all_num = 0
-                    quant_ids = quant_obj.search([('lot_id','=',line.lot_id.id),('location_id','=',line.sourceloc_id.id)])
-                    for quant_id in quant_ids:
-                        all_num += quant_id.qty
-                    if all_num < line.quantity:
-                        raise osv.except_osv(_(u'错误'),_(u'该批次中此库位的库存数量不足，请重新选择批次！'))
-                    for move_line in line.packop_id.linked_move_operation_ids:
-                        move_line.move_id.write({'price_unit':line.lot_id.price_unit})
-                    # 查找库位移动产生的凭证
-                    account_line_ids = account_line_obj.search([('name','=',line.product_id.name),('move_id','in',account_ids.ids)])
-                    for account_line_id in account_line_ids:
-                        if account_line_id.debit > 0:
-                            account_line_id.write({'debit':account_line_id.quantity*line.lot_id.price_unit})
-                        if account_line_id.credit > 0:
-                            account_line_id.write({'credit':account_line_id.quantity*line.lot_id.price_unit})
-        return res
+    # @api.one
+    # def do_detailed_transfer(self):
+    #
+    #     return res
 
 class qdodoo_stock_quant_inherit(models.Model):
     """
@@ -178,27 +142,31 @@ class qdodoo_stock_inventory_inherit(models.Model):
         for line in self.line_ids:
             # 判断产品是否要求按照批次价格出库
             if line.product_id.user_lot_price:
-                if line.prod_lot_id and line.prod_lot_id.price_unit:
+                # if line.prod_lot_id and line.prod_lot_id.price_unit:
+                if line.prod_lot_id:
                     # 计算盘点数量
                     diff_num = line.product_qty - line.theoretical_qty
                     if abs(diff_num) > 0:
-                        # 查询对应的的盘点盈亏
-                        move_ids = move_obj.search([('name','=','INV:'+self.name),('product_id','=',line.product_id.id),('product_uom_qty','=',abs(diff_num)),('price_unit','!=',line.prod_lot_id.price_unit)])
-                        if move_ids:
-                            move_ids[0].write({'price_unit':line.prod_lot_id.price_unit})
-                        # 查询对应的凭证
-                        account_line_ids = account_line_obj.search([('name','=','INV:'+self.name),('product_id','=',line.product_id.id),('quantity','=',abs(diff_num)),('id','not in',account_line_lst)])
-                        lengh = 0
-                        for account_line_id in account_line_ids:
-                            all_price = account_line_id.quantity*line.prod_lot_id.price_unit
-                            if account_line_id.debit > 0 and account_line_id.debit != all_price:
-                                account_line_id.write({'debit':all_price})
-                                lengh += 1
-                                account_line_lst.append(account_line_id.id)
-                            if account_line_id.credit > 0 and account_line_id.credit != all_price:
-                                account_line_id.write({'credit':all_price})
-                                lengh += 1
-                                account_line_lst.append(account_line_id.id)
-                            if lengh >= 2:
-                                break
+                        if line.prod_lot_id.price_unit and line.product_id.cost_method == 'average':
+                            # 查询对应的的盘点盈亏
+                            move_ids = move_obj.search([('name','=','INV:'+self.name),('product_id','=',line.product_id.id),('product_uom_qty','=',abs(diff_num)),('price_unit','!=',line.prod_lot_id.price_unit)])
+                            if move_ids:
+                                move_ids[0].write({'price_unit':line.prod_lot_id.price_unit})
+                            # 查询对应的凭证
+                            account_line_ids = account_line_obj.search([('name','=','INV:'+self.name),('product_id','=',line.product_id.id),('quantity','=',abs(diff_num)),('id','not in',account_line_lst)])
+                            lengh = 0
+                            for account_line_id in account_line_ids:
+                                all_price = account_line_id.quantity*line.prod_lot_id.price_unit
+                                if account_line_id.debit > 0 and account_line_id.debit != all_price:
+                                    account_line_id.write({'debit':all_price})
+                                    lengh += 1
+                                    account_line_lst.append(account_line_id.id)
+                                if account_line_id.credit > 0 and account_line_id.credit != all_price:
+                                    account_line_id.write({'credit':all_price})
+                                    lengh += 1
+                                    account_line_lst.append(account_line_id.id)
+                                if lengh >= 2:
+                                    break
+                        else:
+                            line.prod_lot_id.write({'price_unit':line.product_id.standard_price})
         return res
