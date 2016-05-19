@@ -142,11 +142,9 @@ class qdodoo_stock_inventory_inherit(models.Model):
         for line in self.line_ids:
             # 判断产品是否要求按照批次价格出库
             if line.product_id.user_lot_price:
-                # if line.prod_lot_id and line.prod_lot_id.price_unit:
                 if line.prod_lot_id:
                     # 计算盘点数量
-                    diff_num = line.product_qty - line.theoretical_qty
-                    if abs(diff_num) > 0:
+                    if line.theoretical_qty < 0 or line.product_qty != line.theoretical_qty:
                         if line.prod_lot_id.price_unit and line.product_id.cost_method == 'average':
                             # 查询对应的的盘点盈亏
                             move_ids = move_obj.search([('name','=','INV:'+self.name),('product_id','=',line.product_id.id),('product_uom_qty','=',abs(diff_num)),('price_unit','!=',line.prod_lot_id.price_unit)])
