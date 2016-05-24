@@ -849,7 +849,7 @@ class qdodooo_website_update(website_sale):
         # 判断产品的数量是否按照分类的倍数获取的
         promotion_obj = request.registry['qdodoo.promotion']
         line_obj = request.registry['sale.order.line']
-        checking_obj = request.registry['qdodoo.checking.list']
+        # checking_obj = request.registry['qdodoo.checking.list']
         users_obj = request.registry['res.users']
         promotion_user = request.registry['qdodoo.user.promotion']
         discount_product_user = request.registry['qdodoo.promotion.version.discount.product']
@@ -920,7 +920,7 @@ class qdodooo_website_update(website_sale):
         inv_ids += [invoice.id for invoice in order.invoice_ids]
         for line in invoice_obj.browse(cr, uid, inv_ids):
             if line.state == 'draft':
-                invoice_obj.signal_workflow(cr, uid, [line.id], 'invoice_open')
+                invoice_obj.signal_workflow(cr, uid, [line.id], 'invoice_open', context=context)
         # 获取对应的出库单列表id
         pick_ids = []
         pick_ids += [picking.id for picking in order.picking_ids]
@@ -932,7 +932,7 @@ class qdodooo_website_update(website_sale):
             all_money = -order.partner_id.credit
         else:
             all_money = 0.0
-        checking_obj.create(cr, uid, {'user_id':order.partner_id.id,'date':datetime.datetime.now(),'comsume':order.amount_total,'type':'order','notes':order.name,'all_money':all_money})
+        # checking_obj.create(cr, uid, {'user_id':order.partner_id.id,'date':datetime.datetime.now(),'comsume':order.amount_total,'type':'order','notes':order.name,'all_money':all_money})
         # clean context and session, then redirect to the confirmation page
         request.website.sale_reset(context=context)
 
@@ -1044,18 +1044,51 @@ class qdodooo_website_update(website_sale):
         if uid == 3:
             return request.redirect("/web/login")
         values = {}
-        # 获取所有的活动
+        # 获取满足条件的所有的活动
         promotion_obj = request.registry.get('qdodoo.promotion')
+        user_obj = request.registry.get('res.users')
         promotion_ids = promotion_obj.search(cr, uid, [('is_play','=',True)])
+        promotion_ids_true = promotion_ids
+        now = datetime.datetime.now().date().strftime('%Y-%m-%d')
+        user_id = user_obj.browse(cr, uid, uid)
+        # 满足时间段的明细
+        for promotion_id in promotion_obj.browse(cr, uid, promotion_ids):
+            log = False
+            if promotion_id.version_gift_id:
+                order_lines = promotion_id.version_gift_id
+            if promotion_id.version_discount_id:
+                order_lines = promotion_id.version_discount_id
+            if promotion_id.version_id:
+                order_lines = promotion_id.version_id
+            for line in order_lines:
+                if line.date_start:
+                    if line.date_end:
+                        if line.date_start > now or line.date_end < now:
+                            break
+                    else:
+                        if line.date_start > now:
+                            break
+                else:
+                    if line.date_end:
+                        if line.date_end < now:
+                            break
+                for line1 in line.items_id:
+                    if not line1.section_id:
+                        log = True
+                    else:
+                        if line1.section_id.id == user_id.default_section_id.id:
+                            log = True
+            if not log:
+                promotion_ids_true.remove(promotion_id.id)
         # 获取当前登录人已参加的活动
         promotion_use_obj = request.registry.get('qdodoo.user.promotion')
-        promotion_use_ids = promotion_use_obj.search(cr, uid, [('user','=',uid),('promotion','in',promotion_ids)])
+        promotion_use_ids = promotion_use_obj.search(cr, uid, [('user','=',uid),('promotion','in',promotion_ids_true)])
         values['promotion_users'] = promotion_use_obj.browse(cr, uid, promotion_use_ids)
         promotion_ids_old = []
         for line in values['promotion_users']:
             promotion_ids_old.append(line.promotion.id)
         # 获取未报名的活动
-        promotion_ids_new = list(set(promotion_ids) - set(promotion_ids_old))
+        promotion_ids_new = list(set(promotion_ids_true) - set(promotion_ids_old))
         values['promotion'] = promotion_obj.browse(cr, uid, promotion_ids_new)
         return request.website.render("qdodoo_websale_update.promotion",values)
 

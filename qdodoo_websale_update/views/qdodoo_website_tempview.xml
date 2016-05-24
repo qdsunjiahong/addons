@@ -70,10 +70,10 @@
                                     </td>
                                     <td>
                                         <t t-if=" not product_num.get(recommend.id) or 0>product_num.get(recommend.id)">
-                                            <input type="text" class="form-control"   value="0"  id="virtual_available" readonly="True" size="10"/>
+                                            <input type="text" class="form-control" value="0"  id="virtual_available" readonly="True" size="10"/>
                                         </t>
                                         <t t-if="product_num.get(recommend.id) >0">
-                                            <input type="text" class="form-control"   t-att-value="product_num.get(recommend.id)"  id="virtual_available"   readonly="True" size="10"/>
+                                            <input type="text" class="form-control" t-att-value="product_num.get(recommend.id)"  id="virtual_available"   readonly="True" size="10"/>
                                         </t>
                                     </td>
                                     <td>
@@ -603,19 +603,31 @@
                                           </span>
                                       </div>
                                   </td>
-                                  <td>
+                                  <td t-if="line.product_id.product_tmpl_id">
                                       <input type="text" class="form-control" t-att-value="multiple.get(line.product_id.product_tmpl_id.id)" id="beishu" readonly="True" size="3"/>
                                   </td>
-                                  <td t-if="discount_num">
+                                  <td t-if="discount_num and line.product_id.product_tmpl_id">
                                       <input type="text" class="form-control" t-att-value="discount_num.get(line.product_id.id)" id="discount_num" readonly="True" size="6"/>
                                   </td>
-                                  <td t-if="discount_num">
+                                  <td t-if="discount_num and line.product_id.product_tmpl_id">
                                       <input type="text" class="form-control" t-att-value="discount_money.get(line.product_id.id)" id="discount_money" readonly="True" size="6"/>
                                   </td>
                               </tr>
                           </t>
                       </tbody>
                   </table>
+            </xpath>
+
+            <xpath expr="//div[@id='right_column']" position="before">
+                <div class="col-lg-3 col-lg-offset-1 col-sm-3 col-md-3 text-muted">
+                    <h4 style="color:red;">账户余额为：</h4>
+                    <t t-if="not order.partner_id.credit or order.partner_id.credit >= 0">
+                        <input type="text" name="show_yue" value="0" readonly="True" style="color:red;"/>
+                    </t>
+                    <t t-if="order.partner_id.credit and order.partner_id.credit &lt; 0">
+                        <input type="text" name="show_yue" t-att-value="abs(order.partner_id.credit)" readonly="True"/>
+                    </t>
+                </div>
             </xpath>
         </template>
 

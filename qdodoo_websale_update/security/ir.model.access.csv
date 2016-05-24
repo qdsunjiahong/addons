@@ -37,3 +37,4 @@ access_qdodoo_promotion_version_discount,打折促销版本,model_qdodoo_promoti
 access_qdodoo_promotion_version_discount_items,打折促销版本明细,model_qdodoo_promotion_version_discount_items,base.group_portal,1,1,1,0
 access_qdodoo_promotion_version_discount_product,打折促销版本明细单品,model_qdodoo_promotion_version_discount_product,base.group_portal,1,1,1,0
 access_stock_warehouse,仓库,stock.model_stock_warehouse,base.group_portal,1,1,1,0
+access_mrp_bom_line,bom明细,mrp.model_mrp_bom_line,base.group_portal,1,1,1,0

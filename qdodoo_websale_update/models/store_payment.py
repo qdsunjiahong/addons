@@ -24,17 +24,21 @@ class qdodoo_account_voucher_inherit(models.Model):
         return super(qdodoo_account_voucher_inherit, self).cancel_voucher(cr, uid, ids, context=context)
 
 class store_deposit(models.Model):
+    """
+        门店存款
+    """
     _name = "store.deposit"
     _order = 'id desc'
 
     name = fields.Many2one('res.partner',string='账户',required=True)
     voucher_id = fields.Many2one('account.voucher',string='付款单')
     deposit_time = fields.Datetime(string='存款时间', required=True)
-    locat_deposit = fields.Char('地点', required=True)
+    locat_deposit = fields.Char('开户行', required=True)
     money = fields.Float(string='金额', digits=(20, 2), required=True)
     remarks = fields.Text(string='备注')
     company_id = fields.Many2one(related='name.company_id', relation='res.company',string='备注')
     state = fields.Selection([('draft',u'草稿'),('sent',u'待审核'),('done',u'待记账'),('over',u'完成'),('cancel',u'取消')],u'状态')
+    deposit_type = fields.Selection([('wy',u'网银'),('atm',u'ATM'),('sjyh',u'手机银行'),('zfb',u'支付宝'),('gt',u'柜台'),('other',u'其他')],u'付款方式')
 
     def _get_user(self, cr, uid, ids, context=None):
         user = self.pool.get('res.users')
@@ -84,13 +88,13 @@ class store_deposit(models.Model):
     def btn_over(self, cr, uid, ids, context=None):
         obj = self.browse(cr, uid, ids[0])
         voucher_obj = self.pool.get('account.voucher')
-        checking_obj = self.pool.get('qdodoo.checking.list')
+        # checking_obj = self.pool.get('qdodoo.checking.list')
         voucher_obj.proforma_voucher(cr, uid, [obj.voucher_id.id])
         if obj.name.credit < 0:
             all_money = -obj.name.credit
         else:
             all_money = 0.0
-        checking_obj.create(cr, uid, {'user_id':obj.name.id,'date':datetime.now(),'recharge':obj.money,'type':'beforehand','notes':obj.voucher_id.name,'all_money':all_money})
+        # checking_obj.create(cr, uid, {'user_id':obj.name.id,'date':datetime.now(),'recharge':obj.money,'type':'beforehand','notes':obj.voucher_id.name,'all_money':all_money})
         return self.write(cr, uid, ids, {'state':'over'})
 
     # 取消

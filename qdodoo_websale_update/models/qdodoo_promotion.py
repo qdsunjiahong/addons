@@ -6,7 +6,7 @@
 #
 ###########################################################################################
 
-from openerp import fields, models
+from openerp import fields, models, api
 from openerp.osv import osv
 import time
 from openerp.tools.translate import _
@@ -253,3 +253,25 @@ class qdodoo_promotion_version_discount_product(models.Model):
     name = fields.Many2one('product.product',u'单品')
     all_num = fields.Float(u'总优惠数')
     order_num = fields.Float(u'订单优惠数')
+
+class qdodoo_account_move_line(models.Model):
+    _inherit = 'account.move.line'
+
+    @api.model
+    def create(self, vals):
+        res = super(qdodoo_account_move_line, self).create(vals)
+        if res.partner_id and res.account_id.type in ('receivable','payable'):
+            recharge = 0
+            comsume = 0
+            if res.account_id.type == 'receivable':
+                if res.debit:
+                    comsume = res.debit
+                    type = 'order'
+                if res.credit:
+                    recharge = res.credit
+                    type = 'beforehand'
+            if comsume or recharge:
+                all_money = -res.partner_id.credit + recharge - comsume
+                self.env['qdodoo.checking.list'].sudo().create({'date':datetime.now(),'user_id':res.partner_id.id,'recharge':recharge,'comsume':comsume,
+                                                         'all_money':all_money,'type':type})
+        return res
