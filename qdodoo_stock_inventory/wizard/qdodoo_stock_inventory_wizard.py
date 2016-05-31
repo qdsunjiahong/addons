@@ -8,7 +8,7 @@
 
 from openerp import models, fields, api, _
 from openerp.exceptions import except_orm
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class qdodoo_stock_inventory_wizard(models.Model):
@@ -30,8 +30,8 @@ class qdodoo_stock_inventory_wizard(models.Model):
     @api.multi
     def action_inventory(self):
         # 组织过滤条件数据
-        datetime_start = self.date + " 00:00:01"
-        datetime_end = self.date + " 23:59:59"
+        datetime_start = (datetime.strptime(self.date,'%Y-%m-%d') + timedelta(days=-1)).strftime('%Y-%m-%d') + ' 15:00:00'
+        datetime_end = self.date + ' 15:59:59'
         # 获取数据模型定义
         production_obj = self.env['mrp.production']
         account_move_line_obj = self.env['account.move.line']
