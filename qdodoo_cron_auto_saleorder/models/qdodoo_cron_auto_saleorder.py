@@ -119,7 +119,7 @@ class qdodoo_cron_saleorder(osv.Model):
                     analytic_id = analytic_obj.search(cr, uid, [('name','=',partner_id_name.name+'营运部')])
                     if analytic_id:
                         order_id = self.create(cr, uid,
-                                     {'partner_id': partner_id[0],'company_id':3, 'order_policy':'manual','warehouse_id': stock_id[0], 'date_order': now,'beiyou_date':order_date,'is_auto':True},
+                                     {'project_id':partner_id_name.analytic_account_id.id,'partner_id': partner_id[0],'company_id':3, 'order_policy':'manual','warehouse_id': stock_id[0], 'date_order': now,'beiyou_date':order_date,'is_auto':True},
                                      context=context)
                         order_line_id = order.create(cr, uid, {'order_id': order_id,
                                                           'product_id': product_obj_id.id,
