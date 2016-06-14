@@ -266,9 +266,9 @@ class qdodoo_plan_purchase_order_line(models.Model):
     qty = fields.Float(u'数量(采购)')
     uom_id = fields.Many2one('product.uom',u'单位')
     partner_id = fields.Many2one('res.partner',u'供应商')
-    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态')
+    state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态', default='draft')
     colors = fields.Char(string=u'颜色', compute='_get_colors')
-    is_cancel = fields.Boolean(u'需要回退')
+    is_cancel = fields.Boolean(u'需要回退', default=False)
 
     # 获取颜色
     def _get_colors(self):
@@ -318,15 +318,50 @@ class qdodoo_plan_purchase_order_line(models.Model):
                 res['value']['price_unit'] = price
                 res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
                 # res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(partner_id) else obj.qty_jh
-            # else:
-            #     res['value']['price_unit'] = product_obj.standard_price
+            else:
+                res['value']['price_unit'] = 0.0
             res['value']['name'] = product_obj.product_tmpl_id.name
             res['value']['uom_id'] = product_obj.uom_id.id
             return res
         else:
             return {}
 
-    _defaults = {
-        'state':'draft',
-        'is_cancel':False,
-    }
+    @api.multi
+    def split_quantities(self):
+        self.write({'qty':self.qty-1,'qty_jh':self.qty_jh-1})
+        self.copy({'qty':1,'qty_jh':1})
+        view_ref = self.env['ir.model.data'].get_object_reference('qdodoo_plan_purchase_order', 'view_form_qdodoo_plan_purchase_order')
+        view_id = view_ref and view_ref[1] or False,
+        view_ref_tree = self.env['ir.model.data'].get_object_reference('qdodoo_plan_purchase_order', 'view_tree_qdodoo_plan_purchase_order')
+        view_id_tree = view_ref_tree and view_ref_tree[1] or False,
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('计划转采购'),
+            'res_model': 'qdodoo.plan.purchase.order',
+            'res_id': self.order_id.id,
+            'view_type': 'form',
+            'view_mode': 'form,tree',
+            'views': [(view_id,'form'),(view_id_tree,'tree')],
+            'view_id': view_id,
+
+        }
+
+class qdodoo_res_partner_inherit(models.Model):
+
+    _inherit = 'res.partner'
+
+    def name_search(self, cr, uid, name, args=None, operator='ilike', context=None, limit=100):
+        if args is None:
+            args = []
+        if context is None:
+            context={}
+        if context.get('qdodoo_log'):
+            supplierinfo_obj = self.pool.get('product.supplierinfo')
+            product_obj = self.pool.get('product.product')
+            supplierinfo_ids = supplierinfo_obj.search(cr, uid, [('product_tmpl_id','=',product_obj.browse(cr, uid, context.get('product_id')).product_tmpl_id.id)])
+            partner_list = []
+            for supplierinfo_id in supplierinfo_obj.browse(cr, uid, supplierinfo_ids):
+                partner_list.append(supplierinfo_id.name.id)
+            args.append(('id','in',partner_list))
+        return super(qdodoo_res_partner_inherit, self).name_search(cr, uid, name, args=args, operator=operator, context=context, limit=limit)
+

@@ -64,15 +64,15 @@
                                                domain="[('company_id','=',parent.company_id)]"/>
                                         <field name="qty_jh" sum="合计"/>
                                         <field name="qty" sum="合计" attrs="{'required':[('state','!=','draft')]}"/>
+                                        <button name="split_quantities" string="拆分" type="object" icon="STOCK_PREFERENCES" attrs="{'invisible': [('qty', '=', 1)]}"/>
                                         <field name="plan_date_jh"/>
                                         <field name="plan_date" attrs="{'required':[('state','!=','draft')]}"/>
-                                        <field name="price_unit" invisible="1"/>
-                                        <field name="price_unit2" readonly="1"/>
+                                        <field name="price_unit"/>
                                         <field name="uom_id"/>
                                         <field name="state" invisible="True"/>
                                         <field name="colors" invisible="True"/>
                                         <field name="partner_id" attrs="{'required':[('state','!=','draft')]}"
-                                               on_change="onchange_product_id(product_id,partner_id,qty,uom_id,parent.company_id)"/>
+                                               on_change="onchange_product_id(product_id,partner_id,qty,uom_id,parent.company_id)" context="{'qdodoo_log':True,'product_id':product_id}"/>
                                         <field name="name"/>
                                         <field name="is_cancel"/>
                                     </tree>
@@ -92,7 +92,7 @@
             <field name="model">qdodoo.plan.purchase.order</field>
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <tree string="计划转采购" colors="red:state == 'draft'">
+                <tree string="计划转采购" colors="red:state == 'apply'">
                     <field name="create_date_new"/>
                     <field name="location_id"/>
                     <field name="minimum_planned_date"/>
