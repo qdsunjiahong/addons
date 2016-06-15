@@ -24,3 +24,8 @@ class qdodoo_account_move_line_log(models.Model):
     _inherit = 'account.move.line'
 
     is_mrp_inventory = fields.Boolean(u'是否是生产盘点差异产生的分录')
+
+class qdodoo_stock_move_log(models.Model):
+    _inherit = 'stock.move'
+
+    is_mrp_inventory = fields.Boolean(u'是否是生产盘点差异产生的调拨', default=False)

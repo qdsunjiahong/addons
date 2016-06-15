@@ -35,6 +35,7 @@ class qdodoo_stock_inventory_wizard(models.Model):
         # 获取数据模型定义
         production_obj = self.env['mrp.production']
         account_move_line_obj = self.env['account.move.line']
+        stock_move_obj = self.env['stock.move']
         report_obj = self.env['qdodoo.stock.inventory.report2']
         # 审核盘点
         # 根据盘点表中辅助核算项修改明细中辅助核算项
@@ -87,8 +88,21 @@ class qdodoo_stock_inventory_wizard(models.Model):
                     account_lst.append(move_line.move_id)
                 sql_d = """delete from account_move_line where id=%s"""%move_line.id
                 self._cr.execute(sql_d)
+            move_all = []
             for key_ll,value_ll in end_product_dict.items():
                 for key_ll1,value_ll1 in value_ll.items():
+                    # 查询对应的调拨单
+                    stock_move_ids = stock_move_obj.search([('is_mrp_inventory','=',False),('product_id','=',key_ll1.id),('name', '=', 'INV:' + self.inventory_id.name)])
+                    for stock_move_id in stock_move_ids:
+                        if stock_move_id not in move_all:
+                            move_all.append(stock_move_id)
+                    if stock_move_ids:
+                        if stock_move_ids[0].location_dest_id.usage == 'inventory':
+                            res_id = stock_move_ids[0].copy({'is_mrp_inventory':True,'product_uom_qty':abs(value_ll1),'location_dest_id':key_ll1.property_stock_production.id})
+                        if stock_move_ids[0].location_id.usage == 'inventory':
+                            res_id = stock_move_ids[0].copy({'is_mrp_inventory':True,'product_uom_qty':abs(value_ll1),'location_id':key_ll1.property_stock_production.id})
+                        if res_id:
+                            res_id.action_done()
                     # 如果有凭证，生成对应的凭证明细
                     if account_lst:
                         account_id = account_lst[0].copy({'ref':key_ll.name})
@@ -138,6 +152,10 @@ class qdodoo_stock_inventory_wizard(models.Model):
         # 删除原有的会计凭证、明细
         for line in account_lst:
             line.unlink()
+        # 删除原有的调拨单
+        for line in move_all:
+            sql_e = """delete from stock_move where id=%s"""%line.id
+            self._cr.execute(sql_e)
         if return_list:
             view_model, view_id = self.env['ir.model.data'].get_object_reference('qdodoo_stock_inventory',
                                                                                  'qdodoo_stock_inventory_report2')
