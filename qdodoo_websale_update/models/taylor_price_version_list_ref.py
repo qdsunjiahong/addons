@@ -240,7 +240,6 @@ class qdodoo_product_pricelist_inherit(models.Model):
             if (line_key.date_end is False) and not version:
                 a = line_value
                 version = line_key
-
         if not version:
             # 获取当前登录人用户的价格表
             property_product_pricelist =  users_obj.browse(cr, uid, uid).partner_id.property_product_pricelist
@@ -279,7 +278,6 @@ class qdodoo_product_pricelist_inherit(models.Model):
             (prod_tmpl_ids, prod_ids, categ_ids, version.id))
         item_ids = [x[0] for x in cr.fetchall()]
         items = self.pool.get('product.pricelist.item').browse(cr, uid, item_ids, context=context)
-
         price_types = {}
 
         results = {}
@@ -392,6 +390,7 @@ class qdodoo_product_pricelist_inherit(models.Model):
                     rule_id = rule.id
                 break
             # Final price conversion to target UoM
+
             price = product_uom_obj._compute_price(cr, uid, price_uom_id, price, qty_uom_id)
             results[product.id] = (price, rule_id)
         return results

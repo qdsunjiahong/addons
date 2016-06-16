@@ -87,15 +87,19 @@ class qdodooo_website_update(website_sale):
         # 获取打折促销信息
         promotion_obj = request.registry['qdodoo.promotion']
         promotion_user = request.registry['qdodoo.user.promotion']
+        portal_obj = request.registry['qdodoo.one.portal.num']
         users_obj = request.registry['res.users']
         product_num_dict,discount_money = self.get_discount_info(cr, uid, order, promotion_obj, promotion_user, users_obj)
         if product_num_dict:
+            # 查询此门店可优惠的总数量
+            protal_dict = {}
+            portal_ids = portal_obj.search(cr, uid, [('name','in',product_num_dict.keys()),('protal_id','=',uid)])
+            for portal_id in portal_obj.browse(cr, uid, portal_ids):
+                protal_dict[portal_id.name.id] = portal_id.one_portal_num
             for key,value in product_num_dict.items():
-                if value[1]:
-                    if value[0]:
-                        discount_num[key] = min(value[0], value[1])
-                    else:
-                        discount_num[key] = value[1]
+                num = min(value[0], value[1],protal_dict.get(key,0))
+                if num:
+                    discount_num[key] = num
         values = {
             'discount_num':discount_num,
             'discount_money':discount_money,
@@ -104,10 +108,13 @@ class qdodooo_website_update(website_sale):
             'compute_currency': compute_currency,
             'suggested_products': [],
         }
+
+        pricelist = self.get_pricelist()
+
         if order:
             _order = order
             if not context.get('pricelist'):
-                _order = order.with_context(pricelist=order.pricelist_id.id)
+                _order = order.with_context(pricelist=pricelist.id)
             values['suggested_products'] = _order._cart_accessories()
 
         return request.website.render("website_sale.cart", values)
@@ -199,6 +206,7 @@ class qdodooo_website_update(website_sale):
         # 循环获取的价格表版本明细
         # 获取产品推荐信息
         recommend_dict = []
+
         for product_item in product_list_item:
             #查询出相应的行
             i = i+1
@@ -229,6 +237,7 @@ class qdodooo_website_update(website_sale):
             if  product_item.product_id:
                 if product_item.is_recommend and (product_item.product_id.product_tmpl_id.id not in recommend_dict):
                     recommend_dict.append(product_item.product_tmpl_id.product_tmpl_id.id)
+                print product_item.product_id,'11111111'
                 if product_item.product_id.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_id.product_tmpl_id.id)
                     key[product_item.product_id.product_tmpl_id.id]=product_item.multipl
@@ -462,8 +471,12 @@ class qdodooo_website_update(website_sale):
         for mrp_pro,mrp_id in mrp_dict.items():
             num = 999999999
             for line in mrp_id.bom_line_ids:
-                if line.product_id.product_tmpl_id.id in re_dict and re_dict.get(line.product_id.product_tmpl_id.id,0.0) < num:
-                    num = re_dict.get(line.product_id.product_tmpl_id.id,0.0)
+                quant_ids = quant_obj.search(cr, uid, [('product_id','=',line.product_id.id),('location_id','=',local_id),('reservation_id','=',False)])
+                new = 0
+                for quant_id in quant_obj.browse(cr, uid, quant_ids):
+                    new += quant_id.qty
+                if new < num:
+                    num = new
             re_dict[mrp_pro] = num
         return re_dict
 
@@ -576,7 +589,20 @@ class qdodooo_website_update(website_sale):
         if redirection:
             return redirection
         values = self.checkout_values()
-
+        product_ids = []
+        product_dict = {}
+        product_line_dict = {}
+        for line in order.order_line:
+            product_dict[line.product_id.product_tmpl_id.id] = line.product_uom_qty
+            product_line_dict[line.product_id.product_tmpl_id.id] = line.id
+            if line.product_id.product_tmpl_id.id not in product_ids:
+                product_ids.append(line.product_id.product_tmpl_id.id)
+        multiple=request.session.get('taylor_session')
+        for key_line, value_line in self.get_local_num_dict(product_ids).items():
+            if product_dict.get(key_line,0)*multiple.get(key_line,1) > value_line:
+                sql = "delete from sale_order_line where id=%s"%product_line_dict[key_line]
+                cr.execute(sql)
+                return "<html><head><body><p>产品库存不足(库存不足产品已从购物车中删除，请重新购买)！</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
         return request.redirect("/shop/confirm_order")
         # return request.website.render("website_sale.checkout", values)
 
@@ -663,6 +689,42 @@ class qdodooo_website_update(website_sale):
         sale_order_obj = registry.get('sale.order')
         sale_order_obj.write(cr, uid, order.id, {'minus_money':minus_money})
         return request.redirect("/shop/payment")
+
+    # 获取减价促销
+    def get_detection_info(self, cr, uid, order, promotion_obj, promotion_user, users_obj):
+        # 获取订单中所有的产品、价格
+        num_dict = {}
+        for line in order.order_line:
+            if line.product_id.id not in num_dict:
+                num_dict[line.product_id.id] = line.price_unit
+        # 判断是否有对应的打折促销单
+        date = datetime.datetime.now().date().strftime('%Y-%m-%d')
+        version = []
+        promotion_id = promotion_obj.search(cr, uid, [('selection_ids','=','deduction'),('company_id','=',users_obj.browse(cr, uid, uid).company_id.id)])
+        if promotion_id:
+            promotion_user_ids = promotion_user.search(cr, uid, [('user','=',uid),('promotion','in',promotion_id)])
+            if not promotion_user_ids:
+                return {}
+            # 判断是否有满足时间条件的版本
+            for line_ids in promotion_obj.browse(cr, uid, promotion_id):
+                for line in line_ids.version_deduction_id:
+                    if (line.date_start <= date or not line.date_start) and (line.date_end >= date or not line.date_end):
+                        version.append(line)
+            # 获取当前登录人的销售团队
+            user_section_id = users_obj.browse(cr, uid, uid).default_section_id
+            if not user_section_id:
+                raise except_orm(_('Warning!'),_('当前登录人未设置销售团队！'))
+        # 如果存在满足时间段的版本
+        res_dict = {}
+        for version_line in version:
+            # 判断满足条件的条目
+            for line_key in version_line.items_id:
+                # 如果满足品牌
+                if line_key.section_id.id == user_section_id.id or not line_key.section_id:
+                    # 满足单品
+                    if line_key.product_id.id in num_dict:
+                        res_dict[line_key.product_id.id] = num_dict[line_key.product_id.id] - line_key.product_items_num
+        return res_dict
 
     # 获取打折促销
     def get_discount_info(self, cr, uid, order, promotion_obj, promotion_user, users_obj):
@@ -847,11 +909,8 @@ class qdodooo_website_update(website_sale):
                 if value%key.fold != 0:
                     raise except_orm(_('警告!'),_('%s分类的产品不满足设置的倍数！')%key.name)
         # 判断产品的数量是否按照分类的倍数获取的
-        promotion_obj = request.registry['qdodoo.promotion']
-        line_obj = request.registry['sale.order.line']
-        # checking_obj = request.registry['qdodoo.checking.list']
-        users_obj = request.registry['res.users']
         promotion_user = request.registry['qdodoo.user.promotion']
+        portal_obj = request.registry['qdodoo.one.portal.num']
         discount_product_user = request.registry['qdodoo.promotion.version.discount.product']
         # 获取满减金额
         product_price_dict = self.get_minus_money(cr, uid, order, promotion_obj, promotion_user, users_obj)
@@ -859,23 +918,35 @@ class qdodooo_website_update(website_sale):
         product_num_dict = self.get_minus_gift(cr, uid, order, promotion_obj, promotion_user, users_obj)
         # 获取打折信息
         product_num,discount_money = self.get_discount_info(cr, uid, order, promotion_obj, promotion_user, users_obj)
-        minus_money = 0
+        # 获取减价信息
+        res_dict = self.get_detection_info(cr, uid, order, promotion_obj, promotion_user, users_obj)
         for line in order.order_line:
-            if line.product_id.id in product_num and product_num[line.product_id.id ][1]:
-                if product_num[line.product_id.id][0]:
-                    min_qty = min(product_num[line.product_id.id][0],product_num[line.product_id.id][1])
-                else:
-                    min_qty = product_num[line.product_id.id][1]
-                if min_qty < line.multiple_number:
-                    line_obj.copy(cr, uid, line.id, {'product_uom_qty':line.multiple_number-min_qty})
-                    line_obj.write(cr, uid, line.id, {'product_uom_qty':min_qty,'price_unit':discount_money.get(line.product_id.id)})
-                    if min_qty == product_num[line.product_id.id][0]:
-                        discount_product_user.write(cr, uid, product_num[line.product_id.id][2], {'all_num':discount_product_user.browse(cr, uid, product_num[line.product_id.id][2]).all_num-line.multiple_number})
+            if line.product_id.id in res_dict:
+                line_obj.write(cr, uid, line.id, {'price_unit':res_dict[line.product_id.id]})
+        minus_money = 0
+        if product_num:
+            # 查询此门店可优惠的总数量
+            protal_dict = {}
+            protal_product_dict = {}
+            portal_ids = portal_obj.search(cr, uid, [('name','in',product_num.keys()),('protal_id','=',uid)])
+            for portal_id in portal_obj.browse(cr, uid, portal_ids):
+                protal_dict[portal_id.name.id] = portal_id.one_portal_num
+                protal_product_dict[portal_id.name.id] = portal_id
+        for line in order.order_line:
+            if line.product_id.id in product_num and product_num[line.product_id.id][1]:
+                min_qty = min(product_num[line.product_id.id][0],product_num[line.product_id.id][1],protal_dict.get(line.product_id.id,0))
+                if min_qty > 0:
+                    if min_qty < line.multiple_number:
+                        line_obj.copy(cr, uid, line.id, {'product_uom_qty':line.multiple_number-min_qty})
+                        line_obj.write(cr, uid, line.id, {'product_uom_qty':min_qty,'price_unit':discount_money.get(line.product_id.id)})
+                        discount_product_user.write(cr, uid, product_num[line.product_id.id][2], {'all_num':product_num[line.product_id.id ][1]-min_qty})
+                        protal_product_dict[line.product_id.id].write({'one_portal_num':protal_dict[line.product_id.id]-min_qty})
                     else:
-                        discount_product_user.write(cr, uid, product_num[line.product_id.id][2], {'all_num':0})
+                        line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number,'price_unit':discount_money.get(line.product_id.id)})
+                        discount_product_user.write(cr, uid, product_num[line.product_id.id][2], {'all_num':product_num[line.product_id.id ][1]-line.multiple_number})
+                        protal_product_dict[line.product_id.id].write({'one_portal_num':protal_dict[line.product_id.id]-line.multiple_number})
                 else:
-                    line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number,'price_unit':discount_money.get(line.product_id.id)})
-                    discount_product_user.write(cr, uid, product_num[line.product_id.id][2], {'all_num':discount_product_user.browse(cr, uid, product_num[line.product_id.id][2]).all_num-line.multiple_number})
+                    line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
             else:
                 line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
         for key,valus in product_price_dict.items():
@@ -999,16 +1070,26 @@ class qdodooo_website_update(website_sale):
         discount_num = {}
         promotion_obj = request.registry['qdodoo.promotion']
         promotion_user = request.registry['qdodoo.user.promotion']
+        portal_obj = request.registry['qdodoo.one.portal.num']
         users_obj = request.registry['res.users']
         product_num_dict,discount_money = self.get_discount_info(cr, uid, order, promotion_obj, promotion_user, users_obj)
+        res_dict = self.get_detection_info(cr, uid, order, promotion_obj, promotion_user, users_obj)
         if product_num_dict:
+            # 查询此门店可优惠的总数量
+            protal_dict = {}
+            portal_ids = portal_obj.search(cr, uid, [('name','in',product_num_dict.keys()),('protal_id','=',uid)])
+            for portal_id in portal_obj.browse(cr, uid, portal_ids):
+                protal_dict[portal_id.name.id] = portal_id.one_portal_num
             for key,value in product_num_dict.items():
-                if value[1]:
-                    if value[0]:
-                        discount_num[key] = min(value[0], value[1])
-                    else:
-                        discount_num[key] = value[1]
-
+                num = min(value[0], value[1],protal_dict.get(key,0))
+                if num:
+                    discount_num[key] = num
+        minus_money = order.minus_money
+        for line in order.order_line:
+            if line.product_id.id in res_dict:
+                minus_money += (line.price_unit - res_dict[line.product_id.id])*line.product_uom_qty
+        request.registry['sale.order'].write(cr, uid, order.id, {'minus_money':minus_money})
+        values['res_dict'] = res_dict
         values['discount_num'] = discount_num
         values['discount_money'] = discount_money
 
@@ -1080,6 +1161,8 @@ class qdodooo_website_update(website_sale):
                             log = True
             if not log:
                 promotion_ids_true.remove(promotion_id.id)
+        # 过滤不满足
+        pass
         # 获取当前登录人已参加的活动
         promotion_use_obj = request.registry.get('qdodoo.user.promotion')
         promotion_use_ids = promotion_use_obj.search(cr, uid, [('user','=',uid),('promotion','in',promotion_ids_true)])

@@ -43,8 +43,7 @@ class qdodoo_website(orm.Model):
         # create so if needed
         if not sale_order_id and (force_create or code):
             # TODO cache partner_id session
-            partner = self.pool['res.users'].browse(cr, SUPERUSER_ID, uid, context=context).partner_id
-
+            partner = self.pool['res.users'].browse(cr, uid, uid, context=context).partner_id
             for w in self.browse(cr, uid, ids):
                 values = {
                     'user_id': w.user_id.id,
@@ -59,7 +58,7 @@ class qdodoo_website(orm.Model):
                 request.session['sale_order_id'] = sale_order_id
         if sale_order_id:
             # TODO cache partner_id session
-            partner = self.pool['res.users'].browse(cr, SUPERUSER_ID, uid, context=context).partner_id
+            partner = self.pool['res.users'].browse(cr, uid, uid, context=context).partner_id
 
             sale_order = sale_order_obj.browse(cr, SUPERUSER_ID, sale_order_id, context=context)
             if not sale_order.exists():
@@ -73,9 +72,7 @@ class qdodoo_website(orm.Model):
                     pricelist_id = pricelist_ids[0]
                     request.session['sale_order_code_pricelist_id'] = pricelist_id
                     update_pricelist = True
-
             pricelist_id = request.session.get('sale_order_code_pricelist_id') or partner.property_product_pricelist.id
-
             # check for change of partner_id ie after signup
             if sale_order.partner_id.id != partner.id and request.website.partner_id.id != partner.id:
                 flag_pricelist = False
@@ -94,7 +91,8 @@ class qdodoo_website(orm.Model):
 
                 if flag_pricelist or values.get('fiscal_position', False) != fiscal_position:
                     update_pricelist = True
-
+            if pricelist_id != sale_order.pricelist_id.id:
+                update_pricelist = True
             # update the pricelist
             if update_pricelist:
                 values = {'pricelist_id': pricelist_id}
@@ -106,7 +104,6 @@ class qdodoo_website(orm.Model):
             # update browse record
             if (code and code != sale_order.pricelist_id.code) or sale_order.partner_id.id !=  partner.id:
                 sale_order = sale_order_obj.browse(cr, SUPERUSER_ID, sale_order.id, context=context)
-
         return sale_order
 
 

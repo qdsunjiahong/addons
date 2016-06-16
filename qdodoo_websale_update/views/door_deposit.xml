@@ -116,6 +116,51 @@
             </record>
             <menuitem id="menu_qdodoo_pricelist_edit_line" name="价格表修改记录" parent="base.menu_base_config" action="action_qdodoo_pricelist_edit_line" sequence="71"/>
 
+            <record model="ir.ui.view" id="tree_qdodoo_order_seckill">
+                <field name="name">qdodoo.order.seckill.tree</field>
+                <field name="model">qdodoo.order.seckill</field>
+                <field name="arch" type="xml">
+                    <tree create="false" edit="false">
+                        <field name="partner_id"/>
+                        <field name="name"/>
+                        <field name="date"/>
+                        <field name="money"/>
+                    </tree>
+                </field>
+            </record>
+
+            <record id="form_qdodoo_order_max_wizard" model="ir.ui.view">
+                <field name="name">qdodoo.order.max.wizard.form</field>
+                <field name="model">qdodoo.order.max.wizard</field>
+                <field name="arch" type="xml">
+                    <form string="查看秒杀资格">
+                        <group>
+                            <div>查看本月拥有秒杀资格的客户</div>
+                        </group>
+                        <footer>
+                            <button name="btn_search" string="查看" type="object" class="oe_highlight"/>
+                            or
+                            <button string="取消" class="oe_link" special="cancel" />
+                        </footer>
+                    </form>
+                </field>
+            </record>
+            <record model="ir.actions.act_window" id="action_qdodoo_order_max">
+                <field name="name">查看秒杀资格</field>
+                <field name="res_model">qdodoo.order.max.wizard</field>
+                <field name="view_type">form</field>
+                <field name="view_mode">form</field>
+                <field name="target">new</field>
+            </record>
+            <menuitem id="menu_qdodoo_order_max" name="秒杀资格" parent="base.menu_sales" action="action_qdodoo_order_max" sequence="99"/>
+
+        </data>
+        <data noupdate="1">
+
+            <record id="default_order_max" model="ir.config_parameter">
+                <field name="key">order.max</field>
+                <field name="value">1000</field>
+            </record>
 
         </data>
     </openerp>

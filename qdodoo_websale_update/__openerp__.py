@@ -31,10 +31,11 @@
             'views/qdodoo_website_tempview.xml',
              'views/res_partner_inherit.xml',
              'views/qdodoo_promotion_view.xml',
+             'views/door_deposit.xml',
              'security/ir.model.access.csv',
              'security/qdodoo_websale_update.xml',
              'views/qdodoo_portal_sale.xml',
-             'views/door_deposit.xml',],
+             ],
     'application': True,  # 是否认证
     'installable': True,  # 是否可安装
     'auto_install': False,  # 是否自动安装

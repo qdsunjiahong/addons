@@ -450,6 +450,7 @@
                                     <tr>
                                         <th colspan="2" width="80">Product</th>
                                         <th width="100">Price</th>
+                                        <th width="100" t-if="res_dict">优惠价格</th>
                                         <th width="120">Quantity</th>
                                         <th width="100">倍数</th>
                                         <th width="100">实际数量</th>
@@ -476,6 +477,9 @@
                                              "from_currency": "website_sale_order.pricelist_id.currency_id",
                                              "display_currency": "user_id.partner_id.property_product_pricelist.currency_id"
                                          }'/>
+                                        </td>
+                                        <td t-if="res_dict">
+                                            <input type="text" class="form-control" t-att-value="res_dict.get(line.product_id.id)" id="res_dict" readonly="True" size="6"/>
                                         </td>
                                         <td>
                                             <div t-esc="line.product_uom_qty"/>
@@ -618,6 +622,9 @@
                   </table>
             </xpath>
 
+            <xpath expr="//t[@t-call='website_sale.total']" position="replace">
+            </xpath>
+
             <xpath expr="//div[@id='right_column']" position="before">
                 <div class="col-lg-3 col-lg-offset-1 col-sm-3 col-md-3 text-muted">
                     <h4 style="color:red;">账户余额为：</h4>
@@ -635,7 +642,7 @@
             <xpath expr="//tr[@id='order_total']" position="replace">
 
                 <tr width="100" id="minus_money">
-                    <th><h3>满减金额: </h3></th>
+                    <th><h3>优惠金额: </h3></th>
                     <th class="text-right">
                       <h3><span t-field="website_sale_order.minus_money" style="white-space: nowrap;" t-field-options='{
                           "widget": "monetary",
@@ -740,10 +747,15 @@
                                       <t t-foreach="promotion or []" t-as="promotion">
                                           <tr>
                                               <td>
-                                                <input type="text" class="form-control" t-att-id="promotion.id" t-att-value="promotion.name" readonly="True"></input>
+                                                  <input type="text" class="form-control" t-att-id="promotion.id" t-att-value="promotion.name" readonly="True"></input>
                                               </td>
                                               <td>
-                                                <button type="button" class="btn btn-danger">报名</button>
+                                                  <button type="button" class="btn btn-danger">报名</button>
+                                              </td>
+                                          </tr>
+                                          <tr t-if="promotion.active_information">
+                                              <td>
+                                                  <span style="width:100%" t-esc="promotion.active_information"></span>
                                               </td>
                                           </tr>
                                       </t>
@@ -759,7 +771,7 @@
                                             </h4>
                                          </div>
                                          <div class="modal-footer">
-                                            <form id="conform_promotion" method="post" action="/shop/user/info">
+                                            <form id="conform_promotion" method="post" action="/tfs/user/info">
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-default"
                                                             data-dismiss="modal">确认
