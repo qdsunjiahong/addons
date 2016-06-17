@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="form_tms_return_box_money" model="ir.ui.view">
+            <field name="name">tms.return.box.money.form</field>
+            <field name="model">tms.return.box.money</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="btn_done" string="确认" states='draft' type="object" class="oe_highlight"/>
+                        <button name="btn_cancel" string="取消" states='draft' type="object" class="oe_highlight"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirm_contract":"red"}' readonly="1"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                                <field name="money_type" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                            </group>
+                            <group>
+                                <field name="car_id" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                            </group>
+                        </group>
+                        <field name="order_line" attrs="{'invisible':[('money_type','!=','return_box')],'readonly':[('state','!=','draft')]}">
+                            <tree editable="top">
+                                <field name="logistics_id" required="True"/>
+                                <field name="location_id" invisible="True"/>
+                                <field name="portal_id" required="True" domain="[('tms_location_id','=',location_id)]"/>
+                                <field name="return_box_num" sum="合计"/>
+                                <field name="return_box_standard" sum="合计"/>
+                                <field name="return_box_money" sum="合计"/>
+                                <field name="return_box_partner" required="True"/>
+                            </tree>
+                        </field>
+                        <field name="order_line2" attrs="{'invisible':[('money_type','!=','special')],'readonly':[('state','!=','draft')]}">
+                            <tree editable="top">
+                                <field name="logistics_id" required="True"/>
+                                <field name="location_id" invisible="True"/>
+                                <field name="portal_id" required="True" domain="[('tms_location_id','=',location_id)]"/>
+                                <field name="special_result" required="True"/>
+                                <field name="jyg_assume" sum="合计"/>
+                                <field name="trilateral_assume" sum="合计"/>
+                                <field name="portal_assume" sum="合计"/>
+                                <field name="all_assume" sum="合计"/>
+                                <field name="return_box_partner" required="True"/>
+                                <field name="payment_money" sum="合计"/>
+                                <field name="note"/>
+                            </tree>
+                        </field>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="tree_tms_return_box_money">
+            <field name="name">tms.return.box.money.Tree</field>
+            <field name="model">tms.return.box.money</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="car_id"/>
+                    <field name="money_type"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="search_tms_return_box_money" model="ir.ui.view">
+            <field name="name">tms.return.box.money.search</field>
+            <field name="model">tms.return.box.money</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="car_id"/>
+                    <field name="money_type"/>
+                </search>
+            </field>
+        </record>
+        <record id="action_tms_return_box_money" model="ir.actions.act_window">
+            <field name="name">回箱和特殊运费</field>
+            <field name="res_model">tms.return.box.money</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="tree_tms_return_box_money"/>
+            <field name="search_view_id" ref="search_tms_return_box_money"/>
+        </record>
+
+        <menuitem name="回箱和特殊运费" id="menu_tms_return_box_money" parent="menu_qdodoo_tms_two"
+                  action="action_tms_return_box_money" sequence="5"/>
+
+    </data>
+</openerp>

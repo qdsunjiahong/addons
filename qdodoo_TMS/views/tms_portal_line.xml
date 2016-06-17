@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="view_partner_form_inherit">
+            <field name="name">res.partner.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//page[@name='sales_purchases']" position="after">
+                    <page string="物流信息">
+                        <group>
+                            <group>
+                                <field name="tms_location_id"/>
+                                <field name="portal_plus"/>
+                                <field name="tms_other"/>
+                            </group>
+                            <group>
+                                <field name="warm_box"/>
+                                <field name="tms_piece"/>
+                                <field name="return_warm_box"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>

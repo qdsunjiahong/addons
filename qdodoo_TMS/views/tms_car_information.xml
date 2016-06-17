@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <menuitem name="TMS" id="menu_qdodoo_tms" sequence="60"/>
+        <menuitem name="TMS" id="menu_qdodoo_tms_two" parent="menu_qdodoo_tms" sequence="1"/>
+
+        <record id="form_qdodoo_tms_car_information" model="ir.ui.view">
+            <field name="name">tms.car.information.form</field>
+            <field name="model">tms.car.information</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="name" required="True"/>
+                            <field name="owner" required="True"/>
+                            <field name="car_phone"/>
+                            <field name="car_carid"/>
+                            <field name="location_id"/>
+                            <field name="warm_box"/>
+                        </group>
+                        <group>
+                            <field name="car_num" required="True"/>
+                            <field name="driver"/>
+                            <field name="driver_phone"/>
+                            <field name="driver_carid"/>
+                            <field name="other"/>
+                            <field name="piece"/>
+                        </group>
+                    </group>
+                    <field name="price_line">
+                        <tree editable="top">
+                            <field name="name"/>
+                        </tree>
+                    </field>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="tree_qdodoo_tms_car_information">
+            <field name="name">tms.car.information.Tree</field>
+            <field name="model">tms.car.information</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="rec_name"/>
+                    <field name="car_type"/>
+                    <field name="driver"/>
+                    <field name="location_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="search_qdodoo_tms_car_information" model="ir.ui.view">
+            <field name="name">tms.car.information.search</field>
+            <field name="model">tms.car.information</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="car_num"/>
+                    <field name="name"/>
+                    <field name="owner"/>
+                    <field name="driver"/>
+                </search>
+            </field>
+        </record>
+        <record id="action_qdodoo_tms_car_information" model="ir.actions.act_window">
+            <field name="name">车辆档案</field>
+            <field name="res_model">tms.car.information</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="tree_qdodoo_tms_car_information"/>
+            <field name="search_view_id" ref="search_qdodoo_tms_car_information"/>
+        </record>
+
+        <menuitem name="车辆档案" id="menu_qdodoo_tms_car_information" parent="menu_qdodoo_tms_two"
+                  action="action_qdodoo_tms_car_information" sequence="1"/>
+
+    </data>
+</openerp>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="form_tms_trilateral_logistics" model="ir.ui.view">
+            <field name="name">tms.trilateral.logistics.form</field>
+            <field name="model">tms.trilateral.logistics</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <field name="name" required="True"/>
+                            <field name="location_id"/>
+                            <field name="warm_box"/>
+                            <field name="piece"/>
+                        </group>
+                        <group>
+                            <field name="trilateral_add"/>
+                            <field name="price_unit"/>
+                            <field name="other"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="tree_tms_trilateral_logistics">
+            <field name="name">tms.trilateral.logistics.Tree</field>
+            <field name="model">tms.trilateral.logistics</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="location_id"/>
+                    <field name="trilateral_add"/>
+                    <field name="price_unit"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="search_tms_trilateral_logistics" model="ir.ui.view">
+            <field name="name">tms.trilateral.logistics.search</field>
+            <field name="model">tms.trilateral.logistics</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="location_id"/>
+                </search>
+            </field>
+        </record>
+        <record id="action_tms_trilateral_logistics" model="ir.actions.act_window">
+            <field name="name">短驳基础数据</field>
+            <field name="res_model">tms.trilateral.logistics</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="tree_tms_trilateral_logistics"/>
+            <field name="search_view_id" ref="search_tms_trilateral_logistics"/>
+        </record>
+
+        <menuitem name="短驳基础数据" id="menu_tms_trilateral_logistics" parent="menu_qdodoo_tms_two"
+                  action="action_tms_trilateral_logistics" sequence="3"/>
+
+    </data>
+</openerp>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="form_tms_stowage_wizard" model="ir.ui.view">
+            <field name="name">tms.stowage.wizard.wizard</field>
+            <field name="model">tms.stowage.wizard</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <group>
+                            <label for="date_start" string="订单区间"/>
+                            <div>
+                                <field name="date_start" style="width: 40%" required="True"/>
+                                ---
+                                <field name="date_end" style="width: 40%" required="True"/>
+                            </div>
+                            <field name="portal_id" domain="[('tms_location_id','=',location_id)]"/>
+                        </group>
+                        <group>
+                            <field name="logistics_id" required="True"/>
+                            <field name="location_id" invisible="True"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="查询" name="btn_select" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="action_tms_stowage_wizard" model="ir.actions.act_window">
+            <field name="name">配载信息选择</field>
+            <field name="res_model">tms.stowage.wizard</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="form_tms_stowage" model="ir.ui.view">
+            <field name="name">tms.stowage.form</field>
+            <field name="model">tms.stowage</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="btn_done" string="确认" states='draft' type="object" class="oe_highlight"/>
+                        <button name="btn_cancel" string="取消" states='draft' type="object" class="oe_highlight"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirm_contract":"red"}' readonly="1"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="date" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                                <field name="car_id" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                            </group>
+                            <group>
+                                <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/>
+                                <field name="price" domain="[('tms_id','=',car_id)]" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                            </group>
+                        </group>
+                        <button states="draft" name="%(action_tms_stowage_wizard)d" string="添加配载明细" type="action"></button>
+                        <field name="order_line" attrs="{'readonly':[('state','!=','draft')]}">
+                            <tree editable="top" create="false">
+                                <field name="logistics_id"/>
+                                <field name="portal_id"/>
+                                <field name="warm_box_num"/>
+                                <field name="other_num"/>
+                                <field name="portal_plus"/>
+                                <field name="trilateral_logistics"/>
+                                <field name="warm_box_money"/>
+                                <field name="other_money"/>
+                            </tree>
+                        </field>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="tree_tms_stowage">
+            <field name="name">tms.stowage.Tree</field>
+            <field name="model">tms.stowage</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="car_id"/>
+                    <field name="price"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="search_tms_stowage" model="ir.ui.view">
+            <field name="name">tms.stowage.search</field>
+            <field name="model">tms.stowage</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="date"/>
+                    <field name="car_id"/>
+                </search>
+            </field>
+        </record>
+        <record id="action_tms_stowage" model="ir.actions.act_window">
+            <field name="name">配载</field>
+            <field name="res_model">tms.stowage</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="tree_tms_stowage"/>
+            <field name="search_view_id" ref="search_tms_stowage"/>
+        </record>
+
+        <menuitem name="配载" id="menu_tms_stowage" parent="menu_qdodoo_tms_two"
+                  action="action_tms_stowage" sequence="4"/>
+
+    </data>
+</openerp>
