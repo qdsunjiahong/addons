@@ -939,5 +939,5 @@ class qdodoo_res_users(models.Model):
     """
     _inherit = 'res.users'
 
-    # is_portal_partner = fields.Boolean(u'是门店')
-    # city_id_new = fields.Many2one('account.analytic.account',u'城市')
+    is_portal_partner = fields.Boolean(u'是门店')
+    city_id_new = fields.Many2one('account.analytic.account',u'城市')
