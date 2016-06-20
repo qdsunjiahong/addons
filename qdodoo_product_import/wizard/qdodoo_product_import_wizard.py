@@ -42,6 +42,11 @@ class qdodoo_product_import(models.Model):
         category_public_dict = {}
         for category_public_id in category_public_ids:
             category_public_dict[category_public_id.complete_name.replace(' ', '')] = category_public_id.id
+        # 获取所有的pos分类
+        pos_category_ids = self.env['pos.category'].search([])
+        pos_category_dict = {}
+        for pos_category_id in pos_category_ids:
+            pos_category_dict[pos_category_id.complete_name.replace(' ', '')] = pos_category_id.id
         # 获取所有用户
         user_ids = self.env['res.users'].search([])
         # 循环所有用户{(name,company):id}
@@ -83,6 +88,16 @@ class qdodoo_product_import(models.Model):
                 partner = sh.cell(row, 20).value
                 description = sh.cell(row, 21).value
                 public_category = sh.cell(row, 22).value
+                is_pos = sh.cell(row, 23).value
+                pos_category = sh.cell(row, 24).value
+                if is_pos:
+                    if is_pos not in ('1','0'):
+                        raise except_orm(_(u'警告'), _(u'第%s行可用于POS数值非法') % row_n)
+                    else:
+                        if is_pos == '1':
+                            data['available_in_pos'] = True
+
+                data['barcode'] = ean_13
                 if not name:
                     raise except_orm(_(u'警告'), _(u'第%s行产品名称未填写') % row_n)
                 data['name'] = name
@@ -164,6 +179,10 @@ class qdodoo_product_import(models.Model):
                             raise except_orm(_(u'警告'), _(u'第%s行公开的产品分类填写错误') % row_n)
                         all_public_category_id.append(category_public_dict.get(pca.strip()))
                     data['public_categ_ids'] = [[6, False, all_public_category_id]]
+                if pos_category:
+                    if pos_category.strip() not in pos_category_dict:
+                        raise except_orm(_(u'警告'), _(u'第%s行公开的pos类别填写错误') % row_n)
+                    data['pos_categ_id'] = pos_category_dict.get(pos_category.strip())
                 if description:
                     data['description'] = description
                 create_obj = product_obj.create(data)
