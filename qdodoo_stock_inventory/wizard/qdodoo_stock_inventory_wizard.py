@@ -102,7 +102,8 @@ class qdodoo_stock_inventory_wizard(models.Model):
                         if stock_move_ids[0].location_id.usage == 'inventory':
                             res_id = stock_move_ids[0].copy({'is_mrp_inventory':True,'product_uom_qty':abs(value_ll1),'location_id':key_ll1.property_stock_production.id})
                         if res_id:
-                            res_id.action_done()
+                            # res_id.action_done()
+                            res_id.write({'state':'done'})
                     # 如果有凭证，生成对应的凭证明细
                     if account_lst:
                         account_id = account_lst[0].copy({'ref':key_ll.name})
