@@ -26,6 +26,7 @@ class qdodoo_product_import(models.Model):
         product_obj = self.env['product.template']
         partner_obj = self.env['product.supplierinfo']
         data_obj = self.env['ir.model.data']
+        uom_obj = self.env['product.uom']
         # 获取所有供应商
         partner_ids = self.env['res.partner'].search([('supplier', '=', True)])
         # 循环所有供应商生成字典{(name,company_id)：id}
@@ -53,6 +54,11 @@ class qdodoo_product_import(models.Model):
         user_dict = {}
         for user_id in user_ids:
             user_dict[(user_id.name, user_id.company_id.id)] = user_id.id
+        # 获取所有的单位信息
+        uom_dict = {}
+        uom_ids = uom_obj.search([])
+        for uom_id in uom_ids:
+            uom_dict[uom_id.name] = uom_id.id
         # 获取所有公司信息
         company_id_l = self.env.user.company_id.id
         company_ids = self.env['res.company'].search([])
@@ -90,6 +96,15 @@ class qdodoo_product_import(models.Model):
                 public_category = sh.cell(row, 22).value
                 is_pos = sh.cell(row, 23).value
                 pos_category = sh.cell(row, 24).value
+                product_uom = sh.cell(row, 25).value
+                if not product_uom:
+                    raise except_orm(_(u'警告'), _(u'第%s行缺少单位') % row_n)
+                else:
+                    if product_uom in uom_dict:
+                        data['uom_id'] = uom_dict[product_uom]
+                        data['uom_po_id'] = uom_dict[product_uom]
+                    else:
+                        raise except_orm(_(u'警告'), _(u'系统中缺少名字为%s的单位') % product_uom)
                 if is_pos:
                     if is_pos not in ('1','0'):
                         raise except_orm(_(u'警告'), _(u'第%s行可用于POS数值非法') % row_n)
