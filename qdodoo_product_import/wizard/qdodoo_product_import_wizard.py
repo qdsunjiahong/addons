@@ -7,7 +7,7 @@
 ###########################################################################################
 
 from openerp import models, fields, api, _
-from openerp.exceptions import except_orm
+from openerp.exceptions import UserError
 import xlrd, base64
 
 class qdodoo_product_import(models.Model):
@@ -98,30 +98,30 @@ class qdodoo_product_import(models.Model):
                 pos_category = sh.cell(row, 24).value
                 product_uom = sh.cell(row, 25).value
                 if not product_uom:
-                    raise except_orm(_(u'警告'), _(u'第%s行缺少单位') % row_n)
+                    raise UserError(_(u'警告'), _(u'第%s行缺少单位') % row_n)
                 else:
                     if product_uom in uom_dict:
                         data['uom_id'] = uom_dict[product_uom]
                         data['uom_po_id'] = uom_dict[product_uom]
                     else:
-                        raise except_orm(_(u'警告'), _(u'系统中缺少名字为%s的单位') % product_uom)
+                        raise UserError(_(u'警告'), _(u'系统中缺少名字为%s的单位') % product_uom)
                 if is_pos:
                     if is_pos not in ('1','0'):
-                        raise except_orm(_(u'警告'), _(u'第%s行可用于POS数值非法') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行可用于POS数值非法') % row_n)
                     else:
                         if is_pos == '1':
                             data['available_in_pos'] = True
 
                 data['barcode'] = ean_13
                 if not name:
-                    raise except_orm(_(u'警告'), _(u'第%s行产品名称未填写') % row_n)
+                    raise UserError(_(u'警告'), _(u'第%s行产品名称未填写') % row_n)
                 data['name'] = name
                 if sale_ok in ('Y', 'y'):
                     data['sale_ok'] = sale_ok
                 if purchase_ok in ('Y', 'y'):
                     data['purchase_ok'] = purchase_ok
                 if not type:
-                    raise except_orm(_(u'警告'), _(u'第%s行产品类型名称未填写') % row_n)
+                    raise UserError(_(u'警告'), _(u'第%s行产品类型名称未填写') % row_n)
                 data['type'] = type
                 if default_code:
                     data['default_code'] = default_code
@@ -131,26 +131,26 @@ class qdodoo_product_import(models.Model):
                     if isinstance(list_price, float) or isinstance(list_price, int):
                         data['list_price'] = list_price
                     else:
-                        raise except_orm(_(u'警告'), _(u'第%s行标价填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行标价填写错误') % row_n)
                 if standard_price:
                     if isinstance(standard_price, float) or isinstance(standard_price, int):
                         data['standard_price'] = standard_price
                     else:
-                        raise except_orm(_(u'警告'), _(u'第%s行成本价填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行成本价填写错误') % row_n)
                 if company_name:
                     company_id = company_dict.get(company_name, False)
                     if not company_id:
-                        raise except_orm(_(u'警告'), _(u'第%s行公司填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行公司填写错误') % row_n)
                     company_id_l = company_id
                     data['company_id'] = company_id_l
                 if state:
                     if state not in ('draft', 'sellable', 'end', 'obsolete'):
-                        raise except_orm(_(u'警告'), _(u'第%s行状态填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行状态填写错误') % row_n)
                     data['state'] = state
                 if manager_name:
                     product_manager = user_dict.get((manager_name, company_id_l), False)
                     if not product_manager:
-                        raise except_orm(_(u'警告'), _(u'第%s行产品经理填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行产品经理填写错误') % row_n)
                     data['product_manager'] = product_manager
                 if loc_rack:
                     data['loc_rack'] = loc_rack
@@ -162,41 +162,41 @@ class qdodoo_product_import(models.Model):
                     if isinstance(warranty, float) or isinstance(warranty, int):
                         data['warranty'] = warranty
                     else:
-                        raise except_orm(_(u'警告'), _(u'第%s行质保填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行质保填写错误') % row_n)
                 if sale_delay:
                     if isinstance(sale_delay, float) or isinstance(sale_delay, int):
                         data['sale_delay'] = sale_delay
                     else:
-                        raise except_orm(_(u'警告'), _(u'第%s行客户提前交货周期填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行客户提前交货周期填写错误') % row_n)
                 if volume:
                     if isinstance(volume, float) or isinstance(volume, int):
                         data['volume'] = volume
                     else:
-                        raise except_orm(_(u'警告'), _(u'第%s行体积填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行体积填写错误') % row_n)
                 if weight:
                     if isinstance(weight, float) or isinstance(weight, int):
                         data['weight'] = weight
                     else:
-                        raise except_orm(_(u'警告'), _(u'第%s行毛重填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行毛重填写错误') % row_n)
                 if weight_net:
                     if isinstance(weight_net, float) or isinstance(weight_net, int):
                         data['weight_net'] = weight_net
                     else:
-                        raise except_orm(_(u'警告'), _(u'第%s行净重填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行净重填写错误') % row_n)
                 if category:
                     if category.strip() not in category_dict:
-                        raise except_orm(_(u'警告'), _(u'第%s行内部分类填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行内部分类填写错误') % row_n)
                     data['categ_id'] = category_dict.get(category.strip())
                 if public_category:
                     all_public_category_id = []
                     for pca in public_category.split("|"):
                         if pca.strip() not in category_public_dict:
-                            raise except_orm(_(u'警告'), _(u'第%s行公开的产品分类填写错误') % row_n)
+                            raise UserError(_(u'警告'), _(u'第%s行公开的产品分类填写错误') % row_n)
                         all_public_category_id.append(category_public_dict.get(pca.strip()))
                     data['public_categ_ids'] = [[6, False, all_public_category_id]]
                 if pos_category:
                     if pos_category.strip() not in pos_category_dict:
-                        raise except_orm(_(u'警告'), _(u'第%s行公开的pos类别填写错误') % row_n)
+                        raise UserError(_(u'警告'), _(u'第%s行公开的pos类别填写错误') % row_n)
                     data['pos_categ_id'] = pos_category_dict.get(pos_category.strip())
                 if description:
                     data['description'] = description
@@ -208,7 +208,7 @@ class qdodoo_product_import(models.Model):
                         partner_list = par.split("/")
                         partner_id_d = partner_dict.get((partner_list[0], company_id_l), False)
                         if not partner_id_d:
-                            raise except_orm(_(u'警告'), _(u'第%s行供应商填写错误') % row_n)
+                            raise UserError(_(u'警告'), _(u'第%s行供应商填写错误') % row_n)
                         data2 = {
                             'name': partner_id_d,
                             'min_qty': float(partner_list[1]) or 0,
@@ -232,4 +232,4 @@ class qdodoo_product_import(models.Model):
                 'view_id': [tree_id],
             }
         else:
-            raise except_orm(_(u'警告'), _(u'导入出错'))
+            raise UserError(_(u'警告'), _(u'导入出错'))

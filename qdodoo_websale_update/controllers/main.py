@@ -100,6 +100,84 @@ class qdodooo_website_update(website_sale):
                 num = min(value[0], value[1],protal_dict.get(key,0))
                 if num:
                     discount_num[key] = num
+        if not multiple:
+            # 存储{产品模板id：倍数}
+            key={}
+            product_item_dict={}
+            # 获取产品推荐信息
+            recommend_dict = []
+            # 存储产品模板id
+            pricelist_procuct_ids = []
+            #搜索出相应的价格表明细
+            i=0
+            item_obj = pool.get('product.pricelist.item')
+            version_obj = pool.get('product.pricelist.version')
+            product_obj = pool.get('product.template')
+            # 查询所有的产品模板id
+            product_template_ids = product_obj.search(cr, uid, [])
+            if not context.get('pricelist'):
+                # pricelist 得到价格表 例如product.pricelist(25,)
+                pricelist = self.get_pricelist()
+                context['pricelist'] = int(pricelist)
+            else:
+                # 存在 就在product.pricelist 查询出相应的价格列表 价格表
+                pricelist = pool.get('product.pricelist').browse(cr, uid, context['pricelist'], context)
+            # 搜索产品价格表中的产品
+            pricelist_version_ids = version_obj.search(cr, uid, [
+            ('pricelist_id', '=', pricelist.id)], context=context)
+            version = [self.get_version_id(pricelist_version_ids)]
+            # 获取当前登录人的辅助价格表
+            partner = pool.get('res.users').browse(cr, uid, uid, context=context)
+            if partner.partner_id.assist_pricelist:
+                pricelist_version_ids_new = version_obj.search(cr, uid, [
+                ('pricelist_id', '=', partner.partner_id.assist_pricelist.id)], context=context)
+                if pricelist_version_ids_new:
+                    version.append(self.get_version_id(pricelist_version_ids_new))
+            #查询到相应的价格表
+            pricelist_procuct_item_ids = item_obj.search(cr, uid, [('price_version_id', 'in', version)])
+            product_list_item = item_obj.browse(cr, uid, pricelist_procuct_item_ids, context=context)
+            for product_item in product_list_item:
+                #查询出相应的行
+                i = i+1
+                # 如果没设置倍数，倍数则为1
+                if not product_item.multipl:
+                    product_item_dict[product_item.id]=1
+                #如果存在产品模板
+                if product_item.product_tmpl_id:
+                    if product_item.is_recommend and (product_item.product_tmpl_id.id not in recommend_dict):
+                        recommend_dict.append(product_item.product_tmpl_id.id)
+                    # 产品模板如果不存在于pricelist_procuct_ids中，将模板id加入到其中
+                    if product_item.product_tmpl_id.id not in pricelist_procuct_ids:
+                        pricelist_procuct_ids.append(product_item.product_tmpl_id.id)
+                        key[product_item.product_tmpl_id.id]=product_item.multipl
+                # 如果存在产品类别
+                if product_item.categ_id:
+                    product_ids = product_obj.search(cr, uid,[('categ_id', 'child_of', product_item.categ_id.id)])
+                    temp_ids = product_obj.browse(cr, uid, product_ids)
+                    for temp_id in temp_ids:
+                        if temp_id.product_tmpl_id.id not in pricelist_procuct_ids:
+                            pricelist_procuct_ids.append(temp_id.product_tmpl_id.id)
+                            key[temp_id.product_tmpl_id.id]=product_item.multipl
+                    if product_item.is_recommend:
+                        for temp_id in temp_ids:
+                            if temp_id.product_tmpl_id.id not in recommend_dict:
+                                recommend_dict.append(temp_id.product_tmpl_id.id)
+                # 如果存在产品
+                if  product_item.product_id:
+                    if product_item.is_recommend and (product_item.product_id.product_tmpl_id.id not in recommend_dict):
+                        recommend_dict.append(product_item.product_tmpl_id.product_tmpl_id.id)
+                    if product_item.product_id.product_tmpl_id.id not in pricelist_procuct_ids:
+                        pricelist_procuct_ids.append(product_item.product_id.product_tmpl_id.id)
+                        key[product_item.product_id.product_tmpl_id.id]=product_item.multipl
+                # 如果都没有
+                if not product_item.product_id.id and not product_item.categ_id and not product_item.product_tmpl_id:
+                    if product_item.is_recommend:
+                        recommend_dict = product_template_ids
+                    pricelist_procuct_ids = product_template_ids
+                    for i in pricelist_procuct_ids:
+                        key[i]=product_item.multipl
+                    break
+            multiple = key
         values = {
             'discount_num':discount_num,
             'discount_money':discount_money,
@@ -237,7 +315,6 @@ class qdodooo_website_update(website_sale):
             if  product_item.product_id:
                 if product_item.is_recommend and (product_item.product_id.product_tmpl_id.id not in recommend_dict):
                     recommend_dict.append(product_item.product_tmpl_id.product_tmpl_id.id)
-                print product_item.product_id,'11111111'
                 if product_item.product_id.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_id.product_tmpl_id.id)
                     key[product_item.product_id.product_tmpl_id.id]=product_item.multipl
@@ -636,7 +713,7 @@ class qdodooo_website_update(website_sale):
 
         self.checkout_form_save(values["checkout"])
 
-        request.session['sale_last_order_id'] = order.id
+        # request.session['sale_last_order_id'] = order.id
 
         request.website.sale_get_order(update_pricelist=True, context=context)
         # 判断赠品是否合适
@@ -892,7 +969,7 @@ class qdodooo_website_update(website_sale):
             # 查询出相应的销售订单
             order = request.registry['sale.order'].browse(cr, uid, sale_order_id, context=context)
             # 还是在判断下 当前订单号 和缓存中的是否一致
-            assert order.id == request.session.get('sale_last_order_id')
+            # assert order.id == request.session.get('sale_last_order_id')
         if not order or not order.amount_total:
             return request.redirect('/shop')
         if not order.partner_id.analytic_account_id:
@@ -1013,7 +1090,8 @@ class qdodooo_website_update(website_sale):
     def payment_confirmation(self, **post):
         cr, uid, context = request.cr, request.uid, request.context
 
-        sale_order_id = request.session.get('sale_last_order_id')
+        # sale_order_id = request.session.get('sale_last_order_id')
+        sale_order_id = request.website.sale_get_order(context=context)
         if sale_order_id:
             order = request.registry['sale.order'].browse(cr, uid, sale_order_id, context=context)
         else:

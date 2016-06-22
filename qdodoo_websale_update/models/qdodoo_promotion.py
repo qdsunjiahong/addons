@@ -676,11 +676,11 @@ class qdodoo_promotion_version_deduction_items(models.Model):
         promotion_obj = self.env['qdodoo.is.promotion']
         domain = []
         if res.version_id.date_start and not res.version_id.date_end:
-            domain.append('|',('date_end','=',False),'&','|',('date_start','=',False),('date_start','<=',res.version_id.date_start),('date_end','>=',res.version_id.date_start))
+            domain.append(('|',('date_end','=',False),'&','|',('date_start','=',False),('date_start','<=',res.version_id.date_start),('date_end','>=',res.version_id.date_start)))
         if res.version_id.date_end and not res.version_id.date_start:
-            domain.append('|',('date_start','=',False),'&','|',('date_end','=',False),('date_end','>=',res.version_id.date_end),('date_start','<=',res.version_id.date_end))
+            domain.append(('|',('date_start','=',False),'&','|',('date_end','=',False),('date_end','>=',res.version_id.date_end),('date_start','<=',res.version_id.date_end)))
         if res.version_id.date_end and res.version_id.date_start:
-            domain.append('|','|','|','|','&',('date_end','=',False),('date_start','<=',res.version_id.date_end),'&',('date_start','=',False),('date_end','>=',res.version_id.date_start),'&',('date_start','>=',res.version_id.date_start),('date_start','<',res.version_id.date_end),'&',('date_end','<=',res.version_id.date_end),('date_end','>=',res.version_id.date_start),'&',('date_end','>=',res.version_id.date_end),('date_start','<=',res.version_id.date_start))
+            domain.append(('|','|','|','|','&',('date_end','=',False),('date_start','<=',res.version_id.date_end),'&',('date_start','=',False),('date_end','>=',res.version_id.date_start),'&',('date_start','>=',res.version_id.date_start),('date_start','<',res.version_id.date_end),'&',('date_end','<=',res.version_id.date_end),('date_end','>=',res.version_id.date_start),'&',('date_end','>=',res.version_id.date_end),('date_start','<=',res.version_id.date_start)))
         # 获取所有的品牌
         if res.section_id:
             section_list = [res.section_id.id]
@@ -939,5 +939,5 @@ class qdodoo_res_users(models.Model):
     """
     _inherit = 'res.users'
 
-    is_portal_partner = fields.Boolean(u'是门店')
-    city_id_new = fields.Many2one('account.analytic.account',u'城市')
+    # is_portal_partner = fields.Boolean(u'是门店')
+    # city_id_new = fields.Many2one('account.analytic.account',u'城市')

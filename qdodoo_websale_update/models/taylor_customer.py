@@ -38,7 +38,10 @@ class qdodoo_website(orm.Model):
 
     def sale_get_order(self, cr, uid, ids, force_create=False, code=None, update_pricelist=None, context=None):
         sale_order_obj = self.pool['sale.order']
-        sale_order_id = request.session.get('sale_order_id')
+        if uid == 3:
+            sale_order_id = request.session.get('sale_order_id')
+        else:
+            sale_order_id = sale_order_obj.search(cr, uid, [('is_website','=',True),('state','=','draft')])
         sale_order = None
         # create so if needed
         if not sale_order_id and (force_create or code):
@@ -48,6 +51,7 @@ class qdodoo_website(orm.Model):
                 values = {
                     'user_id': w.user_id.id,
                     'order_policy': 'manual',
+                    'is_website':True,
                     'partner_id': partner.id,
                     'pricelist_id': partner.property_product_pricelist.id,
                     'section_id': self.pool.get('ir.model.data').get_object_reference(cr, uid, 'website', 'salesteam_website_sales')[1],
