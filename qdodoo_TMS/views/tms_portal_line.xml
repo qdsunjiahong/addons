@@ -2,6 +2,7 @@
 <openerp>
     <data>
 
+        <!--业务伙伴中增加物流信息页卡-->
         <record model="ir.ui.view" id="view_partner_form_inherit">
             <field name="name">res.partner.inherit</field>
             <field name="model">res.partner</field>
@@ -15,6 +16,7 @@
                                 <field name="tms_location_id"/>
                                 <field name="portal_plus"/>
                                 <field name="tms_other"/>
+                                <field name="tms_line_id"/>
                             </group>
                             <group>
                                 <field name="warm_box"/>
@@ -23,6 +25,34 @@
                             </group>
                         </group>
                     </page>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!--产品信息中增加每箱数量-->
+        <record model="ir.ui.view" id="view_template_property_form_inherit">
+            <field name="name">product.template.stock.property.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="stock.view_template_property_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='virtual_available']" position="after">
+                    <field name="tms_box_num"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!--调拨单中增加箱数-->
+        <record model="ir.ui.view" id="view_picking_form_inherit">
+            <field name="name">stock.picking.form.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='origin']" position="after">
+                    <field name="box_num"/>
                 </xpath>
 
             </field>

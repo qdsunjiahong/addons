@@ -59,7 +59,6 @@ class tms_return_box_money_line(models.Model):
         for ids in self:
             ids.return_box_money = ids.return_box_num * ids.return_box_standard
 
-
 class tms_return_box_money_line2(models.Model):
     """
         回箱和特殊运费明细

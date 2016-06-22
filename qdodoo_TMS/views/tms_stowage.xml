@@ -15,13 +15,18 @@
                                 ---
                                 <field name="date_end" style="width: 40%" required="True"/>
                             </div>
-                            <field name="portal_id" domain="[('tms_location_id','=',location_id)]"/>
+                            <field name="line_id" required="True"/>
                         </group>
                         <group>
                             <field name="logistics_id" required="True"/>
                             <field name="location_id" invisible="True"/>
                         </group>
                     </group>
+                    <field name="portal_id">
+                        <tree editable="top">
+                            <field name="name" string="门店"/>
+                        </tree>
+                    </field>
                     <footer>
                         <button string="查询" name="btn_select" type="object" class="oe_highlight"/>
                         or
@@ -53,6 +58,7 @@
                             <group>
                                 <field name="date" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
                                 <field name="car_id" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                                <field name="all_money"/>
                             </group>
                             <group>
                                 <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/>
@@ -64,12 +70,12 @@
                             <tree editable="top" create="false">
                                 <field name="logistics_id"/>
                                 <field name="portal_id"/>
-                                <field name="warm_box_num"/>
-                                <field name="other_num"/>
-                                <field name="portal_plus"/>
-                                <field name="trilateral_logistics"/>
-                                <field name="warm_box_money"/>
-                                <field name="other_money"/>
+                                <field name="warm_box_num" sum="合计"/>
+                                <field name="other_num" sum="合计"/>
+                                <field name="portal_plus" sum="合计"/>
+                                <field name="trilateral_logistics" sum="合计"/>
+                                <field name="warm_box_money" readonly="True" sum="合计"/>
+                                <field name="other_money" readonly="True" sum="合计"/>
                             </tree>
                         </field>
                     </sheet>
