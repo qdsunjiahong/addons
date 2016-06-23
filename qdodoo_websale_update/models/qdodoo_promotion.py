@@ -933,11 +933,11 @@ class qdodoo_order_seckill(models.Model):
     date = fields.Datetime(u'日期', related='name.date_order')
     money = fields.Float(u'订单金额', related='name.amount_total')
 
-class qdodoo_res_users(models.Model):
-    """
-        用户增加门店标识
-    """
-    _inherit = 'res.users'
+# class qdodoo_res_users(models.Model):
+#     """
+#         用户增加门店标识
+#     """
+#     _inherit = 'res.users'
 
     # is_portal_partner = fields.Boolean(u'是门店')
     # city_id_new = fields.Many2one('account.analytic.account',u'城市')
