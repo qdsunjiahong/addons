@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+
+    <template id="report_tms_car_connect">
+        <!--<t t-call="report.external_layout">-->
+            <t t-call="report.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t>
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            <table class="MsoNormalTable" border="0" cellspacing="0" cellpadding="0" width="616" style="width:615.75pt;border-collapse:collapse;mso-yfti-tbllook:1184;
+                             mso-padding-alt:0cm 5.4pt 0cm 5.4pt">
+                             <tbody><tr style="mso-yfti-irow:0;mso-yfti-firstrow:yes;height:14.45pt;mso-row-margin-right:
+                              6.2pt">
+                              <td width="39" colspan="2" style="width:38.75pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:14.45pt">
+                              <p class="MsoNormal" align="right" style="text-align:right;mso-pagination:widow-orphan"><br/></p>
+                              </td>
+                              <td width="571" colspan="38" rowspan="2" style="width:570.8pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:14.45pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><b><span style="font-size:18.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">司机交接单<span lang="EN-US"></span></span></b></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;padding:0cm 0cm 0cm 0cm" width="6"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:1;height:7.35pt;mso-row-margin-right:6.2pt">
+                              <td width="39" colspan="2" style="width:38.75pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:7.35pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><b><span style="font-size:18.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt"><span lang="EN-US"></span></span></b></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;padding:0cm 0cm 0cm 0cm" width="6"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:2;height:14.45pt;mso-row-margin-right:50.5pt">
+                              <td width="59" colspan="4" valign="bottom" style="width:59.45pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:14.45pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">物流部：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="110" colspan="6" valign="bottom" style="width:109.85pt;border:none;
+                              border-bottom:solid black 1.0pt;mso-border-bottom-alt:solid black .5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:14.45pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt" t-esc="o.car_id.location_id.name"><span lang="EN-US">&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;
+                              </span></span></p>
+                              </td>
+                              <td width="223" colspan="12" rowspan="3" valign="top" style="width:222.5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:14.45pt">
+                              <p class="MsoNormal" align="left"><span style="font-size:10.0pt;mso-ascii-font-family:Arial;mso-fareast-font-family:
+                              等线;mso-hansi-font-family:Arial;mso-bidi-font-family:Arial;color:white;
+                              mso-font-kerning:0pt">　</span><span lang="EN-US" style="font-size:10.0pt;
+                              font-family:Arial;mso-fareast-font-family:等线;color:white;mso-font-kerning:
+                              0pt"></span></p>
+                              </td>
+                              <td width="93" colspan="11" style="width:92.75pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:14.45pt">
+                              <p class="MsoNormal" align="right" style="text-align:right;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">编号：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="81" colspan="5" valign="top" style="width:80.7pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:14.45pt">
+                              <p class="MsoNormal" align="left"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.name"></span></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;padding:0cm 0cm 0cm 0cm" width="51" colspan="3"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:3;height:7.35pt;mso-row-margin-right:50.5pt">
+                              <td width="169" colspan="10" valign="top" style="width:169.3pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:7.35pt">
+                              <p class="MsoNormal" align="left"><span style="font-size:10.0pt;mso-ascii-font-family:Arial;mso-fareast-font-family:
+                              等线;mso-hansi-font-family:Arial;mso-bidi-font-family:Arial;color:white;
+                              mso-font-kerning:0pt">　</span><span lang="EN-US" style="font-size:10.0pt;
+                              font-family:Arial;mso-fareast-font-family:等线;color:white;mso-font-kerning:
+                              0pt"></span></p>
+                              </td>
+                              <td width="173" colspan="16" valign="top" style="width:173.45pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:7.35pt">
+                              <p class="MsoNormal" align="left"><span style="font-size:10.0pt;mso-ascii-font-family:Arial;mso-fareast-font-family:
+                              等线;mso-hansi-font-family:Arial;mso-bidi-font-family:Arial;color:white;
+                              mso-font-kerning:0pt">　</span><span lang="EN-US" style="font-size:10.0pt;
+                              font-family:Arial;mso-fareast-font-family:等线;color:white;mso-font-kerning:
+                              0pt"></span></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;padding:0cm 0cm 0cm 0cm" width="51" colspan="3"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:4;height:14.45pt;mso-row-margin-right:50.5pt">
+                              <td width="102" colspan="6" style="width:102.35pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:14.45pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt">1</span><span style="font-size:9.0pt;
+                              font-family:宋体;mso-bidi-font-family:宋体;color:black;mso-font-kerning:0pt">、承运方车辆信息<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="67" colspan="4" valign="top" style="width:66.95pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:14.45pt">
+                              <p class="MsoNormal" align="left"><span style="font-size:10.0pt;mso-ascii-font-family:Arial;mso-fareast-font-family:
+                              等线;mso-hansi-font-family:Arial;mso-bidi-font-family:Arial;color:white;
+                              mso-font-kerning:0pt">　</span><span lang="EN-US" style="font-size:10.0pt;
+                              font-family:Arial;mso-fareast-font-family:等线;color:white;mso-font-kerning:
+                              0pt"></span></p>
+                              </td>
+                              <td width="97" colspan="12" style="width:96.75pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:14.45pt">
+                              <p class="MsoNormal"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">日期（年<span lang="EN-US">/</span>月<span lang="EN-US">/</span>日）：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="66" colspan="3" style="width:65.6pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:14.45pt">
+                              <p class="MsoNormal" align="left"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.date"></span></p>
+                              </td>
+                              <td width="11" valign="top" style="width:11.1pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:14.45pt">
+                              <p class="MsoNormal" align="left"><span style="font-size:10.0pt;mso-ascii-font-family:Arial;mso-fareast-font-family:
+                              等线;mso-hansi-font-family:Arial;mso-bidi-font-family:Arial;color:white;
+                              mso-font-kerning:0pt">　</span><span lang="EN-US" style="font-size:10.0pt;
+                              font-family:Arial;mso-fareast-font-family:等线;color:white;mso-font-kerning:
+                              0pt"></span></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;border-bottom:solid black 1.0pt" width="51" colspan="3"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:5;height:21.75pt">
+                              <td width="59" colspan="4" style="width:59.45pt;border:solid black 1.0pt;
+                              mso-border-alt:solid black .5pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">司机姓名：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="68" colspan="4" style="width:68.15pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt" t-esc="o.car_id.driver"><span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="48" colspan="3" style="width:47.95pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">车牌号：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="123" colspan="5" style="width:123.45pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt" t-esc="o.car_id.car_num"><span lang="EN-US">(</span><span lang="EN-US" t-esc="o.car_id.owner.name"></span>)</span></p>
+                              </td>
+                              <td width="54" colspan="4" style="width:54.0pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">手机号码：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="69" colspan="6" style="width:69.3pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.car_id.driver_phone"></span></p>
+                              </td>
+                              <td width="52" colspan="6" style="width:52.25pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">证件号：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="141" colspan="9" style="width:141.2pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.car_id.driver_carid"></span></p>
+                              </td>
+                             </tr>
+                             <tr style="mso-yfti-irow:6;height:14.45pt;mso-row-margin-right:513.4pt">
+                              <td width="102" colspan="6" style="width:102.35pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:14.45pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt">2</span><span style="font-size:9.0pt;
+                              font-family:宋体;mso-bidi-font-family:宋体;color:black;mso-font-kerning:0pt">、委托方货物信息<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;border-bottom:solid black 1.0pt" width="513" colspan="35"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:7;height:21.75pt">
+                              <td width="41" colspan="3" style="width:40.7pt;border:solid black 1.0pt;
+                              mso-border-alt:solid black .5pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">序号<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="108" colspan="6" style="width:108.1pt;border:solid black 1.0pt;
+                              border-left:none;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">交接对象<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="121" colspan="6" style="width:120.55pt;border-top:none;border-left:
+                              none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+                              mso-border-top-alt:solid black .5pt;mso-border-top-alt:solid black .5pt;
+                              mso-border-bottom-alt:solid black .5pt;mso-border-right-alt:solid black .5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">子编码<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="82" colspan="4" style="width:82.25pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">门店数<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="57" colspan="6" style="width:57.45pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">保温箱<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="61" colspan="5" style="width:61.3pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">其它<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="55" colspan="5" style="width:54.5pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">合计<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="91" colspan="6" style="width:90.9pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">回箱数<span lang="EN-US"></span></span></p>
+                              </td>
+                             </tr>
+                             <tr style="mso-yfti-irow:8;height:23.25pt" t-foreach="o.report_line" t-as="report_line">
+                              <td width="41" colspan="3" style="width:40.7pt;border:solid black 1.0pt;
+                              border-top:none;mso-border-top-alt:solid black .5pt;mso-border-alt:solid black .5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">　<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="108" colspan="6" style="width:108.1pt;border-top:none;border-left:
+                              none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+                              mso-border-top-alt:solid black .5pt;mso-border-top-alt:solid black .5pt;
+                              mso-border-bottom-alt:solid black .5pt;mso-border-right-alt:solid black .5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt" t-if="report_line.logistics_id.is_specially"><span t-esc="o.car_id.driver"/></span><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt" t-if="not report_line.logistics_id.is_specially"><span t-esc="report_line.logistics_id.name"/></span></p>
+                              </td>
+                              <td width="121" colspan="6" style="width:120.55pt;border-top:none;border-left:
+                              none;border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;
+                              mso-border-top-alt:solid black .5pt;mso-border-top-alt:solid black .5pt;
+                              mso-border-bottom-alt:solid black .5pt;mso-border-right-alt:solid black .5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="report_line.name"></span></p>
+                              </td>
+                              <td width="82" colspan="4" style="width:82.25pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="report_line.protal_num"></span></p>
+                              </td>
+                              <td width="57" colspan="6" style="width:57.45pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="report_line.warm_box"></span></p>
+                              </td>
+                              <td width="61" colspan="5" style="width:61.3pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="report_line.other"></span></p>
+                              </td>
+                              <td width="55" colspan="5" style="width:54.5pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="report_line.sum"></span></p>
+                              </td>
+                              <td width="91" colspan="6" style="width:90.9pt;border-top:none;border-left:none;
+                              border-bottom:solid black 1.0pt;border-right:solid black 1.0pt;mso-border-top-alt:
+                              solid black .5pt;mso-border-top-alt:solid black .5pt;mso-border-bottom-alt:
+                              solid black .5pt;mso-border-right-alt:solid black .5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:23.25pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">　<span lang="EN-US"></span></span></p>
+                              </td>
+                             </tr>
+                             <tr style="mso-yfti-irow:9;height:21.75pt">
+                              <td width="74" colspan="5" valign="bottom" style="width:73.75pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">保温箱合计：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="41" colspan="2" valign="bottom" style="width:40.95pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="left"><b><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.all_box_num"></span></b></p>
+                              </td>
+                              <td width="65" colspan="5" valign="bottom" style="width:64.5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">其他合计：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="42" colspan="2" valign="bottom" style="width:42.3pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><b><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.all_other_num"></span></b></p>
+                              </td>
+                              <td width="78" colspan="2" valign="bottom" style="width:77.5pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">总计：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="52" colspan="2" valign="bottom" style="width:52.0pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><b><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.all_sum_num"></span></b></p>
+                              </td>
+                              <td width="55" colspan="6" valign="bottom" style="width:55.45pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">回箱合计：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="54" colspan="5" valign="bottom" style="width:53.8pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="left"><b><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">　<span lang="EN-US"></span></span></b></p>
+                              </td>
+                              <td width="68" colspan="7" valign="bottom" style="width:68.25pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="left"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">运费合计￥：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="87" colspan="5" valign="bottom" style="width:87.25pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:21.75pt">
+                              <p class="MsoNormal" align="left"><b><span lang="EN-US" style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;
+                              color:black;mso-font-kerning:0pt" t-esc="o.all_money"></span></b></p>
+                              </td>
+                             </tr>
+                             <tr style="mso-yfti-irow:10;height:18.2pt;mso-row-margin-right:144.7pt">
+                              <td width="59" colspan="4" valign="bottom" style="width:59.45pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:18.2pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">委托方：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="143" colspan="9" valign="bottom" style="width:143.45pt;border:none;
+                              border-bottom:solid black 1.0pt;mso-border-bottom-alt:solid black .5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:18.2pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">美誉捷运<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="203" colspan="10" rowspan="3" valign="top" style="width:202.85pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:18.2pt">
+                              <p class="MsoNormal" align="left"><span style="font-size:10.0pt;mso-ascii-font-family:Arial;mso-fareast-font-family:
+                              等线;mso-hansi-font-family:Arial;mso-bidi-font-family:Arial;color:white;
+                              mso-font-kerning:0pt">　</span><span lang="EN-US" style="font-size:10.0pt;
+                              font-family:Arial;mso-fareast-font-family:等线;color:white;mso-font-kerning:
+                              0pt"></span></p>
+                              </td>
+                              <td width="65" colspan="8" style="width:65.3pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:18.2pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">　<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;padding:0cm 0cm 0cm 0cm" width="145" colspan="10"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:11;height:18.2pt;mso-row-margin-right:144.7pt">
+                              <td width="59" colspan="4" valign="bottom" style="width:59.45pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:18.2pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">委托人：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="143" colspan="9" valign="bottom" style="width:143.45pt;border:none;
+                              border-bottom:solid black 1.0pt;mso-border-bottom-alt:solid black .5pt;
+                              background:white;padding:0cm 5.4pt 0cm 5.4pt;height:18.2pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">　<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td width="65" colspan="8" style="width:65.3pt;background:white;padding:0cm 5.4pt 0cm 5.4pt;
+                              height:18.2pt">
+                              <p class="MsoNormal" align="center" style="text-align:center;mso-pagination:widow-orphan"><span style="font-size:9.0pt;font-family:宋体;mso-bidi-font-family:宋体;color:black;
+                              mso-font-kerning:0pt">短驳司机：<span lang="EN-US"></span></span></p>
+                              </td>
+                              <td style="mso-cell-special:placeholder;border:none;padding:0cm 0cm 0cm 0cm" width="145" colspan="10"><p class="MsoNormal">&amp;nbsp;</p></td>
+                             </tr>
+                             <tr style="mso-yfti-irow:12;height:111.95pt;mso-row-margin-right:210.0pt">
+                              <td width="203" colspan="13" valign="top" style="width:202.9pt;background:white;
+                              padding:0cm 5.4pt 0cm 5.4pt;height:111.95pt">
+                              <p class="MsoNormal" align="left"></p></td><td style="mso-cell-special:placeholder;border:none;padding:0cm 0cm 0cm 0cm" width="210" colspan="18"><br/></td></tr></tbody></table>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        <!--</t>-->
+    </template>
+
+
+</data>
+</openerp>

@@ -2,6 +2,20 @@
 <openerp>
     <data>
 
+        <!--仓库上增加物流中心编号字段-->
+        <record model="ir.ui.view" id="view_warehouse_form_inherit">
+            <field name="name">stock.warehouse.inherit</field>
+            <field name="model">stock.warehouse</field>
+            <field name="inherit_id" ref="stock.view_warehouse"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//field[@name='code']" position="after">
+                    <field name="warehouse_num_name"/>
+                </xpath>
+
+            </field>
+        </record>
+
         <!--业务伙伴中增加物流信息页卡-->
         <record model="ir.ui.view" id="view_partner_form_inherit">
             <field name="name">res.partner.inherit</field>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report
+            id="report_tms_car_connect_id"
+            string="司机交接单"
+            model="tms.stowage"
+            report_type="qweb-pdf"
+            file="qdodoo_TMS.report_tms_car_connect"
+            name="qdodoo_TMS.report_tms_car_connect"
+            menu="False"
+        />
+
+        <report
+            id="report_tms_stowage_id"
+            string="配送运输单"
+            model="tms.stowage"
+            report_type="qweb-pdf"
+            file="qdodoo_TMS.report_tms_stowage"
+            name="qdodoo_TMS.report_tms_stowage"
+            menu="False"
+        />
+
+        <report
+            id="report_tms_stowage_line_id"
+            string="运输明细"
+            model="tms.stowage"
+            report_type="qweb-pdf"
+            file="qdodoo_TMS.report_tms_stowage_line"
+            name="qdodoo_TMS.report_tms_stowage_line"
+            menu="False"
+        />
+
+
+    </data>
+</openerp>

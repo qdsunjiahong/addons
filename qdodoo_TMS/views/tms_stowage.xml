@@ -51,18 +51,37 @@
                     <header>
                         <button name="btn_done" string="确认" states='draft' type="object" class="oe_highlight"/>
                         <button name="btn_cancel" string="取消" states='draft' type="object" class="oe_highlight"/>
+                        <button name="btn_print_car_report" string="打印交车单" states='done' type="object" class="oe_highlight"/>
+                        <button name="btn_print_stowage" string="三方物流信息" attrs="{'invisible':['|',('state','!=','done'),('is_specially_false','=',False)]}" type="object" class="oe_highlight" context="{'log':'1'}"/>
+                        <button name="btn_print_stowage" string="专线配送信息" attrs="{'invisible':['|',('state','!=','done'),('is_specially_true','=',False)]}" type="object" class="oe_highlight" context="{'log':'2'}"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,done" statusbar_colors='{"except_picking":"red","except_invoice":"red","confirm_contract":"red"}' readonly="1"/>
                     </header>
                     <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <label string="配载单号"/>
+                                <field name="name" class="oe_inline" readonly="1"/>
+                            </h1>
+                        </div>
                         <group>
                             <group>
+                                <field name="is_specially_true" invisible="True"/>
+                                <field name="is_specially_false" invisible="True"/>
+                                <field name="all_box_num" invisible="True"/>
+                                <field name="all_box_num_1" invisible="True"/>
+                                <field name="all_box_num_1" invisible="True"/>
+                                <field name="all_other_num" invisible="True"/>
+                                <field name="all_other_num_1" invisible="True"/>
+                                <field name="all_other_num_1" invisible="True"/>
+                                <field name="all_sum_num" invisible="True"/>
+                                <field name="all_sum_num_1" invisible="True"/>
+                                <field name="all_sum_num_1" invisible="True"/>
                                 <field name="date" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
                                 <field name="car_id" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
-                                <field name="all_money"/>
                             </group>
                             <group>
-                                <field name="name" attrs="{'readonly':[('state','!=','draft')]}"/>
                                 <field name="price" domain="[('tms_id','=',car_id)]" attrs="{'readonly':[('state','!=','draft')],'required':True}"/>
+                                <field name="all_money"/>
                             </group>
                         </group>
                         <button states="draft" name="%(action_tms_stowage_wizard)d" string="添加配载明细" type="action"></button>

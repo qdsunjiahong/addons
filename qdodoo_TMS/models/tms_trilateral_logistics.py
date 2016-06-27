@@ -22,3 +22,4 @@ class tms_trilateral_logistics(models.Model):
     warm_box = fields.Float(u'保温箱费用')
     other = fields.Float(u'其他费用')
     piece = fields.Float(u'费包用')
+    is_specially = fields.Boolean(u'专线配送')

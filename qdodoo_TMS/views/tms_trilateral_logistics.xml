@@ -18,6 +18,7 @@
                             <field name="trilateral_add"/>
                             <field name="price_unit"/>
                             <field name="other"/>
+                            <field name="is_specially"/>
                         </group>
                     </group>
                 </form>

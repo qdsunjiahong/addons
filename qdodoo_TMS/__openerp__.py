@@ -21,6 +21,10 @@
         'views/tms_trilateral_logistics.xml',
         'views/tms_stowage.xml',
         'views/tms_return_box_money.xml',
+        'views/report_tms_car_connect.xml',
+        'views/report_tms_stowage.xml',
+        'views/report_tms_stowage_line.xml',
+        'tms_report.xml',
     ],  # 更新XML,CSV
     'js': [
         # 'static/src/js/account_move_reconciliation.js',

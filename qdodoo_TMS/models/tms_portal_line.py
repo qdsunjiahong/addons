@@ -57,3 +57,11 @@ class tms_stock_picking(models.Model):
             if new_num < num:
                 new_num += 1
             ids.box_num = new_num
+
+class tms_stock_warehouse(models.Model):
+    """
+        物流中心编号
+    """
+    _inherit = 'stock.warehouse'
+
+    warehouse_num_name = fields.Char(u'物流中心编号')

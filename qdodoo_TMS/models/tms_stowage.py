@@ -24,7 +24,61 @@ class tms_stowage(models.Model):
     order_line = fields.One2many('tms.stowage.line','order_id',u'配载信息')
     state = fields.Selection([('draft',u'草稿'),('done',u'完成'),('cancel',u'取消')],u'状态',default='draft')
     all_money = fields.Float(u'总合计金额', compute='_get_all_money')
+    report_line = fields.One2many('tms.stowage.report','stowage_id',u'司机交接单数据')
+    report_line_1 = fields.One2many('tms.stowage.report_1','stowage_id',u'配送运输数据')
+    all_box_num = fields.Integer(u'保温箱合计', compute='get_all_num')
+    all_box_num_1 = fields.Integer(u'保温箱合计', compute='get_all_num')
+    all_box_num_2 = fields.Integer(u'保温箱合计', compute='get_all_num')
+    all_other_num = fields.Integer(u'其他合计', compute='get_all_num')
+    all_other_num_1 = fields.Integer(u'其他合计', compute='get_all_num')
+    all_other_num_2 = fields.Integer(u'其他合计', compute='get_all_num')
+    all_sum_num = fields.Integer(u'总合计', compute='get_all_num')
+    all_sum_num_1 = fields.Integer(u'总合计', compute='get_all_num')
+    all_sum_num_2 = fields.Integer(u'总合计', compute='get_all_num')
+    is_specially_true = fields.Boolean(u'有专线配送信息', compute='get_is_specially')
+    is_specially_false = fields.Boolean(u'有三方物流信息', compute='get_is_specially')
 
+    def get_is_specially(self):
+        for ids in self:
+            is_specially_true = 0
+            is_specially_false = 0
+            for line in self.report_line_1:
+                if line.is_specially:
+                    is_specially_true += 1
+                else:
+                    is_specially_false += 1
+            if is_specially_true > 0:
+                ids.is_specially_true = True
+            if is_specially_false > 0:
+                ids.is_specially_false = True
+
+    # 计算合计数量
+    def get_all_num(self):
+        for ids in self:
+            ids.all_box_num = 0
+            ids.all_box_num_1 = 0
+            ids.all_box_num_2 = 0
+            ids.all_other_num = 0
+            ids.all_other_num_1 = 0
+            ids.all_other_num_2 = 0
+            ids.all_sum_num = 0
+            ids.all_sum_num_1 = 0
+            ids.all_sum_num_2 = 0
+            for line in ids.report_line:
+                ids.all_box_num += line.warm_box
+                ids.all_other_num += line.other
+                ids.all_sum_num += line.sum
+            for line in ids.report_line_1:
+                if line.is_specially:
+                    ids.all_box_num_1 += line.warm_box
+                    ids.all_other_num_1 += line.other
+                else:
+                    ids.all_box_num_2 += line.warm_box
+                    ids.all_other_num_2 += line.other
+            ids.all_sum_num_1 = ids.all_box_num_1 + ids.all_other_num_1
+            ids.all_sum_num_2 = ids.all_box_num_2 + ids.all_other_num_2
+
+    # 计算总合计金额
     def _get_all_money(self):
         for ids in self:
             num = 0.0
@@ -32,10 +86,73 @@ class tms_stowage(models.Model):
                 num += line.warm_box_num * line.warm_box_money + line.other_num * line.other_money + line.portal_plus + line.trilateral_logistics
             ids.all_money = num + ids.price.name
 
+    @api.model
+    def create(self, vals):
+        res_id = super(tms_stowage, self).create(vals)
+        now = datetime.now().strftime('%y%m%d')
+        stowage_ids = self.search([('date','=',res_id.date)])
+        # 获取配载编号
+        if not vals.get('name'):
+            name = 'F'+ (str(res_id.car_id.location_id.warehouse_num_name) if res_id.car_id.location_id.warehouse_num_name else '') + now + ('0' + str(len(stowage_ids))) if len(str(len(stowage_ids)))==1 else str(len(stowage_ids))
+            res_id.write({'name':name})
+        return res_id
+
+    @api.multi
+    def unlink(self):
+        for ids in self:
+            if ids.state != 'cancel':
+                raise osv.except_osv(_(u'警告'),_(u'只能删除取消的配载单'))
+        return super(tms_stowage, self).unlink()
+
     # 完成
     @api.multi
     def btn_done(self):
-        return self.write({'state':'done'})
+        # 生成司机交接单数据
+        info_dict = {} #{物流公司:{子编码，门店数，保温箱，其他}}
+        info_portal_dict = {} #{物流公司:门店}
+        protal_dict = {'1':{},'2':{}} #{专线or三方物流:{门店:{保温箱，其他}}}
+        num = 0
+        for line in self.order_line:
+            all_money = line.warm_box_num * line.warm_box_money + line.other_num * line.other_money + line.trilateral_logistics
+            # 如果是专线配送
+            if line.logistics_id.is_specially:
+                if line.portal_id in protal_dict['1']:
+                    protal_dict['1'][line.portal_id]['warm_box'] += line.warm_box_num
+                    protal_dict['1'][line.portal_id]['other'] += line.other_num
+                    protal_dict['1'][line.portal_id]['all_money'] += all_money
+                else:
+                    protal_dict['1'][line.portal_id] = {'all_money':all_money,'warm_box':line.warm_box_num,'other':line.other_num}
+            else:
+                if line.portal_id in protal_dict['2']:
+                    protal_dict['2'][line.portal_id]['warm_box'] += line.warm_box_num
+                    protal_dict['2'][line.portal_id]['other'] += line.other_num
+                    protal_dict['2'][line.portal_id]['all_money'] += all_money
+                else:
+                    protal_dict['2'][line.portal_id] = {'all_money':all_money,'warm_box':line.warm_box_num,'other':line.other_num}
+            if line.logistics_id in info_dict:
+                if line.portal_id not in info_portal_dict.values():
+                    info_dict[line.logistics_id]['protal_num'] += 1
+                info_dict[line.logistics_id]['warm_box'] += line.warm_box_num
+                info_dict[line.logistics_id]['other'] += line.other_num
+            else:
+                num += 1
+                name = self.name + ('P' if line.logistics_id.is_specially else 'W') + ('0'+str(num) if len(str(num)) == 1 else str(num))
+                info_dict[line.logistics_id] = {'name':name,'protal_num':1,'warm_box':line.warm_box_num,'other':line.other_num}
+                info_portal_dict[line.logistics_id] = line.portal_id
+        report_line = []
+        report_line_1 = []
+        for key,value in protal_dict.items():
+            if key == '1':
+                is_specially = True
+            else:
+                is_specially = False
+            num_1 = 0
+            for key1,value1 in value.items():
+                num_1 += 1
+                report_line_1.append((0,0,{'all_money':value1['all_money'],'is_specially':is_specially,'protal_id':key1.id,'name':num_1,'warm_box':value1['warm_box'],'other':value1['other']}))
+        for key,value in info_dict.items():
+            report_line.append((0,0,{'logistics_id':key.id,'name':value['name'],'protal_num':value['protal_num'],'warm_box':value['warm_box'],'other':value['other']}))
+        return self.write({'state':'done','report_line':report_line,'report_line_1':report_line_1})
 
     # 取消
     @api.multi
@@ -43,6 +160,22 @@ class tms_stowage(models.Model):
         for line in self.order_line:
             line.picking_id.write({'stowage_id':''})
         return self.write({'state':'cancel'})
+
+    # 打印交车单
+    @api.multi
+    def btn_print_car_report(self):
+        context = dict(self._context or {}, active_ids=self.ids)
+        return self.pool["report"].get_action(self._cr, self._uid, self.id, 'qdodoo_TMS.report_tms_car_connect', context=context)
+
+    # 打印配送运输单
+    @api.multi
+    def btn_print_stowage(self):
+        context = dict(self._context or {}, active_ids=self.ids)
+        if context.get('log') == '1':
+            res_id = self.pool["report"].get_action(self._cr, self._uid, self.id, 'qdodoo_TMS.report_tms_stowage', context=context)
+        if context.get('log') == '2':
+            res_id = self.pool["report"].get_action(self._cr, self._uid, self.id, 'qdodoo_TMS.report_tms_stowage_line', context=context)
+        return res_id
 
 class tms_stowage_line(models.Model):
     """
@@ -111,3 +244,38 @@ class tms_stock_picking_inherit(models.Model):
     _inherit = 'stock.picking'
 
     stowage_id = fields.Many2one('tms.stowage.line',u'配载明细')
+
+class tms_stowage_report(models.Model):
+    """
+        司机交接单数据
+    """
+    _name = 'tms.stowage.report'
+
+    stowage_id = fields.Many2one('tms.stowage',u'配载单')
+    logistics_id = fields.Many2one('tms.trilateral.logistics',u'物流公司')
+    name = fields.Char(u'子编码')
+    protal_num = fields.Integer(u'门店数')
+    warm_box = fields.Integer(u'保温箱数')
+    other = fields.Integer(u'其他')
+    sum = fields.Integer(u'合计', compute='_get_sum')
+
+    # 计算合计
+    def _get_sum(self):
+        for ids in self:
+            ids.sum = ids.warm_box + ids.other
+
+class tms_stowage_report_1(models.Model):
+    """
+        配送运输明细
+    """
+    _name = 'tms.stowage.report_1'
+
+    stowage_id = fields.Many2one('tms.stowage',u'配载单')
+    protal_id = fields.Many2one('res.partner',u'门店')
+    name = fields.Integer(u'编号')
+    warm_box = fields.Integer(u'保温箱数')
+    other = fields.Integer(u'其他')
+    is_specially = fields.Boolean(u'专线配送')
+    all_money = fields.Float(u'运费合计')
+
+
