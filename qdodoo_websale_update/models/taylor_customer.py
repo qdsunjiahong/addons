@@ -61,7 +61,7 @@ class qdodoo_website(orm.Model):
                 sale_order_obj.write(cr, SUPERUSER_ID, [sale_order_id], values, context=context)
                 request.session['sale_order_id'] = sale_order_id
         if sale_order_id:
-            if type(sale_order_id) == 'list':
+            if type(sale_order_id) == list:
                 sale_order_id = sale_order_id[0]
             # TODO cache partner_id session
             partner = self.pool['res.users'].browse(cr, uid, uid, context=context).partner_id
