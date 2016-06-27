@@ -38,6 +38,7 @@ class qdodoo_plan_purchase_order(models.Model):
     origin = fields.Many2one('qdodoo.plan.purchase.order',u'源单据')
     notes = fields.Text(u'采购单号')
     notes_new = fields.Text(u'备注')
+    product_manager_tfs = fields.Many2one('res.users',u'产品经理')
 
 
     _defaults = {
@@ -173,12 +174,37 @@ class qdodoo_plan_purchase_order(models.Model):
             return {'value': {'location_id': warehouse.lot_stock_id.id}}
         return {}
 
+    @api.multi
     # 提交
-    def btn_draft_confirmed(self, cr, uid, ids, context=None):
-        line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
-        line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
-        line_obj.write(cr, uid, line_id, {'state':'sent'})
-        return self.write(cr, uid, ids, {'state':'sent'})
+    def btn_draft_confirmed(self):
+        dict_user = {} #{产品经理:[计划明细]}
+        for line in self.order_line:
+            line.write({'state':'sent'})
+            if line.product_id.product_manager_tfs in dict_user:
+                dict_user[line.product_id.product_manager_tfs].append(line)
+            else:
+                dict_user[line.product_id.product_manager_tfs] = [line]
+        ids_list = []
+        for key, value in dict_user.items():
+            res_id = self.copy({'product_manager_tfs':key.id,'origin':'','notes':'','state':'sent'})
+            for line_1 in value:
+                line_1.write({'order_id':res_id.id})
+            ids_list.append(res_id.id)
+        self.unlink()
+        result = self.env['ir.model.data'].get_object_reference( 'qdodoo_plan_purchase_order', 'view_tree_qdodoo_plan_purchase_order')
+        view_id = result and result[1] or False
+        result_form = self.env['ir.model.data'].get_object_reference('qdodoo_plan_purchase_order', 'view_form_qdodoo_plan_purchase_order')
+        view_id_form = result_form and result_form[1] or False
+        return {
+              'name': _('计划转采购单'),
+              'view_type': 'form',
+              "view_mode": 'tree,form',
+              'res_model': 'qdodoo.plan.purchase.order',
+              'type': 'ir.actions.act_window',
+              'domain':[('id','in',ids_list)],
+              'views': [(view_id,'tree'),(view_id_form,'form')],
+              'view_id': [view_id],
+        }
 
     # 确认
     def btn_confirmed(self, cr, uid, ids, context=None):
@@ -214,10 +240,10 @@ class qdodoo_plan_purchase_order(models.Model):
                             log = True
                             key_new = key
                             purchase_id[(line.plan_date,line.partner_id.id)].remove(key)
-                            if line.qty_jh > line.qty:
-                                purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty_jh,key_new[2],key_new[3],key_new[4]))
-                            else:
-                                purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty,key_new[2],key_new[3],key_new[4]))
+                            # if line.qty_jh > line.qty:
+                            #     purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty_jh,key_new[2],key_new[3],key_new[4]))
+                            # else:
+                            purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty,key_new[2],key_new[3],key_new[4]))
                             break
                     if not log:
                         if line.qty_jh > line.qty:
@@ -317,7 +343,6 @@ class qdodoo_plan_purchase_order_line(models.Model):
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
                 res['value']['price_unit'] = price
                 res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
-                # res['value']['qty'] = purchase_num_dict.get(partner_id) if purchase_num_dict.get(partner_id) else obj.qty_jh
             else:
                 res['value']['price_unit'] = 0.0
             res['value']['name'] = product_obj.product_tmpl_id.name
@@ -326,6 +351,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
         else:
             return {}
 
+    # 拆单
     @api.multi
     def split_quantities(self):
         self.write({'qty':self.qty-1,'qty_jh':self.qty_jh-1})
@@ -343,7 +369,6 @@ class qdodoo_plan_purchase_order_line(models.Model):
             'view_mode': 'form,tree',
             'views': [(view_id,'form'),(view_id_tree,'tree')],
             'view_id': view_id,
-
         }
 
 class qdodoo_res_partner_inherit(models.Model):
@@ -365,3 +390,10 @@ class qdodoo_res_partner_inherit(models.Model):
             args.append(('id','in',partner_list))
         return super(qdodoo_res_partner_inherit, self).name_search(cr, uid, name, args=args, operator=operator, context=context, limit=limit)
 
+class qdodoo_product_template(models.Model):
+    """
+        产品模板中增加产品经理
+    """
+    _inherit = 'product.template'
+
+    product_manager_tfs = fields.Many2one('res.users',u'产品经理')
