@@ -135,7 +135,7 @@
             <field name="arch" type="xml">
 
                 <xpath expr="//field[@name='list_price']" position="after">
-                    <field name="product_manager_tfs" required="True"/>
+                    <field name="product_manager_tfs"/>
                 </xpath>
 
             </field>
