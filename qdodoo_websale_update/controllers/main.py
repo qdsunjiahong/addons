@@ -699,7 +699,6 @@ class qdodooo_website_update(website_sale):
         users_obj = request.registry['res.users']
         # 没有销售订单就返回销售列表
         if not order:
-            print '222222222'
             return request.redirect("/shop")
 
         # 监测是否需要重定向 需要则重定向

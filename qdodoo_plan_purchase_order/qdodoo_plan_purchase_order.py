@@ -295,6 +295,12 @@ class qdodoo_plan_purchase_order_line(models.Model):
     state = fields.Selection([('draft',u'草稿'),('sent',u'待确认'),('apply',u'待审批'),('confirmed',u'转换采购单'),('done',u'完成')],u'状态', default='draft')
     colors = fields.Char(string=u'颜色', compute='_get_colors')
     is_cancel = fields.Boolean(u'需要回退', default=False)
+    difference_num = fields.Float(u'计划和采购差异数量',compute='_get_difference_num')
+    is_split = fields.Boolean(u'已拆分过')
+
+    def _get_difference_num(self):
+        for ids in self:
+            ids.difference_num = ids.qty_jh - ids.qty
 
     # 获取颜色
     def _get_colors(self):
@@ -354,8 +360,8 @@ class qdodoo_plan_purchase_order_line(models.Model):
     # 拆单
     @api.multi
     def split_quantities(self):
-        self.write({'qty':self.qty-1,'qty_jh':self.qty_jh-1})
-        self.copy({'qty':1,'qty_jh':1})
+        self.write({'is_split':True})
+        self.copy({'qty':self.difference_num,'qty_jh':self.difference_num,'state':'sent'})
         view_ref = self.env['ir.model.data'].get_object_reference('qdodoo_plan_purchase_order', 'view_form_qdodoo_plan_purchase_order')
         view_id = view_ref and view_ref[1] or False,
         view_ref_tree = self.env['ir.model.data'].get_object_reference('qdodoo_plan_purchase_order', 'view_tree_qdodoo_plan_purchase_order')
