@@ -26,27 +26,27 @@ class qdodooo_website_update(website_sale):
         for key in kw:
             template_ids.append(int(key))
         # 获取产品和赠品之间的id关系{产品：【赠品模型】}
-        gifts_dict = {}
-        template_obj = pool.get('product.template')
-        for line in template_obj.browse(cr, uid, template_ids):
-            if line.is_gifts and line.gifts_ids:
-                gifts_dict[line.id] = []
-                for key_line in line.gifts_ids:
-                    gifts_dict[line.id].append(key_line)
+        # gifts_dict = {}
+        # template_obj = pool.get('product.template')
+        # for line in template_obj.browse(cr, uid, template_ids):
+        #     if line.is_gifts and line.gifts_ids:
+        #         gifts_dict[line.id] = []
+        #         for key_line in line.gifts_ids:
+        #             gifts_dict[line.id].append(key_line)
         # 获取赠品的数量
-        gifts_num = {}
-        for key, value in kw.items():
-            if int(key) in gifts_dict:
-                for line_val in gifts_dict[int(key)]:
-                    if line_val.name.id in gifts_num:
-                        gifts_num[line_val.name.id] += line_val.number * float(value)
-                    else:
-                        gifts_num[line_val.name.id] = line_val.number * float(value)
+        # gifts_num = {}
+        # for key, value in kw.items():
+        #     if int(key) in gifts_dict:
+        #         for line_val in gifts_dict[int(key)]:
+        #             if line_val.name.id in gifts_num:
+        #                 gifts_num[line_val.name.id] += line_val.number * float(value)
+        #             else:
+        #                 gifts_num[line_val.name.id] = line_val.number * float(value)
         # 判断赠品的数量是否超过
-        for key, value in kw.items():
-            if int(key) in gifts_num:
-                if float(value) > gifts_num[int(key)]:
-                    return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
+        # for key, value in kw.items():
+        #     if int(key) in gifts_num:
+        #         if float(value) > gifts_num[int(key)]:
+        #             return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
         if not context.get('pricelist'):
             # pricelist 得到价格表 例如product.pricelist(25,)
             pricelist = self.get_pricelist()
@@ -356,8 +356,6 @@ class qdodooo_website_update(website_sale):
         for key_line, value_line in self.get_local_num_dict(product_ids).items():
             if value_line > 2000:
                 product_num[key_line] = '充足'
-            elif 2000 > value_line > 1000:
-                product_num[key_line] = '紧张'
             elif value_line <= 0:
                 pass
             else:
@@ -735,23 +733,23 @@ class qdodooo_website_update(website_sale):
             template_dict[line.product_id.product_tmpl_id.id] = line.product_uom_qty
             product[line.product_id.product_tmpl_id.id] = line.product_id.id
         # 获取产品和赠品之间的关系
-        gifts_dict = {}
+        # gifts_dict = {}
         template_obj = registry.get('product.template')
         line_obj = registry.get('sale.order.line')
-        for line in template_obj.browse(cr, uid, template_lst):
-            if line.is_gifts and line.gifts_ids:
-                gifts_dict[line.id] = []
-                for key_line in line.gifts_ids:
-                    gifts_dict[line.id].append(key_line)
+        # for line in template_obj.browse(cr, uid, template_lst):
+        #     if line.is_gifts and line.gifts_ids:
+        #         gifts_dict[line.id] = []
+        #         for key_line in line.gifts_ids:
+        #             gifts_dict[line.id].append(key_line)
         # 获取赠品的数量
-        gifts_num = {}
-        for key, value in template_dict.items():
-            if key in gifts_dict:
-                for line_val in gifts_dict[key]:
-                    if line_val.name.id in gifts_num:
-                        gifts_num[line_val.name.id] += line_val.number * float(value)
-                    else:
-                        gifts_num[line_val.name.id] = line_val.number * float(value)
+        # gifts_num = {}
+        # for key, value in template_dict.items():
+        #     if key in gifts_dict:
+        #         for line_val in gifts_dict[key]:
+        #             if line_val.name.id in gifts_num:
+        #                 gifts_num[line_val.name.id] += line_val.number * float(value)
+        #             else:
+        #                 gifts_num[line_val.name.id] = line_val.number * float(value)
         multiple=request.session.get('taylor_session')
         if not multiple:
             multiple = self.get_multiple()
@@ -759,10 +757,10 @@ class qdodooo_website_update(website_sale):
         for key, value in template_dict.items():
             line_ids = line_obj.search(cr, uid, [('product_id','=',product.get(key)),('order_id','=',order.id)])
             line_obj_ids = line_obj.browse(cr, uid, line_ids[0])
-            if key in gifts_num:
-                line_obj.write(cr, uid, line_ids, {'price_unit':0.0})
-                if value > gifts_num[key]:
-                    return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
+        #     if key in gifts_num:
+        #         line_obj.write(cr, uid, line_ids, {'price_unit':0.0})
+        #         if value > gifts_num[key]:
+        #             return "<html><head><body><p>赠品数量不能大于产品数量</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
             line_obj.write(cr, uid, line_ids, {'multiple_number':line_obj_ids.product_uom_qty*multiple.get(key)})
         promotion_obj = registry.get('qdodoo.promotion')
         line_obj = registry.get('sale.order.line')
@@ -1036,6 +1034,11 @@ class qdodooo_website_update(website_sale):
                     line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
             else:
                 line_obj.write(cr, uid, line.id, {'product_uom_qty':line.multiple_number})
+            # 查看是否有赠品数据
+            if line.product_id.is_gifts:
+                for line_1 in line.product_id.gifts_ids:
+                    product_line = request.registry['product.product'].search(cr, uid, [('product_tmpl_id','=',line_1.name.id)])
+                    res_id = line_obj.create(cr, uid, {'order_id':order.id,'product_id':product_line[0],'price_unit':0,'product_uom_qty':line.product_uom_qty*line_1.number})
         for key,valus in product_price_dict.items():
             if valus > 0:
                 val = {}
