@@ -779,6 +779,9 @@ class qdodoo_user_promotion(models.Model):
     }
 
 class qdodoo_checking_list(models.Model):
+    """
+        对账单
+    """
     _name = 'qdodoo.checking.list'
     _order = 'id desc'
 
@@ -788,7 +791,7 @@ class qdodoo_checking_list(models.Model):
     comsume = fields.Float(u'消费')
     refund = fields.Float(u'订单退款')
     all_money = fields.Float(u'可用余额')
-    type = fields.Selection([('beforehand',u'预存款'),('order',u'订货消费'),('refund',u'退款')],u'业务类型')
+    type = fields.Char(u'业务类型')
     notes = fields.Text(u'备注')
 
 class qdodoo_promotion_version_discount_product(models.Model):
@@ -869,14 +872,17 @@ class qdodoo_account_move_line(models.Model):
             if res.account_id.type == 'receivable':
                 if res.debit:
                     comsume = res.debit
-                    type = 'order'
                 if res.credit:
                     recharge = res.credit
-                    type = 'beforehand'
             if comsume or recharge:
                 all_money = -res.partner_id.credit + recharge - comsume
+                name = ''
+                if res.name:
+                    name += res.name
+                if res.ref:
+                    name += res.ref
                 self.env['qdodoo.checking.list'].sudo().create({'date':datetime.now(),'user_id':res.partner_id.id,'recharge':recharge,'comsume':comsume,
-                                                         'all_money':all_money,'type':type})
+                                                         'all_money':all_money,'type':name})
         return res
 
 class qdodoo_order_max_wizard(models.Model):

@@ -372,7 +372,7 @@
             <field name="name">qdodoo.checking.list.tree</field>
             <field name="model">qdodoo.checking.list</field>
             <field name="arch" type="xml">
-                <tree string="对账单" cerate="false" write="false">
+                <tree string="对账单" create="false" edit="false">
                     <field name="date"/>
                     <field name="recharge"/>
                     <field name="comsume"/>

@@ -121,7 +121,7 @@ class qdodooo_website_update(website_sale):
                 # 产品模板如果不存在于pricelist_procuct_ids中，将模板id加入到其中
                 if product_item.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_tmpl_id.id)
-                    key[product_item.product_tmpl_id.id]=product_item.multipl
+                    key[product_item.product_tmpl_id.id]=int(product_item.multipl)
             # 如果存在产品类别
             if product_item.categ_id:
                 product_ids = product_obj.search(cr, uid,[('categ_id', 'child_of', product_item.categ_id.id)])
@@ -129,7 +129,7 @@ class qdodooo_website_update(website_sale):
                 for temp_id in temp_ids:
                     if temp_id.product_tmpl_id.id not in pricelist_procuct_ids:
                         pricelist_procuct_ids.append(temp_id.product_tmpl_id.id)
-                        key[temp_id.product_tmpl_id.id]=product_item.multipl
+                        key[temp_id.product_tmpl_id.id]=int(product_item.multipl)
                 if product_item.is_recommend:
                     for temp_id in temp_ids:
                         if temp_id.product_tmpl_id.id not in recommend_dict:
@@ -140,14 +140,14 @@ class qdodooo_website_update(website_sale):
                     recommend_dict.append(product_item.product_tmpl_id.product_tmpl_id.id)
                 if product_item.product_id.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_id.product_tmpl_id.id)
-                    key[product_item.product_id.product_tmpl_id.id]=product_item.multipl
+                    key[product_item.product_id.product_tmpl_id.id]=int(product_item.multipl)
             # 如果都没有
             if not product_item.product_id.id and not product_item.categ_id and not product_item.product_tmpl_id:
                 if product_item.is_recommend:
                     recommend_dict = product_template_ids
                 pricelist_procuct_ids = product_template_ids
                 for i in pricelist_procuct_ids:
-                    key[i]=product_item.multipl
+                    key[i]=int(product_item.multipl)
                 break
         return key
 
@@ -303,7 +303,7 @@ class qdodooo_website_update(website_sale):
                 # 产品模板如果不存在于pricelist_procuct_ids中，将模板id加入到其中
                 if product_item.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_tmpl_id.id)
-                    key[product_item.product_tmpl_id.id]=product_item.multipl
+                    key[product_item.product_tmpl_id.id]=int(product_item.multipl)
             # 如果存在产品类别
             if product_item.categ_id:
                 product_ids = product_obj.search(cr, uid,[('categ_id', 'child_of', product_item.categ_id.id)])
@@ -311,7 +311,7 @@ class qdodooo_website_update(website_sale):
                 for temp_id in temp_ids:
                     if temp_id.product_tmpl_id.id not in pricelist_procuct_ids:
                         pricelist_procuct_ids.append(temp_id.product_tmpl_id.id)
-                        key[temp_id.product_tmpl_id.id]=product_item.multipl
+                        key[temp_id.product_tmpl_id.id]=int(product_item.multipl)
                 if product_item.is_recommend:
                     for temp_id in temp_ids:
                         if temp_id.product_tmpl_id.id not in recommend_dict:
@@ -322,14 +322,14 @@ class qdodooo_website_update(website_sale):
                     recommend_dict.append(product_item.product_tmpl_id.product_tmpl_id.id)
                 if product_item.product_id.product_tmpl_id.id not in pricelist_procuct_ids:
                     pricelist_procuct_ids.append(product_item.product_id.product_tmpl_id.id)
-                    key[product_item.product_id.product_tmpl_id.id]=product_item.multipl
+                    key[product_item.product_id.product_tmpl_id.id]=int(product_item.multipl)
             # 如果都没有
             if not product_item.product_id.id and not product_item.categ_id and not product_item.product_tmpl_id:
                 if product_item.is_recommend:
                     recommend_dict = product_template_ids
                 pricelist_procuct_ids = product_template_ids
                 for i in pricelist_procuct_ids:
-                    key[i]=product_item.multipl
+                    key[i]=int(product_item.multipl)
                 break
         domain += [('id', 'in', pricelist_procuct_ids)]
         # 将产品模板：倍数存入到session中
@@ -682,9 +682,9 @@ class qdodooo_website_update(website_sale):
             multiple = self.get_multiple()
         for key_line, value_line in self.get_local_num_dict(product_ids).items():
             if product_dict.get(key_line,0)*multiple.get(key_line,1) > value_line:
-                sql = "delete from sale_order_line where id=%s"%product_line_dict[key_line]
-                cr.execute(sql)
-                return "<html><head><body><p>产品库存不足(库存不足产品已从购物车中删除，请重新购买)！</p><a href='/shop/cart'>返回购物车</a></body></head></html>"
+                different = product_dict.get(key_line,0)*multiple.get(key_line,1) - value_line
+                message = '库存不足!%s产品现有库存为%s,缺少%s'%(pool.get('product.template').browse(cr, uid, key_line).name,value_line,different)
+                return "<html><head><body><p>%s</p><a href='/shop/cart'>返回购物车</a></body></head></html>" % message
         return request.redirect("/shop/confirm_order")
         # return request.website.render("website_sale.checkout", values)
 
@@ -1293,3 +1293,14 @@ class qdodooo_website_update(website_sale):
         else:
             promotion_obj.create(cr, SUPERUSER_ID, {'user':uid,'promotion':int(post.get('promotion_id'))})
             return '2'
+
+    # 删除购物车中明细
+    @http.route(['/shop/delect/line'], type='http', auth="public", website=True)
+    def shop_delect_line(self, **post):
+        cr, uid, context = request.cr, request.uid, request.context
+        line_obj = request.registry.get('sale.order.line')
+        if not post.get('line_id'):
+            return '0'
+        else:
+            line_obj.unlink(cr, uid, int(post.get('line_id')))
+            return '1'

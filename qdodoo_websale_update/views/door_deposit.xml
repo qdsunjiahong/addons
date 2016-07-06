@@ -5,13 +5,13 @@
                 <field name="name">store_depositk_form</field>
                 <field name="model">store.deposit</field>
                 <field name="arch" type="xml">
-                    <form string="门店存款" create="false">
+                    <form string="门店存款">
                         <header>
                             <button name="btn_sent" states="draft" string="提交申请" type="object"/>
                             <button name="btn_done" states="sent" string="通过" type="object"/>
                             <button name="btn_draft" states="sent" string="驳回" type="object"/>
                             <button name="btn_cancel" states="draft,sent" string="取消" type="object"/>
-                            <button name="btn_over" states="done" string="付款" type="object"/>
+                            <button name="btn_over" states="done" string="付款" type="object" groups="account.group_account_user"/>
                             <field name="state" widget="statusbar" statusbar_visible="draft,sent,done,over" statusbar_colors='{"draft":"red","sent":"blue"}'/>
                         </header>
                         <group>

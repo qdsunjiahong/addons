@@ -3,6 +3,7 @@
 from openerp import models, fields, api, _
 import datetime
 from openerp.exceptions import except_orm
+import copy
 
 class taylor_template(models.Model):
     """
@@ -137,11 +138,7 @@ class qdodoo_sale_order_inherit_tfs(models.Model):
 
     all_money = fields.Float(u'合计',compute='_get_all_money')
     minus_money = fields.Float(u'优惠金额')
-    is_website = fields.Boolean(u'是否是网络报货生成的订单')
-
-    _defaults = {
-        'is_website':False,
-    }
+    is_website = fields.Boolean(u'是否是网络报货生成的订单', default=False)
 
     def create(self, cr, uid, vals, context=None):
         partner_obj = self.pool.get('res.partner')
@@ -152,11 +149,100 @@ class qdodoo_sale_order_inherit_tfs(models.Model):
                 vals['warehouse_id'] = partner_obj.browse(cr, 1, vals.get('partner_id')).out_stock.id
         return super(qdodoo_sale_order_inherit_tfs, self).create(cr, uid, vals, context=context)
 
+    # 计算合计金额
     def _get_all_money(self):
         num = 0.0
         for line in self.order_line:
             num += line.multiple_number * line.price_unit
         self.all_money = num - self.minus_money
+
+class qdodoo_sale_order_return(models.Model):
+    """
+        销售订单上的反向转移
+    """
+    _name = 'qdodoo.sale.order.return'
+
+    order_line = fields.One2many('qdodoo.sale.order.return.line','order_id',u'产品明细')
+    invoice_state = fields.Selection([('2binvoiced',u'开票'),('none',u'没有发票')],u'开发票',default='2binvoiced')
+
+    # 获取默认明细产品
+    @api.model
+    def default_get(self, fields_list):
+        res = super(qdodoo_sale_order_return, self).default_get(fields_list)
+        # 获取销售订单数据
+        sale_id = self.env['sale.order'].browse(self._context.get('active_id'))
+        order_line = []
+        for line in sale_id.order_line:
+            order_line.append({'product_id':line.product_id.id,'quantity':line.product_uom_qty})
+        res.update({'order_line': order_line})
+        return res
+
+    @api.multi
+    def get_bom_product(self):
+        bom_ids = self.env['mrp.bom'].search([('type','=','phantom')])
+        res = {}
+        for bom_id in bom_ids:
+            res[bom_id.product_tmpl_id] = bom_id
+        return res
+
+    @api.multi
+    def btn_return(self):
+        # 获取销售订单数据
+        sale_id = self.env['sale.order'].browse(self._context.get('active_id'))
+        move_obj = self.env['stock.move']
+        picking_ids = []
+        # 获取所有组合品对应的bom
+        bom_product = self.get_bom_product()
+        # 获取销售订单的所有出库单
+        for picking_id in sale_id.picking_ids:
+            if picking_id.state == 'done':
+                picking_ids.append(picking_id.id)
+        if not picking_ids:
+            raise except_orm(_(u'警告!'),_(u'销售订单没有有效的出库单！'))
+        else:
+            product_dict = {} #{产品:数量}
+            for line in self.order_line:
+                # 如果产品是组合品，则拆分对应的明细
+                if line.product_id.product_tmpl_id in bom_product:
+                    for bom_line in bom_product[line.product_id.product_tmpl_id].bom_line_ids:
+                        if bom_line.product_id in product_dict:
+                            product_dict[bom_line.product_id] += line.quantity/bom_product[line.product_id.product_tmpl_id].product_qty*bom_line.product_qty
+                        else:
+                            product_dict[bom_line.product_id] = line.quantity/bom_product[line.product_id.product_tmpl_id].product_qty*bom_line.product_qty
+                else:
+                    if line.product_id in product_dict:
+                        product_dict[line.product_id] += line.quantity
+                    else:
+                        product_dict[line.product_id] = line.quantity
+        # 创建对应的反向转移数据
+        valu = {}
+        product_return_moves = []
+        for key,value in product_dict.items():
+            # 查询产品对应的调拨单
+            move_ids = move_obj.search([('state','=','done'),('product_id','=',key.id),('picking_id','in',picking_ids)])
+            if move_ids:
+                product_return_moves.append((0,0,{'product_id':key.id,'quantity':value,'move_id':move_ids[0].id}))
+            else:
+                raise except_orm(_(u'警告!'),_(u'产品%s没有关联有效的出库单！')%key.name)
+        valu['invoice_state'] = self.invoice_state
+        valu['product_return_moves'] = product_return_moves
+        ctx = dict(self._context)
+        ctx['active_id'] = picking_ids[0]
+        ctx['active_ids'] = [picking_ids[0]]
+        ctx['active_model'] = 'stock.picking'
+        res = self.env['stock.return.picking'].with_context(ctx).create(valu)
+        return res.create_returns()
+
+class qdodoo_sale_order_return_line(models.TransientModel):
+    """
+        销售订单上的反向转移明细
+    """
+    _name = 'qdodoo.sale.order.return.line'
+
+    order_id = fields.Many2one('qdodoo.sale.order.return',u'反向转移')
+    product_id = fields.Many2one('product.product',u'产品')
+    quantity = fields.Float(u'数量')
+
 
 class qdodoo_product_category_inherit(models.Model):
     """
@@ -165,3 +251,17 @@ class qdodoo_product_category_inherit(models.Model):
     _inherit = 'product.category'
 
     fold = fields.Float(u'倍数')
+
+class qdodoo_stock_return_picking_inherit(models.Model):
+    """
+        修改开发票方式的默认值
+    """
+    _inherit = 'stock.return.picking'
+
+
+    def _get_invoice_state_tfs(self):
+        return '2binvoiced' if self.env['stock.picking'].browse(self._context.get('active_id')).partner_id else 'none',
+
+    _defaults = {
+        'invoice_state':_get_invoice_state_tfs,
+    }
