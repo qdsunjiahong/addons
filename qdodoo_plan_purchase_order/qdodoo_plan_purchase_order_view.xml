@@ -66,7 +66,7 @@
                                         <field name="is_split" invisible="True"/>
                                         <field name="qty_jh" sum="合计"/>
                                         <field name="qty" sum="合计" attrs="{'required':[('state','!=','draft')]}"/>
-                                        <button name="split_quantities" string="拆分" type="object" icon="STOCK_PREFERENCES" attrs="{'invisible': ['|','|','|',('is_split','=',False),('state','!=','sent'),('difference_num','&lt;=',0),('qty', '=', 0)]}"/>
+                                        <button name="split_quantities" string="拆分" type="object" icon="STOCK_PREFERENCES" attrs="{'invisible': ['|','|','|',('is_split','=',True),('state','!=','sent'),('difference_num','&lt;=',0),('qty', '=', 0)]}"/>
                                         <field name="plan_date_jh"/>
                                         <field name="plan_date" attrs="{'required':[('state','!=','draft')]}"/>
                                         <field name="price_unit"/>
