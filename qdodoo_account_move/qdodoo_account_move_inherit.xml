@@ -38,6 +38,8 @@
             <field name="arch" type="xml">
                 <xpath expr="//filter[@string='Period']" position="after">
                     <filter string="辅助核算项" icon="terp-go-month" domain="[]" context="{'group_by':'analytic_account_id'}"/>
+                    <!-- 增加按产品分组 -->
+                    <filter string="产品" context="{'group_by':'product_id'}" />
                 </xpath>
             </field>
         </record>
