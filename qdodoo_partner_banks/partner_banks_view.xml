@@ -1,0 +1,49 @@
+<openerp>
+    <data>
+
+        <record id="view_partner_banks_tree" model="ir.ui.view">
+            <field name="name">partner.banks.tree></field>
+            <field name="model">res.partner.bank</field>
+            <field name="arch" type="xml">
+                <tree create="false">
+                    <field name="ref"/>
+                    <field name="partner_id"/>
+                    <field name="bank"/>
+                    <field name="acc_number"/>
+                    <field name="owner_name"/>
+                    <field name="phone"/>
+                    <field name="email"/>
+                    <field name="payment_term"/>
+                    <field name="credit"/>
+                    <field name="debit"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="search_partner_banks" model="ir.ui.view">
+            <field name="name">qdodoo.partner.banks.search</field>
+            <field name="model">res.partner.bank</field>
+            <field name="arch" type="xml">
+                <search>
+                    <filter name="supplier" string="供应商" domain="[('partner_id.supplier','=',True)]"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="action_view_partner_banks" model="ir.actions.act_window">
+            <field name="name">供应商银行帐户</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner.bank</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="context">{'search_default_supplier':1}</field>
+
+        </record>
+
+        <menuitem id="qdodoo_partner_banks" name="供应商银行帐户"
+            parent="purchase.menu_procurement_management"
+            action="action_view_partner_banks" sequence="18"/>
+
+    </data>
+</openerp>
