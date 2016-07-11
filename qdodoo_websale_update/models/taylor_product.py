@@ -258,7 +258,7 @@ class qdodoo_stock_return_picking_inherit(models.Model):
     """
     _inherit = 'stock.return.picking'
 
-
+    @api.multi
     def _get_invoice_state_tfs(self):
         return '2binvoiced' if self.env['stock.picking'].browse(self._context.get('active_id')).partner_id else 'none',
 

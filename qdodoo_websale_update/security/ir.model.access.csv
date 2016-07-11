@@ -24,7 +24,7 @@ access_account_analytic_line,辅助核算项,account.model_account_analytic_line
 access_stock_location,库位,stock.model_stock_location,base.group_portal,1,1,1,0
 access_stock_move_operation_link,库位1,stock.model_stock_move_operation_link,base.group_portal,1,1,1,1
 access_stock_quant,份,stock.model_stock_quant,base.group_portal,1,1,1,1
-access_res_partner,业务伙伴,base.model_res_partner,base.group_portal,1,1,1,0
+access_res_partner,业务伙伴,base.model_res_partner,base.group_portal,1,0,0,0
 access_mrp_bom,物料清单,mrp.model_mrp_bom,base.group_portal,1,1,1,0
 access_account_fiscalyear,分析账户,account.model_account_fiscalyear,base.group_portal,1,1,1,0
 access_account_journal_period,分析账户账期,account.model_account_journal_period,base.group_portal,1,1,1,0

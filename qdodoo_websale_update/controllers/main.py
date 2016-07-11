@@ -1302,5 +1302,5 @@ class qdodooo_website_update(website_sale):
         if not post.get('line_id'):
             return '0'
         else:
-            line_obj.unlink(cr, uid, int(post.get('line_id')))
+            line_obj.unlink(cr, SUPERUSER_ID, int(post.get('line_id')))
             return '1'
