@@ -252,19 +252,20 @@ class qdodoo_product_category_inherit(models.Model):
 
     fold = fields.Float(u'倍数')
 
-# class qdodoo_stock_return_picking_inherit(models.Model):
-#     """
-#         修改开发票方式的默认值
-#     """
-#     _inherit = 'stock.return.picking'
-#
-#     @api.multi
-#     def _get_invoice_state_tfs(self):
-#         return '2binvoiced' if self.env['stock.picking'].browse(self._context.get('active_id')).partner_id else 'none',
-#
-#     _defaults = {
-#         'invoice_state':_get_invoice_state_tfs,
-#     }
+class qdodoo_stock_return_picking_inherit(models.TransientModel):
+    """
+        修改开发票方式的默认值
+    """
+    _inherit = 'stock.return.picking'
 
+    # 退货时根据原单据是否有业务伙伴确定退货的开票状态,有业务伙伴则开票。
+    @api.model
+    def default_get(self, fields):
+        res = super(qdodoo_stock_return_picking_inherit, self).default_get(fields)
+        record_id = self._context and self._context.get('active_id', False) or False
+        picking = self.env['stock.picking'].browse(record_id)
+        if picking.partner_id:
+            res['invoice_state'] = '2binvoiced'
+        return res
 
 
