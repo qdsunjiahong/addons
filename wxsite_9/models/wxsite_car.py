@@ -170,45 +170,50 @@ class qdodoo_pos_session_inherit(models.Model):
                 <div font="b">
                     <div size="double-height"><pre>日结单</pre></div>
                     <div><pre>%s       %s</pre></div>
-                    <div><pre>产品        数量        单价</pre></div>
+                    <div><pre>================================================================</pre></div>
+                    <div><pre>产品                        数量            单价</pre></div>
+                     <div>--------------------------------------------------------------</div>
                 </div>
-                <div line-ratio="0.6">++++++"""%(company, stop_at)
+                <div line-ratio="0.6">++++++""" % (company, stop_at)
 
             for order in obj.order_ids:
                 for line in order.lines:
                     all_num += line.qty
                     all_amount += line.qty * line.price_unit
-                    if "['%s',%s]" % (line.product_id.name, line.price_unit) in dict_all:
-                        dict_all["['%s',%s]" % (line.product_id.name, line.price_unit)] += line.qty
+
+                    if (line.product_id, line.price_unit) in dict_all:
+                        dict_all[(line.product_id, line.price_unit)] += line.qty
                     else:
-                        dict_all["['%s',%s]" % (line.product_id.name, line.price_unit)] = line.qty
+                        dict_all[(line.product_id, line.price_unit)] = line.qty
 
             for key, value in dict_all.items():
-                product_name = eval(key)[0]
-                if len(product_name) < 6:
-                    product_name += ('　' * (6 - len(product_name)))
+                product_name = key[0].name
+                if len(product_name) < 10:
+                    product_name += ('　' * (10 - len(product_name)))
                 else:
-                    product_name = product_name[:6]
+                    product_name = product_name[:10]
                 qty = str(value)
-                if len(qty) < 9:
-                    qty += (' ' * (9 - len(qty)))
+                if len(qty) < 8:
+                    qty += ('　' * (8 - len(qty)))
                 else:
-                    qty = qty[:9]
-                price = str(eval(key)[1])
+                    qty = qty[:8]
+                price = str(key[1])
                 if len(price) < 6:
-                    price += (' ' * (6 - len(price)))
+                    price += ('　' * (6 - len(price)))
                 else:
                     price = price[:6]
 
-                infomation_new += """<div size="double-height">
+                infomation_new += """<div>
                     %s
                     %s
                     %s
                     @@@@@%s@@@@@
-                    </div>++++++""" % (product_name, qty, price, obj.config_id.front_desk)
+                    </div>
+                    <div>----------------------------------------------</div>++++++""" % (
+                product_name, qty, price, obj.config_id.front_desk)
             infomation_new += """</div>
                     <div>
-                        <left><pre>数量: %s  总额：%s</pre></left>
+                        <left><pre>数量: %s    总额：%s</pre></left>
                     </div>
                     </receipt>""" % (all_num, all_amount)
             print_list_obj = self.pool.get('qdodoo.print.list')
@@ -227,52 +232,49 @@ class qdodoo_pos_session_inherit(models.Model):
             <div font="b">
                 <div size="double-height"><pre>日结单</pre></div>
                 <div><pre>%s       %s</pre></div>
-                <div><pre>产品        数量        单价</pre></div>
+                <div><pre>================================================================</pre></div>
+                <div><pre>产品                        数量            单价</pre></div>
+                 <div>--------------------------------------------------------------</div>
             </div>
             <div line-ratio="0.6">++++++"""%(company, stop_at)
-
-        # for line in obj.statement_ids:
-        #     all_num += line.balance_end
-        #     if line.journal_id in dict_all:
-        #         dict_all[line.journal_id] += line.balance_end
-        #     else:
-        #         dict_all[line.journal_id] = line.balance_end
 
         for order in obj.order_ids:
             for line in order.lines:
                 all_num += line.qty
                 all_amount += line.qty*line.price_unit
-                if "['%s',%s]"%(line.product_id.name,line.price_unit) in dict_all:
-                    dict_all["['%s',%s]"%(line.product_id.name,line.price_unit)] += line.qty
+
+                if (line.product_id,line.price_unit) in dict_all:
+                    dict_all[(line.product_id,line.price_unit)] += line.qty
                 else:
-                    dict_all["['%s',%s]"%(line.product_id.name,line.price_unit)] = line.qty
+                    dict_all[(line.product_id,line.price_unit)] = line.qty
 
         for key, value in dict_all.items():
-            product_name = eval(key)[0]
-            if len(product_name) < 6:
-                product_name += ('　' * (6-len(product_name)))
+            product_name = key[0].name
+            if len(product_name) < 10:
+                product_name += ('　' * (10-len(product_name)))
             else:
-                product_name = product_name[:6]
+                product_name = product_name[:10]
             qty = str(value)
-            if len(qty) < 9:
-                qty += (' ' * (9-len(qty)))
+            if len(qty) < 8:
+                qty += ('　' * (8-len(qty)))
             else:
-                qty = qty[:9]
-            price = str(eval(key)[1])
+                qty = qty[:8]
+            price = str(key[1])
             if len(price) < 6:
-                price += (' ' * (6-len(price)))
+                price += ('　' * (6-len(price)))
             else:
                 price = price[:6]
 
-            infomation_new += """<div size="double-height">
+            infomation_new += """<div>
                 %s
                 %s
                 %s
                 @@@@@%s@@@@@
-                </div>++++++"""%(product_name,qty,price,obj.config_id.front_desk)
+                </div>
+                <div>----------------------------------------------</div>++++++"""%(product_name,qty,price,obj.config_id.front_desk)
         infomation_new += """</div>
                 <div>
-                    <left><pre>数量: %s  总额：%s</pre></left>
+                    <left><pre>数量: %s    总额：%s</pre></left>
                 </div>
                 </receipt>"""%(all_num, all_amount)
         print_list_obj = self.pool.get('qdodoo.print.list')
