@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<template>
-    <t t-extend="AccountReconciliation">
-        <t t-jquery="button[class*='oe_account_recom_mark_as_reconciled']" t-operation="replace">
-
-        </t>
-    </t>
-</template>
-
