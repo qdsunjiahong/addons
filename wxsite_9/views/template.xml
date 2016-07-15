@@ -110,18 +110,18 @@
                     <!--顶部信息栏，各页通用-->
                     <div class="top-info"><span t-esc="company_name"/></div>
 
-                    <div class="main">
+                    <div class="main" style="min-height:500px;">
                         <!--商品基本信息-->
                         <span itemprop="image" t-field="product.image" t-field-options='{"widget": "image", "class": "product_detail_img"}'/>
                         <!--菜品描述-->
-                        <div class="pdesc">
-                            <div itemprop="description" t-field="product.description_sale" class="oe_structure mt16 description" id="product_full_description"/>
+                        <div class="pdesc1" style="padding-bottom:10px;border-bottom:1px dashed #000;">
+                            <div style="overflow:hidden;max-height:55px;min-height:30px;" itemprop="description" t-field="product.description_sale" class="oe_structure mt16 description" id="product_full_description"/>
 
                         </div>
 
                         <div class="infos">
                             <!--div class="pname"><span t-esc="product.name"></span></div> -->
-                            <div class="price"><b t-esc="product.list_price"></b>/<span t-esc="product.uom_id.name"/>
+                            <div class="price"><a href="javascript:history.go(-1)">返 回</a> <b t-esc="product.list_price"></b>/<span t-esc="product.uom_id.name"/>
                             <button id="tobuy" class="buy" t-att-pid="product.id"><span t-esc="key_name.get(product.id,'加入购物车')"></span></button>
                             </div>
                                 <div class="clear"></div>
