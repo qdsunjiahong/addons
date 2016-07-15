@@ -121,7 +121,7 @@
 
                         <div class="infos">
                             <!--div class="pname"><span t-esc="product.name"></span></div> -->
-                            <div class="price"><a href="javascript:history.go(-1)">返 回</a> <b t-esc="product.list_price"></b>/<span t-esc="product.uom_id.name"/>
+                            <div class="price"><a href="/shop/wx/lunch">&lt;返 回</a> <b t-esc="product.list_price"></b>/<span t-esc="product.uom_id.name"/>
                             <button id="tobuy" class="buy" t-att-pid="product.id"><span t-esc="key_name.get(product.id,'加入购物车')"></span></button>
                             </div>
                                 <div class="clear"></div>
