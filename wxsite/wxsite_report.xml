@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report
+            id="report_account_print_id"
+            string="结账单"
+            model="qdodoo.account.print"
+            report_type="qweb-pdf"
+            file="wxsite.report_account_print"
+            name="wxsite.report_account_print"
+            menu="False"
+        />
+
+    </data>
+</openerp>

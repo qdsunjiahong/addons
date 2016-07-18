@@ -5,7 +5,7 @@
         <!--产品分类-->
         <template id="categories_recursive" name="Category list">
           <li t-att-class="'active' if c.id == int(category or 0) else ''">
-              <a t-att-href="keep('/shop/wx/lunch/' + slug(c), category=0)" t-field="c.name"></a>
+              <a t-att-href="keep('/shop/wx/lunch/%s'%slug(c), category=0)" t-field="c.name"></a>
               <ul t-if="c.child_id" class="nav nav-pills nav-stacked nav-hierarchy">
                   <t t-foreach="c.child_id" t-as="c">
                       <t t-call="wxsite.categories_recursive"/>
@@ -50,21 +50,9 @@
                 </head>
                 <body>
 
-                    <div class="top-info"><span t-esc="company_name"/><span class="top-info-desk"></span></div>
+                    <div class="top-info"><a href="./main"><span t-esc="company_name"/></a><span class="top-info-desk"></span></div>
                     <!--主体部分-->
                     <div class="main">
-                        <!--图片滚动-->
-                        <!--<div class="index-scrolls">-->
-                            <!--<a class="curr-img" href="./"><img src="/wxsite/static/images/index-scroll1.jpg" /></a>-->
-                            <!--<a href="./"><img src="/wxsite/static/images/index-scroll2.jpg" /></a>-->
-                            <!--<a href="./"><img src="/wxsite/static/images/index-scroll3.jpg" /></a>-->
-                            <!--<ul class="scroll-marks">-->
-                                <!--<li class="curr-mark"></li>-->
-                                <!--<li></li>-->
-                                <!--<li></li>-->
-                            <!--</ul>-->
-                        <!--</div>-->
-
 
                         <!--顶部分类菜单-->
                         <div class="top-cats">
@@ -82,35 +70,22 @@
                                 <div class="product oe_product oe_list oe_product_cart">
                                     <t t-call="wxsite.products_item"/>
                                     <div t-att-id="product.id" class="select-product">
-                                    <a href="javascript:void(0)" name="add" class="quantity-add" title="增加购买数量"></a>
-                                    <span t-esc="key_name.get(product.id,0)"></span>
-                                    <a href="javascript:void(0)" name="reduce" class="quantity-reduce" title="减少购买数量"></a>
+                                        <a href="javascript:void(0)" name="add" class="quantity-add" title="增加购买数量"></a>
+                                        <span t-if="key_name.get(product.id,0) > 0" t-esc="key_name.get(product.id,0)"></span>
+                                        <a t-if="key_name.get(product.id,0) > 0" href="javascript:void(0)" name="reduce" class="quantity-reduce" title="减少购买数量"></a>
                                     </div>
                                 </div>
                             </t>
                         </div>
+                        <br/>
+                        <div class="clear"></div>
                     </div>
 
 					<!--新底部菜单，参照惠美app设计图-->
 					<div class="simple-btn">
-						<span class="selected-quantity">共<span t-esc="all_car_num"/>份</span>总价：￥<span class="selected-sum"><span t-esc="all_money"/></span>
+						共<span class="selected-quantity"><span t-esc="all_car_num"/>份</span>总价：￥<span class="selected-sum"><span t-esc="all_money"/></span>
 						<a href="/shop/wx/car" title="查看我已选菜品">选好了</a>
 					</div>
-		
-                    
-                    <!--底部固定菜单，各页通用
-                    <div class="footer-menus">
-                        <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
-                        </div>
-                        <div class="fmenu-item">
-                            <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
-                        </div>
-                        <div class="fmenu-item">
-                            <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
-                        </div>
-                    </div>-->
                     
                     <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
                     <script type="text/javascript" src="/wxsite/static/js/addtocart.js"></script>  <!--购物车添加js-->
@@ -135,22 +110,28 @@
                     <!--顶部信息栏，各页通用-->
                     <div class="top-info"><span t-esc="company_name"/></div>
 
-                    <div class="main">
+                    <div class="main" style="min-height:500px;">
                         <!--商品基本信息-->
                         <span itemprop="image" t-field="product.image" t-field-options='{"widget": "image", "class": "product_detail_img"}'/>
+                        <!--菜品描述-->
+                        <div class="pdesc1" style="padding-bottom:10px;border-bottom:1px dashed #000;">
+                            <div style="overflow:hidden;max-height:55px;min-height:30px;" itemprop="description" t-field="product.description_sale" class="oe_structure mt16 description" id="product_full_description"/>
+
+                        </div>
+
                         <div class="infos">
-                            <div class="pname"><span t-esc="product.name"></span></div>
-                            <div class="price"><b t-esc="product.list_price"></b>/<span t-esc="product.uom_id.name"/></div>
+                            <!--div class="pname"><span t-esc="product.name"></span></div> -->
+                            <div class="price"><a href="/shop/wx/lunch">&lt;返 回</a> <b t-esc="product.list_price"></b>/<span t-esc="product.uom_id.name"/>
                             <button id="tobuy" class="buy" t-att-pid="product.id"><span t-esc="key_name.get(product.id,'加入购物车')"></span></button>
-                            <div class="clear"></div>
+                            </div>
+                                <div class="clear"></div>
                         </div>
                         <div class="clear"></div>
 
-                        <!--商品描述-->
+                        <!--商品描述
                         <div class="desctitle">
                             <div class="dtitle">菜品详情</div>
-
-                            <!--分享小工具-->
+                            分享小工具
                             <div class="jiathis_style">
                                 <a class="jiathis_button_qzone"></a>
                                 <a class="jiathis_button_tsina"></a>
@@ -164,18 +145,15 @@
 
                             <div class="share">分享到：</div>
                             <div class="clear"></div>
-                        </div>
+                        </div> -->
 
-                        <!--菜品描述-->
-                        <div class="pdesc">
-                            <div itemprop="description" t-field="product.website_description" class="oe_structure mt16" id="product_full_description"/>
-                        </div>
+
                     </div>
 
                     <!--底部固定菜单，各页通用-->
                     <div class="footer-menus">
                         <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
+                            <a href="/shop/wx/main" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
@@ -259,9 +237,58 @@
 
         </template>
 
+        <!--新购物车页面-->
+        <template id="newcar" name="已选菜品">&lt;!DOCTYPE html&gt;
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;" />
+                    <title>已选菜品</title>
+
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/global.css" />
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/newcart.css" />
+                </head>
+                <body>
+                    <div class="cart-main">
+                        <!--已选菜品列表-->
+                        <div class="cart-title">订单详情</div>
+
+                        <form id="subform" action="/shop/wx/wxpay" method="post">
+                            <div class="cart-item" t-foreach="products" t-as="product">
+                                <a t-att-href="'/shop/wx/product/%s'%product.id" target="_blank"><img itemprop="image" class="product-img" t-att-src="website.image_url(product, 'image', None if product_image_big else '300x300')"/></a>
+                                <div class="product-info">
+                                    <div class="product-name"><a t-att-href="'/shop/wx/product/%s'%product.id" target="_blank"><span t-esc="product.name"/></a></div>
+                                    <div class="product-price">￥<b t-att-id="'price%s'%product.id" t-esc="product.lst_price"></b></div>
+                                </div>
+                                <div class="clear"></div>
+                                <div class="change-quantity" t-att-id="product.id">
+                                    <a class="quantity-add" href="javascript:void(0)"><img src="/wxsite/static/img/quantity-add.png" /></a>
+                                    <input type="text" class="buy-quantity" name="'quantity%s'%product.id" t-att-value="product_num[product]" readonly="True"/>
+                                    <a class="quantity-reduce" href="javascript:void(0)"><img src="/wxsite/static/img/quantity-reduce.png" /></a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="cart-summary">
+                        优惠金额：<b>￥ 0</b><br />
+                        共计<b class="cart-num">0</b>份  商品总价：￥<b class="cart-sum" t-esc="all_money"></b>
+                    </div>
+                    <div class="pay-sum">总共需支付金额：￥<b t-esc="all_money"></b></div>
+
+                    <div class="pay-bottom">
+                        <button class="sub-order" name="suborder">提交订单</button>
+                    </div>
+
+                    <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
+                    <script type="text/javascript" src="/wxsite/static/js/newcart.js"></script>
+                </body>
+            </html>
+
+        </template>
+
         <!--个人中心-->
         <template id="user" name="个人中心">&lt;!DOCTYPE html&gt;
-
             <html>
                 <head>
                     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -286,11 +313,10 @@
                     <!--底部固定菜单，各页通用-->
                     <div class="footer-menus">
                         <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
+                            <a href="/shop/wx/main" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -298,12 +324,10 @@
                     </div>
                 </body>
             </html>
-
         </template>
 
         <!--支付页面-->
         <template id="wxpay" name="支付页面">
-
             <html>
                 <head>
                     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -321,20 +345,26 @@
                     <div class="main">
                         <!--已选菜品列表-->
                         <div class="wxpay-title">支付菜单</div>
-
+                        <div class="desk">您是：<input type="tel" class="deskno" name="deskno" value=""/>号桌</div>
+                        <div class="order-note">备注：
+                            <select name="taste" class="form-control">
+                                <option value="">口味...</option>
+                                <t t-foreach="tastes or []" t-as="taste">
+                                <option t-att-value="taste.name"><t t-esc="taste.name"/></option>
+                                </t>
+                            </select>
+                            <br/><input class="onote" name="onote" value="" placeholder="您可以提一些建议或要求" /></div>
                         <div class="pay-sum">￥<span t-esc="all_money"/></div>
                         <button class="pay-btn" onclick="callpay()">立即支付</button>
                     </div>
 
-
                     <!--底部固定菜单，各页通用-->
                     <div class="footer-menus">
                         <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
+                            <a href="/shop/wx/main" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -347,8 +377,54 @@
 
                 </body>
             </html>
+        </template>
 
+        <!--支付宝跳转页面-->
+        <template id="alipay" name="支付页面">
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;" />
+                    <title>支付宝支付</title>
 
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/global.css" />
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/wxpay.css" />
+                </head>
+                <body>
+                    <!--顶部信息栏，各页通用-->
+                    <div class="top-info"><span t-esc="company_name"/></div>
+
+                    <!--主体部分-->
+                    <div class="main">
+                        <input type="hidden" name="oid" t-att-value="oid"/>
+                        <div class="wxpay-title">支付菜单</div>
+                        <div class="desk">您是：<input type="tel" class="deskno" name="deskno" value=""/>号桌</div>
+                        <div class="order-note">备注：
+                            <select name="taste" class="form-control">
+                                <option value="">口味...</option>
+                                <t t-foreach="tastes or []" t-as="taste">
+                                <option t-att-value="taste.name"><t t-esc="taste.name"/></option>
+                                </t>
+                            </select>
+                            <br/><input class="onote" name="onote" value="" placeholder="您可以提一些建议或要求" /></div>
+                        <div class="pay-sum">￥<span t-esc="all_money"/></div>
+
+                        <form id="alipaysubmit" name='alipaysubmit' action="http://wappaygw.alipay.com/service/rest.htm?_input_charset=UTF-8" method="get">
+                            <input type="hidden" name="service" t-att-value="service"/>
+                            <input type="hidden" name="partner" t-att-value="partner"/>
+                            <input type="hidden" name="sec_id" t-att-value="sec_id"/>
+                            <input type="hidden" name="format" t-att-value="format"/>
+                            <input type="hidden" name="v" t-att-value="v"/>
+                            <input type="hidden" name="req_id" t-att-value="req_id"/>
+                            <input type="hidden" name="req_data" t-att-value="req_data"/>
+                            <input type="hidden" name="_input_charset" t-att-value="_input_charset"/>
+                            <button class="pay-btn">立即支付</button>
+                        </form>
+                    </div>
+                </body>
+                <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
+                <script type="text/javascript" src="/wxsite/static/js/alipay4.js"></script>
+            </html>
         </template>
 
         <template id="about" name="关于我们">
@@ -389,11 +465,10 @@
                     <!--底部固定菜单，各页通用-->
                     <div class="footer-menus">
                         <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
+                            <a href="/shop/wx/main" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title=""><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -420,8 +495,8 @@
 
                         <!--第一笔订单-->
                         <div class="order" t-foreach="orders" t-as="order">
-                            <div class="order" a-att-id="order.name">
-                                <div class="oid">订单：<span t-esc="order.name"></span><span class="ostatus oflag15" t-esc="'未付' if order.state=='draft' else '已付'"></span></div>
+                            <div a-att-id="order.name">
+                                <div class="oid">订单：<span t-esc="order.name"></span><span class="ostatus oflag15" t-esc="'未付' if order.is_payment!=True else '已付'"></span></div>
 
                                 <!--商品列表-->
                                 <table class="products" cellspacing="1">
@@ -452,23 +527,20 @@
                                 <div class="clear"></div>
                                 <!--<div class="addr"></div>-->
                                 <div class="osum">饭金:<b t-esc="order.amount_total"></b>元
-                                    <a t-if="order.state=='draft'" class="ops obtn ocancel" t-att-id="order.id" t-att-pid="order.amount_total" href="javascript:void(0)">付款</a><!--id为单号-->
+                                    <!--<a t-if="order.is_payment!=True" class="ops obtn ocancel" t-att-id="order.id" t-att-pid="order.amount_total" href="javascript:void(0)">付款</a>--><!--id为单号-->
                                 </div>
                             </div>
                         </div>
 
                     </div>
 
-
-
                     <!--底部固定菜单，各页通用-->
                     <div class="footer-menus">
                         <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
+                            <a href="/shop/wx/main" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title="个人中心"><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
@@ -508,16 +580,102 @@
                     <!--底部固定菜单，各页通用-->
                     <div class="footer-menus">
                         <div class="fmenu-item">
-                            <a href="/shop/wx/lunch" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
+                            <a href="/shop/wx/main" title="回到首页"><img src="/wxsite/static/img/btnmenu-shop.png" /><span>首页</span></a>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/car" title="查看我已选菜品"><img src="/wxsite/static/img/btnmenu-cart.png" /><span>已选菜品</span></a>
-                            <div class="cart-num"><span t-esc="all_car_num"></span></div>
                         </div>
                         <div class="fmenu-item">
                             <a href="/shop/wx/user" title="个人中心"><img src="/wxsite/static/img/btnmenu-ucen.png" /><span>个人中心</span></a>
                         </div>
                     </div>
+                </body>
+            </html>
+        </template>
+
+        <template id="order_list" name="订单详情">
+
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=0;" />
+                    <title>订单列表</title>
+
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/global.css" />
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/orders.css" />
+                </head>
+                <body>
+                    <div class="main" style="margin-top: 0;">
+                        <div class="orders-title">订单列表</div><a href="javascript:void(0)" onclick="location.reload(true);" style="display: inline-block; float: right; margin-right: 0; font-size: 0.8em; background-color: #ffffbb; border-radius: 5px; padding: 0 1em; color: #ff3333;">刷新</a>
+
+                        <!--第一笔订单-->
+                        <div class="order" t-foreach="orders" t-as="order">
+                            <div a-att-id="order.name">
+                                <div class="oid">订单：<span t-esc="order.name"></span></div>
+                                <div class="oid">时间：<span t-esc="order.date_order"></span></div>
+                                <table class="products" cellspacing="1">
+                                    <tr>
+                                        <th class="txtl">菜品</th>
+                                        <th>单价</th>
+                                        <th>数量</th>
+                                        <th>小计</th>
+                                        <th>        </th>
+                                        <th>        </th>
+                                    </tr>
+
+                                    <tr t-foreach="order.lines" t-as="line">
+                                        <td>
+                                            <div class="product">
+                                                <div class="pname"><span t-esc="line.product_id.name"/></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="price"><span t-esc="line.price_unit"/></div>
+                                        </td>
+                                        <td><div class="quantity"><span t-esc="line.qty"/></div></td>
+                                        <td><div class="amount"><span t-esc="line.price_subtotal_incl"/></div></td>
+                                        <td><a t-if="line.is_make==False" class="ops obtn ocancel" t-att-href="'/shop/wx/order/list/make?is_make=True&amp;line_id=%s'%line.id">制菜</a><div t-if="line.is_make==True">已制菜</div></td>
+                                        <td><a t-if="line.is_out==False" class="ops obtn ocancel" t-att-href="'/shop/wx/order/list/make?is_out=True&amp;line_id=%s'%line.id">传菜</a><div t-if="line.is_out==True">已传菜</div></td>
+                                    </tr>
+
+                                </table>
+                                <div class="clear"></div>
+                                <!--<div class="addr"></div>-->
+                                <div class="osum">合计:<b t-esc="order.amount_total"></b>元</div>
+                                <div class="osum">备注:<b t-esc="order.customer_count"/>号桌  <b t-esc="order.note"/>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
+                    <script type="text/javascript" src="/wxsite/static/js/orders.js"></script>
+                </body>
+            </html>
+
+        </template>
+
+        <!--产品明细页面-->
+        <template id="main" name="主页">&lt;!DOCTYPE html&gt;
+            <html>
+                <head>
+                    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0;" />
+                    <title t-esc="company_name"></title>
+
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/global.css" />
+                    <link rel="stylesheet" type="text/css" href="/wxsite/static/css/main.css" />
+                </head>
+                <body>
+                    <img class="shop-banner" src="/wxsite/static/images/shop-banner.jpg" />
+                    <a class="menu-box box-start" href="./lunch">开始点菜</a>
+                    <a class="menu-box mleft2 box-order" href="./order">我的订单</a>
+                    <a class="menu-box box-secret" href="./secret">神秘功能</a>
+                    <a class="menu-box mleft2 box-my-info" href="./user">我的信息</a>
+
+                    <script type="text/javascript" src="/wxsite/static/js/jquery-2.1.0.min.js"></script>
+                    <script type="text/javascript" src="/wxsite/static/js/main.js"></script>
                 </body>
             </html>
         </template>

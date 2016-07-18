@@ -1,0 +1,27 @@
+body{background-color: white;}
+.cart-main{width: 92%; padding: 2%; margin: 0.6em auto; border: solid 1px #FFE8BE; background-color: #FFFFF7;}
+.cart-title{line-height: 2.6em; font-size: 1.5em; border-bottom: solid 1px #FFE8BE;}
+
+.cart-item{margin-top: 0.4em; border-bottom: solid 1px #ccc; padding-bottom: 0.4em; position: relative;}
+.cart-item .product-img{display: block; height: 6em; float: left; width: 25%; border: solid 1px #eee;}
+.cart-item .product-info{float: left; height: 6em; margin-left: 4%; width: 70%;}
+.cart-item .product-info .product-name{font-size: 1.2em; line-height: 1.4em; height: 2.8em; overflow: hidden;}
+.cart-item .product-info .product-name a{color: #888;}
+.cart-item .product-info .product-price{line-height: 1.2em; margin-top: 1.1em; font-size: 1em; color: red;}
+.cart-item .product-info .product-price b{font-size: 1.2em;}
+
+.cart-item .change-quantity{position: absolute; right: 0.2em; bottom: 0.4em;}
+.cart-item .change-quantity img{display: block; border: none 0; height: 30px; width: 30px; float: right;}
+.cart-item .change-quantity .buy-quantity{display: block; float: right; border: none 0; margin: 0; line-height: 30px; width:2em; text-align: center; font-size: 1.3em;}
+
+.cart-summary{margin-top: 0.8em; background-color: white; box-shadow: 0 -0.1em 0.2em 0.1em #eee; border-top: solid 1px #ccc; font-size: 1.4em; line-height: 3em; padding-left: 20%; text-align: left; color: #999;}
+.cart-summary b{color: #FF9805;}
+.pay-sum{background-color: white; font-size: 1.2em; line-height: 3em; padding-left: 20%; border-top: solid 1px #ccc; border-bottom: solid 1px #ccc;}
+.pay-sum b{color: red;}
+
+.pay-bottom{background-color: #eee; height: 5.6em; padding-top: 1em;}
+.pay-bottom .sub-order{display: block; border: none 0; width: 86%; margin: 0 auto; height: 3em; font-size: 1.3em; color: white; border-radius: 2em; background-color: red;}
+
+
+
+

@@ -1,0 +1,55 @@
+/*基本通用元素样式*/
+body{font-family: Verdana, helvetica, arial, sans-serif, SimHei, 黑体; font-size: 13px; margin: 0; padding: 0; background-color: #eee;}
+a{text-decoration: none; color: blue;}
+a:focus{outline: none;}
+a:hover{color: #FF6600; text-decoration: none;}
+a:visited{color: blue;}
+
+.main{width: 98%; max-width: 700px; min-height: 600px; margin: 26px auto 60px; background-color: white;}
+.func-title{line-height: 40px; text-align: center; font-size: 28px; border-bottom: solid 4px #00afed; color: #00afed;}
+
+/*表单提示*/
+.input-note{display: inline-block; margin-left: 14px; font-size: 12px; border: solid 1px #eee; color: #99dd00;}
+.input-note b{color: red;}
+
+/*分页*/
+.pages{height: 32px; overflow: hidden; margin: 6px auto; padding: 4px; border-bottom: solid 2px #00AFED;}
+.pages a{display: block; float: right; margin-left: 6px; height: 30px; line-height: 30px; width: 32px; text-align: center; font-size: 14px; border: none 0; border-radius: 4px; color: black;
+          background: -moz-linear-gradient(top, #FFFFFF, #C6C6C4);
+          background: -webkit-gradient(linear, 0 0, 0 100%, from(#FFFFFF), to(#C6C6C4));
+          background: -o-linear-gradient(top, #FFFFFF,#C6C6C4);
+}
+.pages a:hover{border-color: #FF6600; color: red;
+          background: -moz-linear-gradient(top, #24CC14, #18A308);
+          background: -webkit-gradient(linear, 0 0, 0 100%, from(#24CC14), to(#18A308));
+          background: -o-linear-gradient(top, #24CC14,#18A308);
+}
+.pages a.currpage{border: none 0; color: white; font-weight: bold; cursor: auto;
+          background: -moz-linear-gradient(top, #24CC14, #18A308);
+          background: -webkit-gradient(linear, 0 0, 0 100%, from(#24CC14), to(#18A308));
+          background: -o-linear-gradient(top, #24CC14,#18A308);
+}
+.pages a.currpage:hover{color: white;}
+
+/*顶栏*/
+.top-info{position: fixed; top: 0; left: 0; right: 0; font-size: 16px; line-height: 24px; padding: 0 4%; color: #00dd00; border-bottom: solid 2px #00afed; background-color: white; z-index: 100;}
+.top-info .top-info-desk{display: inline-block; float: right; font-size: 14px; color: black;}
+.top-info .top-info-desk b{font-size: 18px; color: #ff6600;}
+
+/*惠美app设计的底部菜单*/
+.simple-btn{position: fixed; width: 100%; font-size: 14px; line-height: 2.6em; padding: 0; bottom: 0; left: 0; background-color: black; opacity: 0.7; z-index: 100;}
+.simple-btn span{display: inline-block; float: left; margin-left: 0.8em; color: white;}
+.simple-btn a{display: inline-block; float: right; line-height: 1.8em; margin-top: 0.4em; margin-right: 0.5em; background-color: #fe9900; padding: 0 2em; color: white; border-radius: 4px;}
+
+/*底部菜单*/
+.footer-menus{position: fixed; width: 100%; padding: 0 2%; bottom: 0; left: 0; background-color: #eee; border-top: solid 1px #d5d5d5; z-index: 6;}
+.footer-menus .fmenu-item{position: relative; width: 30%; float: left; height: 54px;}
+.footer-menus .fmenu-item a{display: block;}
+.footer-menus .fmenu-item a img{display: block; height: 30px; margin: 0 auto; border: none 0;}
+.footer-menus .fmenu-item a span{display: block; text-align: center; line-height: 22px; color: black; font-size: 18px;}
+.footer-menus .fmenu-item .cart-num{position: absolute; width: 100%; top: 3px; text-align: center; color: red;}
+
+/*常用琐碎样式*/
+.clear{float: none; clear: both;}
+.fontgray{color: #888888;}
+.ajaxnote{line-height: 30px; text-align: center; font-weight: normal; font-size: 12px; text-indent: 0; color: #FF6600;}

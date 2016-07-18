@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+access_pos_category,产品pos分类,point_of_sale.model_pos_category,base.group_user,1,0,0,0
+xmlrpc_write_read,XMLRPC打印读写,model_qdodoo_print_list,group_wxsite_xmlrpc_readwrite,1,1,0,0

@@ -22,7 +22,7 @@ b{color: #ff6600;}
 
 /*商品列表*/
 .product{margin-top: 2px;}
-.product .pimg{display: block; width: 6rem; margin: 2px auto; height: 4rem;}
+.product .img{display: block; width: 6rem; margin: 2px auto; height: 4rem;}
 .product .pname{font-size: 12px; line-height: 1.2em; height: 2.4em; width: 6rem; margin: 0 auto; overflow: hidden;}
 .product .pname a{color: #ddaa00;}
 

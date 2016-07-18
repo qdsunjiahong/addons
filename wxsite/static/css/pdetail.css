@@ -1,15 +1,17 @@
 .cat{width: 286px; margin: 6px auto 0; border-bottom: solid 2px #00AFED; padding-left: 4px; padding-right: 20px; line-height: 20px; height: 20px; overflow: hidden;}
 
 /*基本信息*/
-.product_detail_img{display: block; float: left; margin-left: 4px; margin-top: 10px; width: 30%; height: 6em; border: solid 1px #ccc;}
-.infos{float: left; margin-left: 5px; margin-top: 10px; width: 65%; line-height: 24px; font-size: 12px;}
+.product_detail_img{display: block; float: left; margin-bottom:20px; margin-left: 4px; margin-top: 10px; width: 96%; border: solid 1px #ccc;}
+.infos{float: left; margin-left: 5px; margin-top: 10px; width: 96%; line-height: 24px; font-size: 12px;}
 .infos div{overflow: hidden;}
 .infos .pname{height: 3em; line-height: 1.5em; font-size: 14px; font-weight: bold;}
-.infos .price b{color: red;}
+.infos .price b{margin-left: 30px; color: red; width: 85%; }
 .infos .yhtip{color: #FF6600; font-size: 12px;}
+.main .description{padding: 25px; max-height:80px;}
+
 
 /*选择点餐购买按钮*/
-.buy{display: block; width: 80%; margin: 0.2em auto 0; font-size: 14px; height: 2em; border: none 0; border-radius: 5px; color: white; cursor: pointer;background-color: #C51B00;}
+.buy{width: 60%; margin: 0.2em auto 0; margin-left: 20px; font-size: 14px; height: 2em; border: none 0; border-radius: 5px; color: white; cursor: pointer;background-color: #C51B00;}
 
 /*商品介绍*/
 .pdesc{padding: 10px;}

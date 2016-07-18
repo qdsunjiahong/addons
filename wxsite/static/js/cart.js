@@ -37,7 +37,8 @@ $('a.delcart').click(function(){
             action: 'del',
             cartid: cartID
         }}).done(function(msg){
-            if(msg == '1'){  //删除成功
+            var res = eval("("+msg+")");
+            if(res.key == '1'){  //删除成功
                 location.href='/shop/wx/car';
             }else{
                 alert("操作失败，请刷新页面！");
@@ -75,7 +76,8 @@ $('a.chquantity').click(function(){
                 number: quantity,
             }
         }).done(function (msg) {
-            if (msg == '1') {  //操作成功
+            var res = eval("("+msg+")");
+            if (res.key == '1') {  //操作成功
                 location.href = '/shop/wx/car';
             } else {
                 alert("操作失败，请刷新页面！");
@@ -114,8 +116,6 @@ $('input.quantity').change(function(){
 //点击确认按钮，提交表单
 $('button[name="suborder"]').click(function(){
     //可以在此做一些检验
-
-
     
     $('form#subform').submit();
 });

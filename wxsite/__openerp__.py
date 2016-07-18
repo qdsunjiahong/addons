@@ -14,10 +14,15 @@
     'website': 'http://www.qdodoo.com/',    #网址
     'summary': '',    #摘要
     'images' : [],    #模块图片
-    'depends' : ['base','website_sale'],    #依赖模块
+    'depends' : ['base','website_sale','point_of_sale'],    #依赖模块
     'data': [
         'views/template.xml',
         'views/wxsite.xml',
+        'security/account_security.xml',
+        'security/ir.model.access.csv',
+        'views/account_print.xml',
+        'wxsite_report.xml',
+        'views/report_account_print.xml',
         # ...
     ],    #更新XML,CSV
     'js': [

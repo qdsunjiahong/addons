@@ -7,5 +7,6 @@
 ###########################################################################################
 
 import wxsite_car    #引入模型
+import account_print    #引入模型
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
