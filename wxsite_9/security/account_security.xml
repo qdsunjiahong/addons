@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<openerp>
-<data noupdate="0">
-    <record id="group_wxsite_xmlrpc_readwrite" model="res.groups">
-        <field name="name">XMLRPC打印菜单</field>
-        
-    </record>
-</data>
-</openerp>
