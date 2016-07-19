@@ -166,7 +166,7 @@ class qdodoo_sale_order_return(models.Model):
         invoice_state = 'none'
         if self._context.get('active_id'):
             order_policy = self.env['sale.order'].browse(self._context.get('active_id')).order_policy
-            if order_policy != 'manual':
+            if order_policy == 'picking':
                 invoice_state = '2binvoiced'
         return invoice_state
 
