@@ -162,8 +162,16 @@ class qdodoo_sale_order_return(models.Model):
     """
     _name = 'qdodoo.sale.order.return'
 
+    def _get_invoice_state(self):
+        invoice_state = 'none'
+        if self._context.get('active_id'):
+            order_policy = self.env['sale.order'].browse(self._context.get('active_id')).order_policy
+            if order_policy != 'manual':
+                invoice_state = '2binvoiced'
+        return invoice_state
+
     order_line = fields.One2many('qdodoo.sale.order.return.line','order_id',u'产品明细')
-    invoice_state = fields.Selection([('2binvoiced',u'开票'),('none',u'没有发票')],u'开发票',default='2binvoiced')
+    invoice_state = fields.Selection([('2binvoiced',u'开票'),('none',u'没有发票')],u'开发票',default=_get_invoice_state)
 
     # 获取默认明细产品
     @api.model
