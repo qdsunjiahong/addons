@@ -81,7 +81,6 @@ class qdodoo_purchase_sale_order(models.Model):
         sale_obj = self.pool.get('sale.order')
         product_obj = self.pool.get('product.product')
         sale_line_obj = self.pool.get('sale.order.line')
-        product_pricelist = self.pool.get('product.pricelist')
         partner_obj = self.pool.get('res.partner')
         company_obj = self.pool.get('res.company')
         # 获取数据字典{客户id：公司id}
@@ -138,7 +137,8 @@ class qdodoo_purchase_sale_order(models.Model):
                         'product_uom_qty': line.product_qty,
                         'price_unit': line.price_unit,
                     })
-                sale_obj.action_button_confirm(cr, 1, [res_id])
+                res_users = self.pool.get('res.users').search(cr, 1, [('company_id','=',dict_partner_company.get(obj.partner_id.id, ''))])
+                sale_obj.action_button_confirm(cr, res_users[0], [res_id])
         return True
 
 
