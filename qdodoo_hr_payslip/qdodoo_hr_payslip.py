@@ -19,6 +19,8 @@ class qdodoo_hr_payslip(models.Model):
         company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id,
         period_obj = self.pool.get("account.period")
         period_ids = period_obj.search(cr, uid, [('company_id', '=', company_id), ('name', '=', account_period)])
+        if not period_ids:
+            return ''
         period_brw = period_obj.browse(cr, uid, period_ids[0], context=context)
         return period_brw.date_start
 
@@ -28,6 +30,8 @@ class qdodoo_hr_payslip(models.Model):
         company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id,
         period_obj = self.pool.get("account.period")
         period_ids = period_obj.search(cr, uid, [('company_id', '=', company_id), ('name', '=', account_period)])
+        if not period_ids:
+            return ''
         period_brw = period_obj.browse(cr, uid, period_ids[0], context=context)
         return period_brw.date_stop
 
