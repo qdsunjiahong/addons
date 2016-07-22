@@ -137,8 +137,10 @@ class qdodoo_purchase_sale_order(models.Model):
                         'product_uom_qty': line.product_qty,
                         'price_unit': line.price_unit,
                     })
-                res_users = self.pool.get('res.users').search(cr, 1, [('company_id','=',dict_partner_company.get(obj.partner_id.id, ''))])
-                sale_obj.action_button_confirm(cr, res_users[0], [res_id])
+
+                if dict_partner_company.get(obj.partner_id.id, ''):
+                    self.pool.get('res.users').write(cr, 1, 1, {'company_id':dict_partner_company.get(obj.partner_id.id, '')})
+                sale_obj.action_button_confirm(cr, 1, [res_id])
         return True
 
 
