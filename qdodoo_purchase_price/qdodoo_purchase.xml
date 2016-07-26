@@ -16,5 +16,47 @@
             </field>
         </record>
 
+        <record id="tree_qdodoo_product_supplierinfo" model="ir.ui.view">
+            <field name="name">产品供应商价格</field>
+            <field name="model">qdodoo.product.supplierinfo</field>
+            <field name="arch" type="xml">
+                <tree string="产品供应商价格" create="false" edite="false">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="contract_name"/>
+                    <field name="contract_phone"/>
+                    <field name="product_num"/>
+                    <field name="price"/>
+                </tree>
+            </field>
+        </record>
+        <record id="wizard_qdodoo_product_supplierinfo" model="ir.ui.view">
+            <field name="name">产品供应商价格</field>
+            <field name="model">qdodoo.product.supplierinfo</field>
+            <field name="arch" type="xml">
+                <form string="产品供应商价格">
+                    <div>
+                        查询产品对应供应商的价格
+                    </div>
+                    <footer>
+                        <button string="查询" name="btn_select" type="object" class="oe_highlight"/>
+                        or
+                        <button string="取消" class="oe_link" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        <record id="action_qdodoo_product_supplierinfo" model="ir.actions.act_window">
+            <field name="name">产品供应商价格</field>
+            <field name="res_model">qdodoo.product.supplierinfo</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="view_id" ref="wizard_qdodoo_product_supplierinfo"/>
+        </record>
+        <menuitem name="产品供应商价格" action="action_qdodoo_product_supplierinfo"
+                  id="menu_qdodoo_product_supplierinfo"
+                  parent="purchase.menu_procurement_management_product" sequence="60"/>
+
     </data>
 </openerp>
