@@ -8,7 +8,7 @@ import types
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-class partner_import(osv.osv):
+class partner_import(osv.osv_memory):
     _name = 'rain.partner.import'
 
     _columns = {
@@ -30,6 +30,7 @@ class partner_import(osv.osv):
         city_pool = self.pool.get('hm.city')
         district_pool = self.pool.get('hm.district')
         account_pool = self.pool.get('account.payment.term')
+        bank_pool = self.pool.get('res.partner.bank')
 
 
         for rownum in range(3, nrows):
@@ -166,6 +167,26 @@ class partner_import(osv.osv):
                     args['property_supplier_payment_term'] = payment_ids[0]
                 else:
                     raise osv.except_osv("导入出错:", _(u'付款方式不存在， (会计－> 其他－>付款方式)请添加该付款方式;行号:%d' % (rownum + 1)))
+
+            sh_acc_number = sh.cell(rownum, 14).value
+            sh_bank_name = sh.cell(rownum, 15).value
+            sh_owner_name = sh.cell(rownum, 15).value
+            if sh_acc_number and sh_bank_name:
+                bank_id = bank_pool.search(cr, uid, [('acc_number','=',sh_acc_number)])
+                if bank_id:
+                    args['bank_ids'] = bank_id
+                else:
+                    args['bank_ids'] = [{'state': 'bank',
+                                    'acc_number': sh_acc_number,
+                                    'bank_name': sh_bank_name,
+
+                                    }]
+            else:
+                raise osv.except_osv("导入出错:", _(u'银行帐户不完整，请修正;行号:%d' % (rownum + 1)))
+            if sh_owner_name:
+                args['bank_ids'][0]['own_name'] = sh_owner_name
+            else:
+                args['bank_ids'][0]['own_name'] = sh_name
 
             args['supplier'] = True
             args['customer'] = False
