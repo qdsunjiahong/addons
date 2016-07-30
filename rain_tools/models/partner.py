@@ -20,7 +20,6 @@ class partner_import(osv.osv_memory):
             context = {}
         value = self.browse(cr, uid, ids[0]).db_datas
         wb = xlrd.open_workbook(file_contents=base64.decodestring(value))
-
         sh = wb.sheet_by_index(0)
         nrows = sh.nrows
 
@@ -33,8 +32,9 @@ class partner_import(osv.osv_memory):
         bank_pool = self.pool.get('res.partner.bank')
 
 
-        for rownum in range(3, nrows):
+        for rownum in range(2, nrows):
             args = {}
+            bank_val = {}
 
             #是否是公司［Y/N] 0 is_company
             # sh_is_company = sh.cell(rownum, 0).value.strip()
@@ -162,6 +162,8 @@ class partner_import(osv.osv_memory):
             #付款方式 13 property_supplier_payment_term
             sh_payment_term = sh.cell(rownum, 13).value
             if sh_payment_term != "":
+                print sh_payment_term
+                print len(sh_payment_term)
                 payment_ids = account_pool.search(cr, uid,[('name','=',sh_payment_term)] )
                 if len(payment_ids) > 0:
                     args['property_supplier_payment_term'] = payment_ids[0]
@@ -170,26 +172,27 @@ class partner_import(osv.osv_memory):
 
             sh_acc_number = sh.cell(rownum, 14).value
             sh_bank_name = sh.cell(rownum, 15).value
-            sh_owner_name = sh.cell(rownum, 15).value
-            if sh_acc_number and sh_bank_name:
-                bank_id = bank_pool.search(cr, uid, [('acc_number','=',sh_acc_number)])
-                if bank_id:
-                    args['bank_ids'] = bank_id
-                else:
-                    args['bank_ids'] = [{'state': 'bank',
-                                    'acc_number': sh_acc_number,
-                                    'bank_name': sh_bank_name,
+            sh_owner_name = sh.cell(rownum, 16).value
+            if sh_acc_number != "" and sh_bank_name != "":
+                bank_val = {'state': 'bank',
+                                'acc_number': sh_acc_number,
+                                'bank_name': sh_bank_name,
 
-                                    }]
+                                }
+                if sh_owner_name != "":
+                    bank_val['owner_name'] = sh_owner_name
+                else:
+                    bank_val['owner_name'] = sh_name
             else:
                 raise osv.except_osv("导入出错:", _(u'银行帐户不完整，请修正;行号:%d' % (rownum + 1)))
-            if sh_owner_name:
-                args['bank_ids'][0]['own_name'] = sh_owner_name
-            else:
-                args['bank_ids'][0]['own_name'] = sh_name
+
 
             args['supplier'] = True
             args['customer'] = False
+
+            if bank_val:
+                args['bank_ids'] = [[0, False, bank_val]]
             partner_pool.create(cr, uid, args)
+
 
 partner_import()
