@@ -9,7 +9,12 @@
             <field name="arch" type="xml">
                 <form string='供应商导入' version="7.0">
                     <group>
-                        <field  name="db_datas" string="导入Excel文件"/>
+                        <group>
+                            <field  name="db_datas" string="导入Excel文件"/>
+                        </group>
+                        <group>
+                            <a href="/rain_tools/static/partner_import.xlsx">点此进行模板下载</a>
+                        </group>
                     </group>
                     <footer>
                         <button name="action_upload" string="导入" type="object" class="oe_highlight"/>

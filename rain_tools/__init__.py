@@ -1,2 +1,3 @@
+import partner
 import models
 
