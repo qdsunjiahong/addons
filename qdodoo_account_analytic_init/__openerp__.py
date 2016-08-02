@@ -28,6 +28,7 @@
     'website': 'https://www.odoo.com',
     'summary': 'Jobs, Departments, Employees Details',
     'description': """
+    根据收支明细的日期，初始化对应的账期
     """,
     'author': 'OpenERP SA',
     'website': 'https://www.odoo.com/page/employees',
