@@ -66,42 +66,45 @@ class partner_import(osv.osv_memory):
             #地址[国家／省／市／区／街道] 3
             sh_address = sh.cell(rownum, 3).value.strip()
 
-            address_array = sh_address.split('/')
-            #国家0
-            add_country = address_array[0]
-            country_ids = country_pool.search(cr, uid, [('name','=',add_country)])
-            if len(country_ids) > 0:
-                args['country_id'] = country_ids[0]
-            else:
-                raise osv.except_osv("导入出错:", _(u'国家不存在， 请添加该国家;行号:%d' % (rownum + 1)))
+            # address_array = sh_address.split('/')
+            # #国家0
+            # add_country = address_array[0]
+            # country_ids = country_pool.search(cr, uid, [('name','=',add_country)])
+            # if len(country_ids) > 0:
+            #     args['country_id'] = country_ids[0]
+            # else:
+            #     raise osv.except_osv("导入出错:", _(u'国家不存在， 请添加该国家;行号:%d' % (rownum + 1)))
+            #
+            # #省1
+            # add_state = address_array[1]
+            # state_ids = state_pool.search(cr, uid, [('name','=',add_state),('country_id','=',country_ids[0])])
+            # if len(state_ids) > 0:
+            #     args['state_id'] = state_ids[0]
+            # else:
+            #     raise osv.except_osv("导入出错:", _(u'省不存在， 请添加该省;行号:%d' % (rownum + 1)))
+            #
+            # #市2
+            # add_city = address_array[2]
+            # city_ids = city_pool.search(cr, uid, [('name','=',add_city),('state','=',state_ids[0])])
+            # if len(city_ids) > 0:
+            #     args['city'] = city_ids[0]
+            # else:
+            #     raise osv.except_osv("导入出错:", _(u'城市不存在， 请添加该城市;行号:%d' % (rownum + 1)))
+            #
+            # #区3
+            # add_district = address_array[3]
+            # district_ids = district_pool.search(cr, uid, [('name','=',add_district),('city','=',city_ids[0])])
+            # if len(district_ids) > 0:
+            #     args['district'] = district_ids[0]
+            # else:
+            #     raise osv.except_osv("导入出错:", _(u'区不存在， 请添加该区;行号:%d' % (rownum + 1)))
+            #
+            # #街道4
+            # if address_array[4] != "":
+            #     args['street'] = address_array[4]
 
-            #省1
-            add_state = address_array[1]
-            state_ids = state_pool.search(cr, uid, [('name','=',add_state),('country_id','=',country_ids[0])])
-            if len(state_ids) > 0:
-                args['state_id'] = state_ids[0]
-            else:
-                raise osv.except_osv("导入出错:", _(u'省不存在， 请添加该省;行号:%d' % (rownum + 1)))
-
-            #市2
-            add_city = address_array[2]
-            city_ids = city_pool.search(cr, uid, [('name','=',add_city),('state','=',state_ids[0])])
-            if len(city_ids) > 0:
-                args['city'] = city_ids[0]
-            else:
-                raise osv.except_osv("导入出错:", _(u'城市不存在， 请添加该城市;行号:%d' % (rownum + 1)))
-
-            #区3
-            add_district = address_array[3]
-            district_ids = district_pool.search(cr, uid, [('name','=',add_district),('city','=',city_ids[0])])
-            if len(district_ids) > 0:
-                args['district'] = district_ids[0]
-            else:
-                raise osv.except_osv("导入出错:", _(u'区不存在， 请添加该区;行号:%d' % (rownum + 1)))
-
-            #街道4
-            if address_array[4] != "":
-                args['street'] = address_array[4]
+            if sh_address != "":
+                args['street'] = sh_address
 
 
             #电话 4
@@ -191,4 +194,4 @@ class partner_import(osv.osv_memory):
                 args['bank_ids'] = [[0, False, bank_val]]
             partner_pool.create(cr, uid, args)
 
-partner_import()
+#partner_import()
