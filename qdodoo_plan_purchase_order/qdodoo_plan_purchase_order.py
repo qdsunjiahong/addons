@@ -283,9 +283,6 @@ class qdodoo_plan_purchase_order(models.Model):
                                                        'price_unit':line_va[2],'product_manager':line_va[5]})
         return self.write(cr, uid, ids, {'state':'done','notes':notes})
 
-    def assign_supplier(self, cr, uid, ids, context=None):
-        print ids
-        print self.browse(cr, uid, ids)
 
 class qdodoo_purchase_order_tfs(models.Model):
     _inherit = 'purchase.order'

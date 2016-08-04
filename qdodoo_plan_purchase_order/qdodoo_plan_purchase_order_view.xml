@@ -56,7 +56,6 @@
                                         <button name='btn_import_data' string='导入' type='object' states="draft"/>
                                         <a href="/qdodoo_plan_purchase_order/static/template.xls">点此进行模板下载</a>
                                     </group>
-                                    <group><button name="assign_supplier" attrs="{'invisible':[('state','!=','sent')]}" string="分配供应商" type="object"/></group>
                                 </group>
                                 <field name="order_line">
                                     <tree editable="bottom" colors="red:colors=='red'">
