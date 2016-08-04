@@ -210,6 +210,11 @@ class qdodoo_plan_purchase_order(models.Model):
     def btn_confirmed(self, cr, uid, ids, context=None):
         line_obj = self.pool.get('qdodoo.plan.purchase.order.line')
         line_id = line_obj.search(cr, uid, [('order_id','=',ids[0])])
+        lines = line_obj.browse(cr, uid, line_id)
+        #确认时验证是否无供应商信息
+        for line in lines:
+            if not line.partner_id:
+                raise osv.except_osv(_(u'错误'), _(u'明细行无供应商信息，请修正！'))
         line_obj.write(cr, uid, line_id, {'state':'apply'})
         return self.write(cr, uid, ids, {'state':'apply'})
 
@@ -226,7 +231,7 @@ class qdodoo_plan_purchase_order(models.Model):
         partner_obj = self.pool.get('res.partner')
         purchase_line_obj = self.pool.get('purchase.order.line')
         for obj in self.browse(cr, uid, ids):
-            # 循环处理产品明细{(日期,供应商):[(产品,数量,单价,备注,单位id)]}
+            # 循环处理产品明细{(日期,供应商):[(产品,数量,单价,备注,单位id,产品经理)]}
             purchase_id = {}
             for line in obj.order_line:
                 # 组织采购订单数据
@@ -246,15 +251,19 @@ class qdodoo_plan_purchase_order(models.Model):
                             purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty,key_new[2],key_new[3],key_new[4]))
                             break
                     if not log:
-                        if line.qty_jh > line.qty:
-                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id))
-                        else:
-                            purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
+                        # if line.qty_jh > line.qty:
+                        #     purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id))
+                        # else:
+                        #     purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
+                        purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id,line.product_manager.id))
+
                 else:
-                    if line.qty_jh > line.qty:
-                        purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id)]
-                    else:
-                        purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
+                    # if line.qty_jh > line.qty:
+                    #     purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id)]
+                    # else:
+                    #     purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
+
+                    purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id,line.product_manager.id)]
             notes = ''
             # 创建采购单
             for key_line,value_line in purchase_id.items():
@@ -271,8 +280,12 @@ class qdodoo_plan_purchase_order(models.Model):
                 for line_va in value_line:
                     purchase_line_obj.create(cr, uid, {'name':line_va[3],'order_id':res_id,'product_id':line_va[0],'date_planned':key_line[0],
                                                        'company_id':obj.company_id.id,'product_qty':line_va[1],'product_uom':line_va[4],
-                                                       'price_unit':line_va[2]})
+                                                       'price_unit':line_va[2],'product_manager':line_va[5]})
         return self.write(cr, uid, ids, {'state':'done','notes':notes})
+
+    def assign_supplier(self, cr, uid, ids, context=None):
+        print ids
+        print self.browse(cr, uid, ids)
 
 class qdodoo_purchase_order_tfs(models.Model):
     _inherit = 'purchase.order'
@@ -297,6 +310,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
     is_cancel = fields.Boolean(u'需要回退', default=False)
     difference_num = fields.Float(u'计划和采购差异数量',compute='_get_difference_num')
     is_split = fields.Boolean(u'已拆分过')
+    product_manager = fields.Many2one('res.users',u'产品经理')
 
     def _get_difference_num(self):
         for ids in self:
@@ -310,17 +324,32 @@ class qdodoo_plan_purchase_order_line(models.Model):
 
     # 带出默认值
     def create(self, cr, uid, vals, context=None):
-        if vals.get('plan_date_jh'):
+        print vals
+        if not vals.get('plan_date') and vals.get('plan_date_jh'):
             vals['plan_date'] = vals.get('plan_date_jh')
-        if vals.get('qty_jh'):
+        if not vals.get('qty') and vals.get('qty_jh'):
             vals['qty'] = vals.get('qty_jh')
         return super(qdodoo_plan_purchase_order_line, self).create(cr, uid, vals, context=context)
+
+    #比较采购数量跟计划数量
+    def onchange_qty(self, cr, uid, ids, qty_jh, qty, context=None):
+        res={}
+
+        if qty> qty_jh and qty_jh != 0:
+            warning_msgs = "采购数量%d大于计划数量%d,请修正！" % (qty, qty_jh)
+            warning = {
+                       'title': _('Configuration Error!'),
+                       'message' : warning_msgs
+                    }
+            res.update({'warning': warning})
+        return res
 
     # 根据产品和供应商修改产品价格
     def onchange_product_id(self, cr, uid, ids, product_id, partner_id, qty, uom_id, company_id, context=None):
         product_pricelist = self.pool.get('product.pricelist')
         partner_obj = self.pool.get('res.partner')
         users_obj = self.pool.get('res.users')
+        product_obj = self.pool.get('product.product')
         if ids:
             obj = self.browse(cr, uid, ids[0])
         res = {}
@@ -339,6 +368,15 @@ class qdodoo_plan_purchase_order_line(models.Model):
             # 获取产品对应的供应商和送货周期\数量
             purchase_dict = {}
             purchase_num_dict = {}
+            #唯一供应商默认填充到明细
+            if len(product_obj.seller_ids) == 1:
+                # 根据价格表有效期判断是否填充供应商
+                date_end = datetime.strptime(product_obj.seller_ids.name.property_product_pricelist_purchase.version_id.date_end,'%Y-%m-%d')
+                if  date_end > datetime.today():
+                    res['value']['partner_id'] = product_obj.seller_ids.name.id
+            #填充产品经理
+            if product_obj.product_manager_tfs:
+                res['value']['product_manager'] = product_obj.product_manager_tfs.id
             for line in product_obj.seller_ids:
                 purchase_dict[line.name.id] = line.delay
                 purchase_num_dict[line.name.id] = line.min_qty
@@ -349,6 +387,7 @@ class qdodoo_plan_purchase_order_line(models.Model):
                         product_id, qty or 1.0, partner_id or False, {'uom': uom_id, 'date': date_order_str})[pricelist_id]
                 res['value']['price_unit'] = price
                 res['value']['plan_date'] = datetime.now().date() + timedelta(days=purchase_dict.get(partner_id,0))
+                res['value']['qty'] = purchase_num_dict.get(partner_id, qty)
             else:
                 res['value']['price_unit'] = 0.0
             res['value']['name'] = product_obj.product_tmpl_id.name
@@ -389,9 +428,13 @@ class qdodoo_res_partner_inherit(models.Model):
         if context.get('qdodoo_log'):
             supplierinfo_obj = self.pool.get('product.supplierinfo')
             product_obj = self.pool.get('product.product')
+
             supplierinfo_ids = supplierinfo_obj.search(cr, uid, [('product_tmpl_id','=',product_obj.browse(cr, uid, context.get('product_id')).product_tmpl_id.id)])
             partner_list = []
             for supplierinfo_id in supplierinfo_obj.browse(cr, uid, supplierinfo_ids):
+                pricelist = supplierinfo_id.name.property_product_pricelist_purchase.version_id
+                if datetime.strptime(pricelist.date_end,'%Y-%m-%d') < datetime.today():
+                    continue
                 partner_list.append(supplierinfo_id.name.id)
             args.append(('id','in',partner_list))
         return super(qdodoo_res_partner_inherit, self).name_search(cr, uid, name, args=args, operator=operator, context=context, limit=limit)
@@ -403,3 +446,11 @@ class qdodoo_product_template(models.Model):
     _inherit = 'product.template'
 
     product_manager_tfs = fields.Many2one('res.users',u'产品经理')
+
+class purchase_order_line(models.Model):
+    """
+    采购订单明细增加产品经理字段
+    """
+    _inherit = 'purchase.order.line'
+
+    product_manager = fields.Many2one('res.users', u'产品经理')

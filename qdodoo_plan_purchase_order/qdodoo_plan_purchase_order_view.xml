@@ -56,6 +56,7 @@
                                         <button name='btn_import_data' string='导入' type='object' states="draft"/>
                                         <a href="/qdodoo_plan_purchase_order/static/template.xls">点此进行模板下载</a>
                                     </group>
+                                    <group><button name="assign_supplier" attrs="{'invisible':[('state','!=','sent')]}" string="分配供应商" type="object"/></group>
                                 </group>
                                 <field name="order_line">
                                     <tree editable="bottom" colors="red:colors=='red'">
@@ -64,19 +65,21 @@
                                                domain="[('company_id','=',parent.company_id)]"/>
                                         <field name="difference_num" invisible="True"/>
                                         <field name="is_split" invisible="True"/>
-                                        <field name="qty_jh" sum="合计"/>
-                                        <field name="qty" sum="合计" attrs="{'required':[('state','!=','draft')]}"/>
-                                        <button name="split_quantities" string="拆分" type="object" icon="STOCK_PREFERENCES" attrs="{'invisible': ['|','|','|',('is_split','=',True),('state','!=','sent'),('difference_num','&lt;=',0),('qty', '=', 0)]}"/>
+                                        <field name="qty_jh" sum="合计" on_change="onchange_qty(qty_jh,qty)"/>
+                                        <field name="qty" sum="合计" on_change="onchange_qty(qty_jh,qty)" attrs="{'required':[('state','!=','draft')]}" groups="__export__.res_groups_144"/>
+                                        <field name="product_manager" />
+                                        <button name="split_quantities" string="拆分" type="object" icon="STOCK_PREFERENCES" attrs="{'invisible': ['|','|','|',('is_split','=',False),('state','!=','sent'),('difference_num','&lt;=',0),('qty', '=', 0)]}"/>
                                         <field name="plan_date_jh"/>
-                                        <field name="plan_date" attrs="{'required':[('state','!=','draft')]}"/>
-                                        <field name="price_unit"/>
+                                        <field name="plan_date" attrs="{'required':[('state','!=','draft')]}" groups="__export__.res_groups_144"/>
+                                        <field name="price_unit" groups="__export__.res_groups_144"/>
                                         <field name="uom_id"/>
                                         <field name="state" invisible="True"/>
                                         <field name="colors" invisible="True"/>
-                                        <field name="partner_id" attrs="{'required':[('state','!=','draft')]}"
+                                        <field name="partner_id" groups="__export__.res_groups_144"
                                                on_change="onchange_product_id(product_id,partner_id,qty,uom_id,parent.company_id)" context="{'qdodoo_log':True,'product_id':product_id}"/>
                                         <field name="name"/>
                                         <field name="is_cancel"/>
+
                                     </tree>
                                 </field>
                             </page>
@@ -138,6 +141,17 @@
                     <field name="product_manager_tfs"/>
                 </xpath>
 
+            </field>
+        </record>
+
+        <record id="qdooo_purchase_order_form" model="ir.ui.view">
+            <field name="name">qdoo.purchase.order.form</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/sheet/notebook/page/field/tree/field[@name='date_planned']" position="after">
+                    <field name="product_manager"/>
+                </xpath>
             </field>
         </record>
     </data>

@@ -11,5 +11,20 @@
                 </field>
             </field>
         </record>
+
+        <record id="qdoo_view_purchase_order_filter" model="ir.ui.view">
+            <field name="name">qdoo.purchase.order.list.select</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+            <field name="arch" type="xml">
+                <filter name="message_unread" position="after">
+                    <separator/>
+                    <filter name="part_in" string="部分入库" domain="[('stock_in_state','in',['part_in'])]"/>
+                    <filter name="all_in" string="全部入库" domain="[('stock_in_state','in',['all_in'])]"/>
+                    <filter name="not_in" string="未入库" domain="[('stock_in_state','in',['not_in'])]"/>
+                </filter>
+            </field>
+        </record>
+
     </data>
 </openerp>

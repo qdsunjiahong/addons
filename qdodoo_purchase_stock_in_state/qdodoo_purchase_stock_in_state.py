@@ -52,4 +52,4 @@ class qdodoo_purchase_stock_state(models.Model):
 
     stock_in_state = fields.Selection(
         [('not_in', u'未入库'), ('part_in', u'部分入库'), ('all_in', u'全部入库'), ('other', u'入库异常')], string=u'入库状态',
-        compute='_compute_stock_state', multi="purchase_stock")
+        compute='_compute_stock_state', multi="purchase_stock", store=True)
