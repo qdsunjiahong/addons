@@ -236,26 +236,26 @@ class qdodoo_plan_purchase_order(models.Model):
             for line in obj.order_line:
                 # 组织采购订单数据
                 # 判断是否是同一到货日期和供应商
-                if (line.plan_date,line.partner_id.id) in purchase_id:
+                if (line.plan_date_jh,line.partner_id.id) in purchase_id:
                     # 如果存在重复的产品
-                    all = purchase_id[(line.plan_date,line.partner_id.id)][:]
+                    all = purchase_id[(line.plan_date_jh,line.partner_id.id)][:]
                     log = False
                     for key in all:
                         if line.product_id.id == key[0]:
                             log = True
                             key_new = key
-                            purchase_id[(line.plan_date,line.partner_id.id)].remove(key)
+                            purchase_id[(line.plan_date_jh,line.partner_id.id)].remove(key)
                             # if line.qty_jh > line.qty:
                             #     purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty_jh,key_new[2],key_new[3],key_new[4]))
                             # else:
-                            purchase_id[(line.plan_date,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty,key_new[2],key_new[3],key_new[4]))
+                            purchase_id[(line.plan_date_jh,line.partner_id.id)].append((key_new[0], key_new[1]+line.qty,key_new[2],key_new[3],key_new[4]))
                             break
                     if not log:
                         # if line.qty_jh > line.qty:
                         #     purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id))
                         # else:
                         #     purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id))
-                        purchase_id[(line.plan_date,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id,line.product_manager.id))
+                        purchase_id[(line.plan_date_jh,line.partner_id.id)].append((line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id,line.product_manager.id))
 
                 else:
                     # if line.qty_jh > line.qty:
@@ -263,7 +263,7 @@ class qdodoo_plan_purchase_order(models.Model):
                     # else:
                     #     purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty, line.price_unit,line.name,line.uom_id.id)]
 
-                    purchase_id[(line.plan_date,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id,line.product_manager.id)]
+                    purchase_id[(line.plan_date_jh,line.partner_id.id)] = [(line.product_id.id ,line.qty_jh, line.price_unit,line.name,line.uom_id.id,line.product_manager.id)]
             notes = ''
             # 创建采购单
             for key_line,value_line in purchase_id.items():
@@ -321,7 +321,6 @@ class qdodoo_plan_purchase_order_line(models.Model):
 
     # 带出默认值
     def create(self, cr, uid, vals, context=None):
-        print vals
         if not vals.get('plan_date') and vals.get('plan_date_jh'):
             vals['plan_date'] = vals.get('plan_date_jh')
         if not vals.get('qty') and vals.get('qty_jh'):
